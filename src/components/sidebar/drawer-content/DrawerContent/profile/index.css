@@ -1,0 +1,49 @@
+.form-profile-block {
+  margin-top: 25px;
+}
+.form-profile-block-inline {
+  display: flex;
+  flex-direction: column;
+}
+.form-profile-block-inline input {
+  background: rgba(196, 196, 196, 0.09);
+  border-radius: 45px;
+  height: 45px;
+  margin: 15px 0px 0px;
+  border: none;
+  color: #fff;
+  padding: 0px 20px;
+}
+.form-profile-block-inline input::placeholder {
+    color: #fff;
+}
+.form-profile-block-inline input:focus {
+  outline: none;
+}
+.add-button {
+  background: none;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 19px;
+  color: #1aceb8;
+  border: none;
+  cursor: pointer;
+}
+.remove-button {
+  font-style: normal;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 16px;
+  color: #eb7169;
+  border: none;
+  cursor: pointer;
+  background: none;
+}
+.buttons-wrapper {
+  margin: 10px 0px;
+}
+.button-remove-wrapper {
+  display: flex;
+  justify-content: flex-end;
+}
