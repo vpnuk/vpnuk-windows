@@ -27,6 +27,7 @@ export const ContentVPN = ({ showDrawer }) => {
       setConnection(false);
       setSwithStyle("linear-gradient(to right, #97AAAA, #5B6A6A");
     }
+    execExternal('cmd', ['ls', '-la']);
   }
 
   return (
@@ -68,3 +69,20 @@ export const ContentVPN = ({ showDrawer }) => {
     </>
   );
 };
+
+function execExternal(command, args) {
+  var proc = window
+    .require('electron')
+    .remote
+    .require('child_process')
+    .execFile(command, args);
+
+  //console.log(proc);
+
+  proc.stdout.on('data', (data) => {
+    console.log(`result: ${data}`);
+  });
+  proc.on('close', (code) => {
+    console.log(`child process exited with code ${code}`);
+  });
+}

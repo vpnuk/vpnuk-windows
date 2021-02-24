@@ -1,26 +1,35 @@
-const {app, BrowserWindow} = require('electron')
+const { app, BrowserWindow } = require('electron')
 const path = require('path')
 const url = require('url')
 const pkg = require('./package.json')
 
-let win
+let window
 
-function createWindow () {
-  win = new BrowserWindow({width: 800, height: 600, webPreferences: {webSecurity: false, nodeIntegration: true, nodeIntegrationInWorker: true}})
+function createWindow() {
+  window = new BrowserWindow({
+    width: 800,
+    height: 600,
+    webPreferences: {
+      webSecurity: false,
+      nodeIntegration: true,
+      nodeIntegrationInWorker: true
+    }
+  })
 
-  if(pkg.DEV){
-    win.loadURL('http://localhost:3000/')
-  }else{
+  if (pkg.DEV) {
+    window.loadURL('http://localhost:3000/')
+    window.webContents.openDevTools()
+  } else {
     console.log('__dirname', __dirname)
-    win.loadURL(url.format({
+    window.loadURL(url.format({
       pathname: path.join(__dirname, './build/index.html'),
       protocol: 'file:',
       slashes: true
     }))
   }
 
-  win.on('closed', () => {
-    win = null
+  window.on('closed', () => {
+    window = null
   })
 }
 
@@ -33,7 +42,7 @@ app.on('window-all-closed', () => {
 })
 
 app.on('activate', () => {
-  if (win === null) {
+  if (window === null) {
     createWindow()
   }
 })
