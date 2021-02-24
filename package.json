@@ -18,16 +18,26 @@
     "electron-start": "electron .",
     "start": "concurrently --kill-others \"cross-env BROWSER=none npm run react-start\" \"wait-on http://localhost:3000 && electron .\"",
     "electron-build": "electron-builder",
-    "build": "npm run react-build && npm run electron-build"
+    "build": "npm run react-build && cross-env PORTABLE_EXECUTABLE_DIR=%APPDATA%\\Local\\vpnuk && npm run electron-build"
   },
   "build": {
     "productName": "VPNUK",
     "appId": "net.vpnuk.desktop",
+    "copyright": "Interexy LLC",
     "win": {
       "target": [
-        "portable"
+        {
+          "target": "nsis",
+          "arch": [
+            "x64",
+            "ia32"
+          ]
+        }
       ],
       "icon": "build/favicon.ico"
+    },
+    "nsis": {
+      "artifactName": "vpnuk_installer.exe"
     },
     "portable": {
       "artifactName": "vpnuk_portable.exe"
