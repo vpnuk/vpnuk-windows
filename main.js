@@ -1,14 +1,15 @@
 const { app, BrowserWindow } = require('electron')
+const isDevelopment = require('electron-is-dev')
 const path = require('path')
 const url = require('url')
-const pkg = require('./package.json')
 
 let window
 
 function createWindow() {
   window = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: isDevelopment ? 1280 : 720,
+    height: 960,
+    icon: path.join(__dirname, './public/favicon.ico'),
     webPreferences: {
       webSecurity: false,
       nodeIntegration: true,
@@ -16,11 +17,10 @@ function createWindow() {
     }
   })
 
-  if (pkg.DEV) {
+  if (isDevelopment) {
     window.loadURL('http://localhost:3000/')
     window.webContents.openDevTools()
   } else {
-    console.log('__dirname', __dirname)
     window.loadURL(url.format({
       pathname: path.join(__dirname, './build/index.html'),
       protocol: 'file:',
