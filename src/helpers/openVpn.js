@@ -57,12 +57,21 @@ export const runOpenVpn = (ovpnExePath, configPath, profilePath, ovpnOptions) =>
                 `--proto\ ${ovpnOptions.proto}`,
                 `--auth-user-pass\ ${profilePath}`,
                 `--redirect-gateway\ ${ovpnOptions.gatewayFlag}`,
-                Array.from(ovpnOptions.dnsAddresses, addr => `--dhcp-option\ DNS\ ${addr}`).join(' '),
+                Array.from(ovpnOptions.dnsAddresses,
+                    addr => `--dhcp-option\ DNS\ ${addr}`).join(' '),
                 `--mssfix\n ${'' + ovpnOptions.mtu}`
             ],
             { shell: true });
 
     console.log(proc);
+
+    proc.on('SIGHUP', () => {
+        console.log('received SIGHUP')
+    });
+
+    proc.on('SIGTERM', () => {
+        console.log('received SIGTERM')
+    });
 
     proc.stdout.on('data', (data) => {
         console.log(`ovpn-out: ${data}`);
@@ -72,5 +81,17 @@ export const runOpenVpn = (ovpnExePath, configPath, profilePath, ovpnOptions) =>
     });
     proc.on('close', (code) => {
         console.log(`ovpn exited with code ${code}`);
+    });
+
+    return proc;
+}
+
+export const killWindowsProcess = (pid) => {
+    var proc = childProcess
+        .spawn('taskkill', [`/PID\ ${pid}\ /T\ /F`],
+            { shell: true });
+    
+    proc.on('close', (code) => {
+        console.log(`killed process PID=${pid}`);
     });
 }

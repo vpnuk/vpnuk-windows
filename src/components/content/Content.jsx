@@ -3,9 +3,11 @@ import WorldImage from "../../assets/world.png";
 import SettingsImage from "../../assets/settings.png";
 import { Switch } from "antd";
 import "./Content.css";
-import { execExternal, getOpenVpnExePath, runOpenVpn, OvpnOptions } from "../../helpers/openVpn";
+import { getOpenVpnExePath, runOpenVpn, OvpnOptions, killWindowsProcess } from "../../helpers/openVpn";
 
 const path = require('path');
+
+window.currentConnection = null;
 
 export const ContentVPN = ({ showDrawer }) => {
   const [connection, setConnection] = useState(false);
@@ -26,18 +28,20 @@ export const ContentVPN = ({ showDrawer }) => {
     if (checked) {
       setConnection(true);
       setSwithStyle("linear-gradient(to right, #1ACEB8, #0BBFBA)");
+
+      window.currentConnection = runOpenVpn(
+        getOpenVpnExePath(),
+        path.resolve('config.ovpn'),
+        path.resolve('profile.txt'),
+        new OvpnOptions());
     } else {
       setConnection(false);
       setSwithStyle("linear-gradient(to right, #97AAAA, #5B6A6A");
+
+      killWindowsProcess(window.currentConnection.pid);
+      window.currentConnection = null;
     }
-    
-    execExternal('powershell', ['/c', 'pwd']);
-    var ovpnExe = getOpenVpnExePath();
-    runOpenVpn(
-      ovpnExe,
-      path.resolve('config.ovpn'),
-      path.resolve('profile.txt'),
-      new OvpnOptions())
+    //execExternal('powershell', ['/c', 'pwd']);
   }
 
   return (
