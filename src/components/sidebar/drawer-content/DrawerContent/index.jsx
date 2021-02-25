@@ -16,18 +16,8 @@ import {
   optionsMtu,
 } from "../../../../constants/settings";
 import { ConnectionDetails } from "./connectionDetails/index";
-//import * as fs from "fs";
-import TestFile from "../../../../OpenVPN/test.txt";
-import path from "path";
-//const writeFileP = require("write-file-p");
-//const remote = require('electron').remote;
-//const electronFs = remote.require('fs');
-//const fs = window.require("fs");
 
-//var remote = require('remote');
-//var dialog = remote.require('dialog');
-//var fs = require('fs');
-//const {dialog} = require('electron').remote;
+const fs = require('fs');
 
 export const DrawerContent = () => {
   const { handleSubmit, register, setValue, reset } = useForm();
@@ -44,35 +34,6 @@ export const DrawerContent = () => {
   const [radioValueConnectionValue, setRadioValueConnectionValue] = useState(
     "443"
   );
-
-  //This can help generate new files and modify the contents of existing ones
-  
-  //fs.readFile("/Applications/OpenVPN/test.ovpn", "utf-8", (err, data) => {
-  //  if (err) {
-  //    alert("An error ocurred reading the file :" + err.message);
-  //    return;
-  //  }
-
-  //  console.log("The file content is : " + data);
-  //});
-
-  //fs.writeFile("/Applications/OpenVPN/test1.txt", "test test test", (err) => {
-  //  if(err){
-  //      alert("An error ocurred creating the file "+ err.message)
-  //  }
-                
-  //  alert("The file has been succesfully saved");
-//});
-
-  //fs.writeFile("/Applications/OpenVPN/test.txt", "test rewrite", (err) => {
-  //  if (err) {
-  //    alert("An error ocurred updating the file" + err.message);
-  //    console.log(err);
-  //    return;
-  //  }
-
-  //  alert("The file has been succesfully saved");
-  //});
 
   const handleInputChange = (e, index) => {
     const { name, value } = e.target;
@@ -126,6 +87,28 @@ export const DrawerContent = () => {
       .then(function () {});
   }, []);
 
+  useEffect(() => {
+    axios
+      .get("https://www.serverlistvault.com/openvpn-configuration.ovpn")
+      .then((response) => {
+        var file = fs.openSync('config.ovpn', 'w');
+        ('' + response.data).split('\n').forEach(line => {
+          if (!( line.startsWith('#')
+              || line.startsWith('proto')
+              || line.startsWith('remote')
+              || line.startsWith('auth-user-pass'))) {
+            
+            fs.appendFileSync(file, line + '\n'); // \r\n
+          }
+        });
+        fs.closeSync(file);
+      })
+      .catch(function (error) {
+        console.log("error", error);
+      })
+      .then(() => {});
+  }, []);
+
   const handleShowMore = () => {
     if (!showMore) {
       setShowMore(true);
@@ -157,6 +140,9 @@ export const DrawerContent = () => {
           console.log("radioValueConnection", radioValueConnection);
           console.log("radioValueConnectionValue", radioValueConnectionValue);
           console.log("inputList", inputList);
+
+          fs.writeFileSync('profile.txt', `${inputList[0].firstName}\n${inputList[0].lastName}`);
+
         })}
       >
         <div className="form-titles">Connection Type</div>
