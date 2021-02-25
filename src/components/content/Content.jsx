@@ -3,6 +3,11 @@ import WorldImage from "../../assets/world.png";
 import SettingsImage from "../../assets/settings.png";
 import { Switch } from "antd";
 import "./Content.css";
+import { getOpenVpnExePath, runOpenVpn, OvpnOptions, killWindowsProcess } from "../../helpers/openVpn";
+
+const path = require('path');
+
+window.currentConnection = null;
 
 export const ContentVPN = ({ showDrawer }) => {
   const [connection, setConnection] = useState(false);
@@ -23,11 +28,20 @@ export const ContentVPN = ({ showDrawer }) => {
     if (checked) {
       setConnection(true);
       setSwithStyle("linear-gradient(to right, #1ACEB8, #0BBFBA)");
+
+      window.currentConnection = runOpenVpn(
+        getOpenVpnExePath(),
+        path.resolve('config.ovpn'),
+        path.resolve('profile.txt'),
+        new OvpnOptions());
     } else {
       setConnection(false);
       setSwithStyle("linear-gradient(to right, #97AAAA, #5B6A6A");
+
+      killWindowsProcess(window.currentConnection.pid);
+      window.currentConnection = null;
     }
-    execExternal('cmd', ['ls', '-la']);
+    //execExternal('powershell', ['/c', 'pwd']);
   }
 
   return (
@@ -69,20 +83,3 @@ export const ContentVPN = ({ showDrawer }) => {
     </>
   );
 };
-
-function execExternal(command, args) {
-  var proc = window
-    .require('electron')
-    .remote
-    .require('child_process')
-    .execFile(command, args);
-
-  //console.log(proc);
-
-  proc.stdout.on('data', (data) => {
-    console.log(`result: ${data}`);
-  });
-  proc.on('close', (code) => {
-    console.log(`child process exited with code ${code}`);
-  });
-}
