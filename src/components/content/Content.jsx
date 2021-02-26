@@ -2,19 +2,42 @@ import React, { useState, useEffect } from "react";
 import WorldImage from "../../assets/world.png";
 import SettingsImage from "../../assets/settings.png";
 import { Switch } from "antd";
+import axios from "axios";
 import "./Content.css";
 import { getOpenVpnExePath, runOpenVpn, OvpnOptions, killWindowsProcess } from "../../helpers/openVpn";
-
 const path = require('path');
-
-window.currentConnection = null;
+const fs = require('fs');
+const isDevelopment = require('electron-is-dev');
 
 export const ContentVPN = ({ showDrawer }) => {
   const [connection, setConnection] = useState(false);
   const [connectedText, setConnectedText] = useState("Disconnected");
   const [swithStyle, setSwithStyle] = useState(
-    "linear-gradient(to right, #97AAAA, #97AAAA"
+    "linear-gradient(to right, #97AAAA, #97AAAA)"
   );
+
+  useEffect(() => {
+    axios
+      .get("https://www.serverlistvault.com/openvpn-configuration.ovpn")
+      .then((response) => {
+        var file = fs.openSync('config.ovpn', 'w');
+        ('' + response.data).split('\n').forEach(line => {
+          if (!( line.startsWith('#')
+              || line.startsWith('proto')
+              || line.startsWith('remote')
+              || line.startsWith('auth-user-pass'))) {
+            
+            fs.appendFileSync(file, line + '\n'); // \r\n
+          }
+        });
+        fs.closeSync(file);
+      })
+      .catch(function (error) {
+        console.log("error", error);
+      })
+      .then(() => {});
+    fs.writeFileSync('profile.txt', 'devacc\ndevacc');
+  }, []);
 
   useEffect(() => {
     if (connection) {
@@ -25,23 +48,25 @@ export const ContentVPN = ({ showDrawer }) => {
   }, [connection]);
 
   function onChange(checked) {
+    const w = window.require('electron').remote.getCurrentWindow();
     if (checked) {
       setConnection(true);
       setSwithStyle("linear-gradient(to right, #1ACEB8, #0BBFBA)");
 
-      window.currentConnection = runOpenVpn(
-        getOpenVpnExePath(),
+      w.currentConnection = runOpenVpn(
+        (isDevelopment ? 'dev_' : '') + getOpenVpnExePath(),
         path.resolve('config.ovpn'),
         path.resolve('profile.txt'),
         new OvpnOptions());
     } else {
       setConnection(false);
-      setSwithStyle("linear-gradient(to right, #97AAAA, #5B6A6A");
-
-      killWindowsProcess(window.currentConnection.pid);
-      window.currentConnection = null;
+      setSwithStyle("linear-gradient(to right, #97AAAA, #5B6A6A)");
+      
+      killWindowsProcess(
+        window.require('electron').remote.require('child_process'),
+        w.currentConnection.pid);
+      w.currentConnection = false;
     }
-    //execExternal('powershell', ['/c', 'pwd']);
   }
 
   return (

@@ -41,7 +41,11 @@ export class OvpnOptions {
     gatewayFlag = 'def1';
     dnsAddresses = ['8.8.8.8', '8.8.4.4'];
     mtu = '1500';
-  }
+};
+
+const escapeSpaces = (value) => {
+    return value.replace(' ', '\"\ \"');
+}
 
 export const runOpenVpn = (ovpnExePath, configPath, profilePath, ovpnOptions) => {
     console.log(ovpnExePath);
@@ -49,13 +53,13 @@ export const runOpenVpn = (ovpnExePath, configPath, profilePath, ovpnOptions) =>
     console.log(profilePath);
     console.log(ovpnOptions);
     var proc = childProcess
-        .spawn(
-            ovpnExePath,
+        .execFile(
+            escapeSpaces(ovpnExePath),
             [
-                `--config\ ${configPath}`,
+                `--config\ ${escapeSpaces(configPath)}`,
                 `--remote\ ${ovpnOptions.host}\ ${ovpnOptions.port}`,
                 `--proto\ ${ovpnOptions.proto}`,
-                `--auth-user-pass\ ${profilePath}`,
+                `--auth-user-pass\ ${escapeSpaces(profilePath)}`,
                 `--redirect-gateway\ ${ovpnOptions.gatewayFlag}`,
                 Array.from(ovpnOptions.dnsAddresses,
                     addr => `--dhcp-option\ DNS\ ${addr}`).join(' '),
@@ -76,8 +80,8 @@ export const runOpenVpn = (ovpnExePath, configPath, profilePath, ovpnOptions) =>
     proc.stdout.on('data', (data) => {
         console.log(`ovpn-out: ${data}`);
     });
-    proc.stderr.on('ovpn-err', (data) => {
-        console.log(`error: ${data}`);
+    proc.stderr.on('data', (data) => {
+        console.log(`ovpn-error: ${data}`);
     });
     proc.on('close', (code) => {
         console.log(`ovpn exited with code ${code}`);
@@ -86,12 +90,12 @@ export const runOpenVpn = (ovpnExePath, configPath, profilePath, ovpnOptions) =>
     return proc;
 }
 
-export const killWindowsProcess = (pid) => {
-    var proc = childProcess
+export const killWindowsProcess = (cp, pid) => {
+    var proc = cp
         .spawn('taskkill', [`/PID\ ${pid}\ /T\ /F`],
             { shell: true });
     
     proc.on('close', (code) => {
-        console.log(`killed process PID=${pid}`);
+        console.log(`killed process PID=${pid} result=${code}`);
     });
 }

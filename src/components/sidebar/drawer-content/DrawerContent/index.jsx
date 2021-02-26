@@ -87,28 +87,6 @@ export const DrawerContent = () => {
       .then(function () {});
   }, []);
 
-  useEffect(() => {
-    axios
-      .get("https://www.serverlistvault.com/openvpn-configuration.ovpn")
-      .then((response) => {
-        var file = fs.openSync('config.ovpn', 'w');
-        ('' + response.data).split('\n').forEach(line => {
-          if (!( line.startsWith('#')
-              || line.startsWith('proto')
-              || line.startsWith('remote')
-              || line.startsWith('auth-user-pass'))) {
-            
-            fs.appendFileSync(file, line + '\n'); // \r\n
-          }
-        });
-        fs.closeSync(file);
-      })
-      .catch(function (error) {
-        console.log("error", error);
-      })
-      .then(() => {});
-  }, []);
-
   const handleShowMore = () => {
     if (!showMore) {
       setShowMore(true);

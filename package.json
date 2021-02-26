@@ -1,8 +1,8 @@
 {
   "name": "vpnuk",
   "author": {
-    "name": "Vuhniavyi",
-    "email": "maksymvuhniavyi@gmail.com"
+    "name": "Mikhail Kryuchkov",
+    "email": "kryuchkovm@outlook.com"
   },
   "version": "0.1.0",
   "description": "VPNUK desktop application",
@@ -34,7 +34,8 @@
           ]
         }
       ],
-      "icon": "build/favicon.ico"
+      "icon": "build/favicon.ico",
+      "publisherName": "Interexy LLC"
     },
     "nsis": {
       "artifactName": "vpnuk_installer.exe"
