@@ -1,37 +1,22 @@
+const isDevelopment = require('electron-is-dev');
+const fs = require('fs');
 const childProcess = window
     .require('electron')
     .remote
     .require('child_process');
 
-export const execExternal = (command, args) => {
-    var proc = childProcess
-        .spawn(command, args, { shell: true });
-
-    console.log(proc);
-
-    proc.stdout.on('data', (data) => {
-        console.log(`result: ${data}`);
-    });
-    proc.stderr.on('data', (data) => {
-        console.log(`error: ${data}`);
-    });
-    proc.on('close', (code) => {
-        console.log(`child process exited with code ${code}`);
-    });
-}
-
-export const getOpenVpnExePath = () => {
+const getOpenVpnExePath = () => {
     var exeKey = '' + childProcess
         .spawnSync('cmd', ['/c\ reg\ query\ HKLM\\SOFTWARE\\OpenVPN\\\ /v\ exe_path'],
             { shell: true })
         .stdout;
-    
-    // todo: check if empty
     var exePath = exeKey.substring(exeKey.indexOf('REG_SZ') + 6).trim();
+
+    if (fs.existsSync(exePath)) {
+        return (isDevelopment ? 'dev_' : '') + exePath;
+    }
     
-    //console.log('stdout here: \n' + exePath);
-    
-    return exePath;
+    throw new Error('No OpenVPN found');
 }
 
 export class OvpnOptions {
@@ -47,14 +32,13 @@ const escapeSpaces = (value) => {
     return value.replace(' ', '\"\ \"');
 }
 
-export const runOpenVpn = (ovpnExePath, configPath, profilePath, ovpnOptions) => {
-    console.log(ovpnExePath);
+export const runOpenVpn = (configPath, profilePath, ovpnOptions) => {
     console.log(configPath);
     console.log(profilePath);
     console.log(ovpnOptions);
     var proc = childProcess
         .execFile(
-            escapeSpaces(ovpnExePath),
+            escapeSpaces(getOpenVpnExePath()),
             [
                 `--config\ ${escapeSpaces(configPath)}`,
                 `--remote\ ${ovpnOptions.host}\ ${ovpnOptions.port}`,

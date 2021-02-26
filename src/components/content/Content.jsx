@@ -4,10 +4,9 @@ import SettingsImage from "../../assets/settings.png";
 import { Switch } from "antd";
 import axios from "axios";
 import "./Content.css";
-import { getOpenVpnExePath, runOpenVpn, OvpnOptions, killWindowsProcess } from "../../helpers/openVpn";
+import { runOpenVpn, OvpnOptions, killWindowsProcess } from "../../helpers/openVpn";
 const path = require('path');
 const fs = require('fs');
-const isDevelopment = require('electron-is-dev');
 
 export const ContentVPN = ({ showDrawer }) => {
   const [connection, setConnection] = useState(false);
@@ -27,7 +26,7 @@ export const ContentVPN = ({ showDrawer }) => {
               || line.startsWith('remote')
               || line.startsWith('auth-user-pass'))) {
             
-            fs.appendFileSync(file, line + '\n'); // \r\n
+            fs.appendFileSync(file, line + '\n');
           }
         });
         fs.closeSync(file);
@@ -50,14 +49,27 @@ export const ContentVPN = ({ showDrawer }) => {
   function onChange(checked) {
     const w = window.require('electron').remote.getCurrentWindow();
     if (checked) {
-      setConnection(true);
-      setSwithStyle("linear-gradient(to right, #1ACEB8, #0BBFBA)");
-
-      w.currentConnection = runOpenVpn(
-        (isDevelopment ? 'dev_' : '') + getOpenVpnExePath(),
-        path.resolve('config.ovpn'),
-        path.resolve('profile.txt'),
-        new OvpnOptions());
+      try {
+        w.currentConnection = runOpenVpn(
+          path.resolve('config.ovpn'),
+          path.resolve('profile.txt'),
+          new OvpnOptions());
+      } catch (error) {
+        console.error(error);
+        if (error.message === 'No OpenVPN found') {
+          const { dialog } = window.require('electron').remote;
+          console.log(dialog.showMessageBoxSync({
+            type: 'error',
+            title: 'Error',
+            message: 'OpenVPN is not installed.'
+          }));
+        }
+      }
+      console.log(w.currentConnection)
+      if (w.currentConnection) {
+        setConnection(true);
+        setSwithStyle("linear-gradient(to right, #1ACEB8, #0BBFBA)");
+      }
     } else {
       setConnection(false);
       setSwithStyle("linear-gradient(to right, #97AAAA, #5B6A6A)");
@@ -89,6 +101,7 @@ export const ContentVPN = ({ showDrawer }) => {
             <div className="column-content_block-check">
               <Switch
                 onChange={onChange}
+                checked={connection}
                 className="switch"
                 style={{
                   background: swithStyle,
