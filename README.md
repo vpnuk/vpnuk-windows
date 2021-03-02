@@ -12,6 +12,7 @@
    1. Application will be installed to `<YOUR_USER_DIR>/AppData/Local/Programs/vpnuk`
    1. Desktop and start menu shortcuts will be created
    1. Application will be started
+   1. Application configuration file will be stored in `<YOUR_USER_DIR>/AppData/Roaming/VPNUK`
 1. Start application manually if needed
 
 ## OpenVPN

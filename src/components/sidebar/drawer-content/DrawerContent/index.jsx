@@ -4,7 +4,6 @@ import { RHFInput } from 'react-hook-form-input';
 import Select from 'react-select';
 import { Checkbox } from 'antd';
 import './index.css';
-import axios from 'axios';
 import { Server } from './server/index';
 import { Profile } from './profile/index';
 import {
@@ -13,15 +12,19 @@ import {
 } from '../../../../helpers/serverData';
 import {
     optionsConnectionType,
-    optionsMtu,
-    settingsLink
+    optionsMtu
 } from '../../../../settings/constants';
 import { ConnectionDetails } from './connectionDetails/index';
 
 const fs = require('fs');
+const w = window.require('electron').remote.getCurrentWindow();
 
 export const DrawerContent = () => {
     const { handleSubmit, register, setValue, reset } = useForm();
+    const [optionsConnectionTypeData, setOptionsConnectionTypeData] = useState([
+        optionsConnectionType[0]
+    ]);
+    // TODO: load from file and set here
     const [showMore, setShowMore] = useState(false);
     const [showMoreText, setShowMoreText] = useState('Show more');
     const [radioValue, setRadioValue] = useState('SHARED');
@@ -32,9 +35,7 @@ export const DrawerContent = () => {
     const [dnsData, setDnsData] = useState([]);
     const [inputList, setInputList] = useState([{ firstName: '', lastName: '' }]);
     const [radioValueConnection, setRadioValueConnection] = useState('TCP');
-    const [radioValueConnectionValue, setRadioValueConnectionValue] = useState(
-        '443'
-    );
+    const [radioValueConnectionValue, setRadioValueConnectionValue] = useState('443');
 
     const handleInputChange = (e, index) => {
         const { name, value } = e.target;
@@ -58,34 +59,11 @@ export const DrawerContent = () => {
     }
 
     useEffect(() => {
-        axios
-            .get(settingsLink.servers)
-            .then(function (response) {
-                setShared(handlerServerTypesStructure(response.data.servers, 'shared'));
-                setDedicated(
-                    handlerServerTypesStructure(response.data.servers, 'dedicated')
-                );
-                setDedicated11(
-                    handlerServerTypesStructure(response.data.servers, 'dedicated11')
-                );
-            })
-            .catch(function (error) {
-                console.log('error', error);
-            })
-            .then(function () { });
-    }, []);
-
-    useEffect(() => {
-        axios
-            .get(settingsLink.dns)
-            .then(function (response) {
-                console.log('response', response);
-                setDnsData(handlerServerDnsStructure(response.data.dns));
-            })
-            .catch(function (error) {
-                console.log('error', error);
-            })
-            .then(function () { });
+        setShared(handlerServerTypesStructure(w.appOptions.servers, 'shared'));
+        setDedicated(handlerServerTypesStructure(w.appOptions.servers, 'dedicated'));
+        setDedicated11(handlerServerTypesStructure(w.appOptions.servers, 'dedicated11'));
+        setDnsData(handlerServerDnsStructure(w.appOptions.dns));
+        setOptionsConnectionTypeData(optionsConnectionType);
     }, []);
 
     const handleShowMore = () => {
@@ -101,12 +79,14 @@ export const DrawerContent = () => {
     function onChangeRadio(e) {
         setRadioValue(e.target.value);
     }
-
     function onChangeRadioConnection(e) {
         setRadioValueConnection(e.target.value);
     }
     function onChangeRadioConnectionValue(e) {
         setRadioValueConnectionValue(e.target.value);
+    }
+    function onChangeOptionsConnectionTypeData(e) {
+        setOptionsConnectionTypeData(e.target.value);
     }
 
     return (
@@ -126,12 +106,14 @@ export const DrawerContent = () => {
             >
                 <div className="form-titles">Connection Type</div>
                 <RHFInput
-                    as={<Select options={optionsConnectionType} />}
+                    as={<Select options={optionsConnectionTypeData} />}
                     //rules={{ required: true }}
                     name="connectionType"
                     register={register}
                     setValue={setValue}
                     className="form-select"
+                    onChange={onChangeOptionsConnectionTypeData}
+                    defaultValue={optionsConnectionTypeData}
                 />
                 <div type="more" onClick={handleShowMore} className="form-show-more">
                     {showMoreText}
@@ -140,10 +122,10 @@ export const DrawerContent = () => {
                     <div className="show-more-wrapper">
                         <Checkbox onChange={onChangeCheckbox} style={{ color: "#fff" }}>
                             Kill Switch
-            </Checkbox>
+                        </Checkbox>
                         <div className="form-show-more-connection-log">
                             View the connection log
-            </div>
+                        </div>
                         <RHFInput
                             as={<Select options={dnsData} placeholder="DNS: Default" />}
                             //rules={{ required: true }}

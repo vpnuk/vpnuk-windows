@@ -4,10 +4,10 @@ import SettingsImage from '../../assets/settings.png';
 import { Switch } from 'antd';
 import './Content.css';
 import { runOpenVpn, OvpnOptions, killWindowsProcess } from '../../helpers/openVpn';
-import { initializeSettings } from '../../settings/settings';
-import { settingsPath } from '../../settings/constants';
+import { initializeSettings, settingsPath } from '../../settings/settings';
 const path = require('path');
 const fs = require('fs');
+const w = window.require('electron').remote.getCurrentWindow();
 
 export const ContentVPN = ({ showDrawer }) => {
     const [connection, setConnection] = useState(false);
@@ -18,8 +18,8 @@ export const ContentVPN = ({ showDrawer }) => {
 
     useEffect(() => {
         initializeSettings()
-            .then((settings) => {
-                console.log(settings);
+            .then((options) => {
+                w.appOptions = options;
             });
 
         // multiple profiles support
@@ -35,7 +35,6 @@ export const ContentVPN = ({ showDrawer }) => {
     }, [connection]);
 
     function onChange(checked) {
-        const w = window.require('electron').remote.getCurrentWindow();
         if (checked) {
             try {
                 w.currentConnection = runOpenVpn(
