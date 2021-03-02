@@ -48,6 +48,7 @@
   font-size: 36px;
   color: #ffffff;
   font-style: bold;
+  white-space: nowrap;
 }
 .column-content_block-check p {
   font-style: normal;
@@ -64,14 +65,14 @@
 }
 
 .switch {
-  width: 250px !important;
-  height: 124px !important;
-  border-width: 5px;
+  width: 168px !important;
+  height: 92px !important;
+  border-width: 3px;
   border-color: #97aaaa;
   margin-bottom: 10px;
 }
 .switch::after {
-  width: 112px;
-  height: 112px;
+  width: 84px;
+  height: 84px;
   border-radius: 100%;
 }
