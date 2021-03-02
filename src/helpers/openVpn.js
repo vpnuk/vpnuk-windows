@@ -1,4 +1,4 @@
-const isDevelopment = require('electron-is-dev');
+const isDev = require('electron-is-dev');
 const fs = require('fs');
 const childProcess = window
     .require('electron')
@@ -13,7 +13,7 @@ const getOpenVpnExePath = () => {
     var exePath = exeKey.substring(exeKey.indexOf('REG_SZ') + 6).trim();
 
     if (fs.existsSync(exePath)) {
-        return (isDevelopment ? 'dev_' : '') + exePath;
+        return (isDev ? 'dev_' : '') + exePath;
     }
     
     throw new Error('No OpenVPN found');

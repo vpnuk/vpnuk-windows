@@ -1,5 +1,5 @@
 const { app, BrowserWindow } = require('electron');
-const isDevelopment = require('electron-is-dev');
+const isDev = require('electron-is-dev');
 const path = require('path');
 const url = require('url');
 
@@ -14,7 +14,7 @@ const killWindowsProcess = (pid) => {
 
 function createWindow() {
   window = new BrowserWindow({
-    width: isDevelopment ? 1280 : 720,
+    width: isDev ? 1280 : 720,
     height: 960,
     icon: path.join(__dirname, './public/favicon.ico'),
     webPreferences: {
@@ -26,7 +26,7 @@ function createWindow() {
 
   window.currentConnection = null;
   
-  if (isDevelopment) {
+  if (isDev) {
     window.loadURL('http://localhost:3000/');
     window.webContents.openDevTools();
   } else {
@@ -38,13 +38,13 @@ function createWindow() {
   }
 
   window.on('close', (event) => {
-    if (isDevelopment) {
+    if (isDev) {
       console.log(window.currentConnection);
     }
     if (window.currentConnection) {
       killWindowsProcess(window.currentConnection.pid);
     }
-    if (isDevelopment) {
+    if (isDev) {
       event.preventDefault();
     }
   });
