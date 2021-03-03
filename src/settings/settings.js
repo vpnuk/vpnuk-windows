@@ -2,7 +2,7 @@ import axios from 'axios';
 const fs = require('fs');
 
 const baseAddress = 'https://www.serverlistvault.com/';
-export const settingsLink = {
+const settingsLink = {
     versions: baseAddress + 'versions.json',
     dns: baseAddress + 'dns.json',
     servers: baseAddress + 'servers.json',

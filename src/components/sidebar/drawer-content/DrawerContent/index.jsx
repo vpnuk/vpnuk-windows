@@ -20,11 +20,12 @@ const fs = require('fs');
 const w = window.require('electron').remote.getCurrentWindow();
 
 export const DrawerContent = () => {
-    const { handleSubmit, register, setValue, reset } = useForm();
-    const [optionsConnectionTypeData, setOptionsConnectionTypeData] = useState([
-        optionsConnectionType[0]
-    ]);
+    const { handleSubmit, register, setValue, reset } = useForm(); // default values?
     // TODO: load from file and set here
+    const [optionsConnectionTypeData, setOptionsConnectionTypeData] = useState(
+        optionsConnectionType[0]
+    );
+    const [optionsMtuData, setOptionsMtuData] = useState(optionsMtu[0]);
     const [showMore, setShowMore] = useState(false);
     const [showMoreText, setShowMoreText] = useState('Show more');
     const [radioValue, setRadioValue] = useState('SHARED');
@@ -64,6 +65,7 @@ export const DrawerContent = () => {
         setDedicated11(handlerServerTypesStructure(w.appOptions.servers, 'dedicated11'));
         setDnsData(handlerServerDnsStructure(w.appOptions.dns));
         setOptionsConnectionTypeData(optionsConnectionType);
+        setOptionsMtuData(optionsMtu);
     }, []);
 
     const handleShowMore = () => {
@@ -85,15 +87,12 @@ export const DrawerContent = () => {
     function onChangeRadioConnectionValue(e) {
         setRadioValueConnectionValue(e.target.value);
     }
-    function onChangeOptionsConnectionTypeData(e) {
-        setOptionsConnectionTypeData(e.target.value);
-    }
 
     return (
         <div className="settings-forms-wrapper">
             <form
                 onSubmit={handleSubmit((data) => {
-                    console.log('data', data);
+                    console.log('data', data); // connection type, dns, mtu
                     console.log('checkboxValue', checkboxValue);
                     console.log('dnsData', dnsData);
                     console.log('radioValueConnection', radioValueConnection);
@@ -112,44 +111,42 @@ export const DrawerContent = () => {
                     register={register}
                     setValue={setValue}
                     className="form-select"
-                    onChange={onChangeOptionsConnectionTypeData}
                     defaultValue={optionsConnectionTypeData}
                 />
                 <div type="more" onClick={handleShowMore} className="form-show-more">
                     {showMoreText}
                 </div>
-                {showMore && (
-                    <div className="show-more-wrapper">
-                        <Checkbox onChange={onChangeCheckbox} style={{ color: "#fff" }}>
-                            Kill Switch
+                <div className={(showMore ? '' : 'hidden') + ' show-more-wrapper'}>
+                    <Checkbox onChange={onChangeCheckbox} style={{ color: "#fff" }}>
+                        Kill Switch
                         </Checkbox>
-                        <div className="form-show-more-connection-log">
-                            View the connection log
-                        </div>
-                        <RHFInput
-                            as={<Select options={dnsData} placeholder="DNS: Default" />}
-                            //rules={{ required: true }}
-                            name="dns"
-                            register={register}
-                            setValue={setValue}
-                            className="form-select"
-                        />
-                        <RHFInput
-                            as={<Select options={optionsMtu} placeholder="MTU: Default" />}
-                            //rules={{ required: true }}
-                            name="mtu"
-                            register={register}
-                            setValue={setValue}
-                            className="form-select"
-                        />
-                        <ConnectionDetails
-                            radioValueConnection={radioValueConnection}
-                            onChangeRadioConnection={onChangeRadioConnection}
-                            radioValueConnectionValue={radioValueConnectionValue}
-                            onChangeRadioConnectionValue={onChangeRadioConnectionValue}
-                        />
+                    <div className="form-show-more-connection-log">
+                        View the connection log
                     </div>
-                )}
+                    <RHFInput
+                        as={<Select options={dnsData} placeholder="DNS: Default" />}
+                        //rules={{ required: true }}
+                        name="dns"
+                        register={register}
+                        setValue={setValue}
+                        className="form-select"
+                    />
+                    <RHFInput
+                        as={<Select options={optionsMtuData} />}
+                        //rules={{ required: true }}
+                        name="mtu"
+                        register={register}
+                        setValue={setValue}
+                        className="form-select"
+                        defaultValue={optionsMtuData}
+                    />
+                    <ConnectionDetails
+                        radioValueConnection={radioValueConnection}
+                        onChangeRadioConnection={onChangeRadioConnection}
+                        radioValueConnectionValue={radioValueConnectionValue}
+                        onChangeRadioConnectionValue={onChangeRadioConnectionValue}
+                    />
+                </div>
                 <Profile
                     register={register}
                     setValue={setValue}
