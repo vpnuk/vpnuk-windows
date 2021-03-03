@@ -5,8 +5,6 @@ import { Switch } from 'antd';
 import './Content.css';
 import { runOpenVpn, OvpnOptions, killWindowsProcess } from '../../helpers/openVpn';
 import { initializeSettings, settingsPath } from '../../settings/settings';
-const path = require('path');
-const fs = require('fs');
 const w = window.require('electron').remote.getCurrentWindow();
 
 export const ContentVPN = ({ showDrawer }) => {
@@ -21,9 +19,6 @@ export const ContentVPN = ({ showDrawer }) => {
             .then((options) => {
                 w.appOptions = options;
             });
-
-        // multiple profiles support
-        fs.writeFileSync('profile.txt', 'devacc\ndevacc');
     }, []);
 
     useEffect(() => {
@@ -39,7 +34,7 @@ export const ContentVPN = ({ showDrawer }) => {
             try {
                 w.currentConnection = runOpenVpn(
                     settingsPath.ovpn,
-                    path.resolve('profile.txt'),
+                    settingsPath.profile,
                     new OvpnOptions());
             } catch (error) {
                 console.error(error);

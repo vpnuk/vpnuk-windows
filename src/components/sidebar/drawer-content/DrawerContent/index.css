@@ -22,10 +22,17 @@
   font-size: 20px;
   line-height: 23px;
 }
+.form-select {
+  display: flex;
+  justify-content: flex-end;
+  margin: 15px 0px;
+}
 .form-select > div:first-of-type {
   background: rgba(196, 196, 196, 0.09);
   border-radius: 45px;
   border: none;
+  height: 45px;
+  width: 100%;
 }
 .form-select > div:first-of-type:hover {
   border: none;
@@ -36,11 +43,16 @@
   box-shadow: none !important;
 }
 .form-select > div:nth-child(3) {
-  width: 40%;
+  width: 50%;
   background-color: #252525;
   border-radius: 23px;
   color: #fff;
   margin: auto;
+  display: flex;
+  flex-direction: column;
+  align-self: flex-end;
+  z-index: 1000;
+  margin-top: -45px;
 }
 .form-select > div div div {
   color: #fff;

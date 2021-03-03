@@ -19,7 +19,8 @@ export const settingsPath = {
     dns: path.join(settingsFolder, 'dns.json'),
     servers: path.join(settingsFolder, 'servers.json'),
     ovpn: path.join(settingsFolder, 'openvpn-configuration.ovpn'),
-    ovpnObfucation: path.join(settingsFolder, 'openvpn-obfuscation-configuration.ovpn')
+    ovpnObfucation: path.join(settingsFolder, 'openvpn-obfuscation-configuration.ovpn'),
+    profile: path.join(settingsFolder, 'profile.txt')
 }
 
 
@@ -52,6 +53,24 @@ const dowloadJson = (link, filePath) =>
         .catch((error) => {
             console.log('error', error);
         });
+
+const handlerServerDnsStructure = (arr) => [
+    { value: null, label: 'No DNS' },
+    ...arr.map(dnsItem => ({
+        value: dnsItem,
+        label: dnsItem.name,
+    }))
+];
+
+const handlerServerTypesStructure = (arr, types) =>
+    Object.assign({}, ...types.map(type => ({
+        [type]: arr
+            .filter(server => server.type === type)
+            .map(server => ({
+                label: server.location.name,
+                value: server
+            }))
+    })));
 
 export const initializeSettings = () => {
     if (!fs.existsSync(settingsPath.folder)) {
@@ -94,8 +113,9 @@ export const initializeSettings = () => {
         })
         .then((result) => {
             return {
-                dns: result[0].dns,
-                servers: result[1].servers
+                dns: handlerServerDnsStructure(result[0].dns),
+                servers: handlerServerTypesStructure(result[1].servers,
+                    ['shared', 'dedicated', 'dedicated11'])
             }
         });
 }

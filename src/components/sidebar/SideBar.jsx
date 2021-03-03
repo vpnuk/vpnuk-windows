@@ -12,12 +12,11 @@ export const SideBar = ({ visible, setVisible }) => {
   return (
     <>
       <Drawer
-        title="Basic Drawer"
+        title={<HeaderContent />}
         placement="left"
         onClose={onClose}
         visible={visible}
         width={522}
-        title={<HeaderContent />}
         closable
         headerStyle={{ background: "#000000" }}
         drawerStyle={{ background: "#000000" }}

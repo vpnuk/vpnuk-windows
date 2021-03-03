@@ -2,25 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { RHFInput } from 'react-hook-form-input';
 import Select from 'react-select';
-import { Checkbox } from 'antd';
+import { Checkbox, Radio } from 'antd';
 import './index.css';
-import { Server } from './server/index';
 import { Profile } from './profile/index';
-import {
-    handlerServerTypesStructure,
-    handlerServerDnsStructure,
-} from '../../../../helpers/serverData';
 import {
     optionsConnectionType,
     optionsMtu
 } from '../../../../settings/constants';
+import { settingsPath } from '../../../../settings/settings';
 import { ConnectionDetails } from './connectionDetails/index';
 
 const fs = require('fs');
 const w = window.require('electron').remote.getCurrentWindow();
 
 export const DrawerContent = () => {
-    const { handleSubmit, register, setValue, reset } = useForm(); // default values?
+    const { handleSubmit, register, setValue } = useForm();
     // TODO: load from file and set here
     const [optionsConnectionTypeData, setOptionsConnectionTypeData] = useState(
         optionsConnectionType[0]
@@ -30,9 +26,9 @@ export const DrawerContent = () => {
     const [showMoreText, setShowMoreText] = useState('Show more');
     const [radioValue, setRadioValue] = useState('SHARED');
     const [checkboxValue, setCheckboxValue] = useState('SHARED');
-    const [shared, setShared] = useState([]);
-    const [dedicated, setDedicated] = useState([]);
-    const [dedicated11, setDedicated11] = useState([]);
+    const [shared, setShared] = useState(w.appOptions.servers.shared[0]);
+    const [dedicated, setDedicated] = useState(w.appOptions.servers.dedicated[0]);
+    const [dedicated11, setDedicated11] = useState(w.appOptions.servers.dedicated11[0]);
     const [dnsData, setDnsData] = useState([]);
     const [inputList, setInputList] = useState([{ firstName: '', lastName: '' }]);
     const [radioValueConnection, setRadioValueConnection] = useState('TCP');
@@ -45,7 +41,7 @@ export const DrawerContent = () => {
         setInputList(list);
     };
 
-    const handleRemoveClick = (index) => {
+    const handleRemoveClick = index => {
         const list = [...inputList];
         list.splice(index, 1);
         setInputList(list);
@@ -55,15 +51,15 @@ export const DrawerContent = () => {
         setInputList([...inputList, { firstName: '', lastName: '' }]);
     };
 
-    function onChangeCheckbox(e) {
+    const onChangeCheckbox = e => {
         setCheckboxValue(e.target.checked);
     }
 
     useEffect(() => {
-        setShared(handlerServerTypesStructure(w.appOptions.servers, 'shared'));
-        setDedicated(handlerServerTypesStructure(w.appOptions.servers, 'dedicated'));
-        setDedicated11(handlerServerTypesStructure(w.appOptions.servers, 'dedicated11'));
-        setDnsData(handlerServerDnsStructure(w.appOptions.dns));
+        setShared(w.appOptions.servers.shared);;
+        setDedicated(w.appOptions.servers.dedicated);
+        setDedicated11(w.appOptions.servers.dedicated11);
+        setDnsData(w.appOptions.dns);
         setOptionsConnectionTypeData(optionsConnectionType);
         setOptionsMtuData(optionsMtu);
     }, []);
@@ -78,31 +74,36 @@ export const DrawerContent = () => {
         }
     };
 
-    function onChangeRadio(e) {
+    const saveButtonHandler = () => {
+        fs.writeFileSync(
+            settingsPath.profile,
+            `${inputList[0].firstName}\n${inputList[0].lastName}`);
+    }
+
+    const onChangeRadio = e => {
         setRadioValue(e.target.value);
     }
-    function onChangeRadioConnection(e) {
+    const onChangeRadioConnection = e => {
         setRadioValueConnection(e.target.value);
     }
-    function onChangeRadioConnectionValue(e) {
+    const onChangeRadioConnectionValue = e => {
         setRadioValueConnectionValue(e.target.value);
+    }
+
+    const handleConnect = data => {
+        const params = {
+            proto: radioValueConnection.toLowerCase(),
+            port: radioValueConnectionValue,
+            host: data.server?.value.address,
+            dnsAddresses: data.dns && [data.dns.value.primary, data.dns.value.secondary],
+            mtu: data.mtu.value
+        };
+        console.log('connect', params);
     }
 
     return (
         <div className="settings-forms-wrapper">
-            <form
-                onSubmit={handleSubmit((data) => {
-                    console.log('data', data); // connection type, dns, mtu
-                    console.log('checkboxValue', checkboxValue);
-                    console.log('dnsData', dnsData);
-                    console.log('radioValueConnection', radioValueConnection);
-                    console.log('radioValueConnectionValue', radioValueConnectionValue);
-                    console.log('inputList', inputList);
-
-                    fs.writeFileSync('profile.txt', `${inputList[0].firstName}\n${inputList[0].lastName}`);
-
-                })}
-            >
+            <form onSubmit={handleSubmit(handleConnect)}>
                 <div className="form-titles">Connection Type</div>
                 <RHFInput
                     as={<Select options={optionsConnectionTypeData} />}
@@ -119,7 +120,7 @@ export const DrawerContent = () => {
                 <div className={(showMore ? '' : 'hidden') + ' show-more-wrapper'}>
                     <Checkbox onChange={onChangeCheckbox} style={{ color: "#fff" }}>
                         Kill Switch
-                        </Checkbox>
+                    </Checkbox>
                     <div className="form-show-more-connection-log">
                         View the connection log
                     </div>
@@ -156,17 +157,47 @@ export const DrawerContent = () => {
                     inputList={inputList}
                     setInputList={setInputList}
                 />
-
-                <button className="form-button">Save</button>
+                <button
+                    type="button"
+                    className="form-button"
+                    onClick={saveButtonHandler}>Save</button>
+                <div className="form-titles">Server</div>
+                <div className="form-server-block">
+                    <div className="form-server-block-radio">
+                        <Radio.Group onChange={onChangeRadio} defaultValue={radioValue}>
+                            <Radio.Button value="SHARED">SHARED</Radio.Button>
+                            <Radio.Button value="DEDICATED">DEDICATED</Radio.Button>
+                            <Radio.Button value="1:1">1:1</Radio.Button>
+                        </Radio.Group>
+                    </div>
+                    <RHFInput
+                        as={
+                            <Select
+                                options={
+                                    radioValue === "SHARED"
+                                        ? shared
+                                        : radioValue === "DEDICATED"
+                                            ? dedicated
+                                            : dedicated11
+                                }
+                            />
+                        }
+                        //rules={{ required: true }}
+                        name="server"
+                        register={register}
+                        setValue={setValue}
+                        className="form-select"
+                        defaultValue={
+                            radioValue === "SHARED"
+                                ? shared
+                                : radioValue === "DEDICATED"
+                                    ? dedicated
+                                    : dedicated11
+                        }
+                    />
+                </div>
+                <button className="form-button">Connect</button>
             </form>
-            <Server
-                onChangeRadio={onChangeRadio}
-                radioValue={radioValue}
-                setRadioValue={setRadioValue}
-                shared={shared}
-                dedicated={dedicated}
-                dedicated11={dedicated11}
-            />
         </div>
     );
 };
