@@ -5,6 +5,7 @@ import { SideBar } from "./components/sidebar/SideBar";
 import { ContentVPN } from "./components/content/Content";
 
 const { Content } = Layout;
+const { ipcRenderer } = require('electron')
 
 function App() {
     const [visible, setVisible] = useState(false);
@@ -33,5 +34,12 @@ function App() {
         </div>
     );
 }
+
+ipcRenderer.on('connection-kill', event => {
+    console.log('kill event')
+    // todo: kill connection process via message to main process (send pid)
+    
+    event.sender.send('app-quit')
+})
 
 export default App;

@@ -82,3 +82,11 @@ export const killWindowsProcess = (cp, pid) => {
         console.log(`killed process PID=${pid} result=${code}`);
     });
 }
+
+export const killWindowsProcessSync = (pid) => {
+    var code = require('child_process')
+      .spawnSync('taskkill', [`/PID\ ${pid}\ /T\ /F`], { shell: true })
+      .exitCode;
+    console.log(`kill process PID=${pid} result=${code}`);
+  }
+  

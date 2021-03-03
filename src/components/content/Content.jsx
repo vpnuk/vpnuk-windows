@@ -8,7 +8,6 @@ import { initializeSettings } from '../../settings/settings';
 const w = window.require('electron').remote.getCurrentWindow();
 
 export const ContentVPN = ({ showDrawer, connection, setConnection }) => {
-    //const [connection, setConnection] = useState(false);
     const [connectedText, setConnectedText] = useState('Disconnected');
     const [swithStyle, setSwithStyle] = useState(
         "linear-gradient(to right, #97AAAA, #97AAAA)"
@@ -17,6 +16,7 @@ export const ContentVPN = ({ showDrawer, connection, setConnection }) => {
     useEffect(() => {
         initializeSettings()
             .then((options) => {
+                // todo: appOptions -> from App.js
                 w.appOptions = options;
             });
     }, []);
