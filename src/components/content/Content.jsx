@@ -4,11 +4,11 @@ import SettingsImage from '../../assets/settings.png';
 import { Switch } from 'antd';
 import './Content.css';
 import { runOpenVpn, OvpnOptions, killWindowsProcess } from '../../helpers/openVpn';
-import { initializeSettings, settingsPath } from '../../settings/settings';
+import { initializeSettings } from '../../settings/settings';
 const w = window.require('electron').remote.getCurrentWindow();
 
-export const ContentVPN = ({ showDrawer }) => {
-    const [connection, setConnection] = useState(false);
+export const ContentVPN = ({ showDrawer, connection, setConnection }) => {
+    //const [connection, setConnection] = useState(false);
     const [connectedText, setConnectedText] = useState('Disconnected');
     const [swithStyle, setSwithStyle] = useState(
         "linear-gradient(to right, #97AAAA, #97AAAA)"
@@ -24,18 +24,18 @@ export const ContentVPN = ({ showDrawer }) => {
     useEffect(() => {
         if (connection) {
             setConnectedText('Connected');
+            setSwithStyle("linear-gradient(to right, #1ACEB8, #0BBFBA)");
         } else {
             setConnectedText('Disconnected');
+            setSwithStyle("linear-gradient(to right, #97AAAA, #5B6A6A)");
         }
     }, [connection]);
 
     function onChange(checked) {
         if (checked) {
+            var newConnection;
             try {
-                w.currentConnection = runOpenVpn(
-                    settingsPath.ovpn,
-                    settingsPath.profile,
-                    new OvpnOptions());
+                newConnection = runOpenVpn(new OvpnOptions());
             } catch (error) {
                 console.error(error);
                 if (error.message === 'No OpenVPN found') {
@@ -47,19 +47,13 @@ export const ContentVPN = ({ showDrawer }) => {
                     }));
                 }
             }
-            console.log(w.currentConnection)
-            if (w.currentConnection) {
-                setConnection(true);
-                setSwithStyle("linear-gradient(to right, #1ACEB8, #0BBFBA)");
-            }
+            console.log(newConnection)
+            newConnection && setConnection(newConnection);
         } else {
-            setConnection(false);
-            setSwithStyle("linear-gradient(to right, #97AAAA, #5B6A6A)");
-
             killWindowsProcess(
                 window.require('electron').remote.require('child_process'),
-                w.currentConnection.pid);
-            w.currentConnection = false;
+                connection.pid);
+            setConnection(null);
         }
     }
 
@@ -83,7 +77,7 @@ export const ContentVPN = ({ showDrawer }) => {
                         <div className="column-content_block-check">
                             <Switch
                                 onChange={onChange}
-                                checked={connection}
+                                checked={connection && true}
                                 className="switch"
                                 style={{
                                     background: swithStyle,

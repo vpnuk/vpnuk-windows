@@ -11,11 +11,12 @@ import {
 } from '../../../../settings/constants';
 import { settingsPath } from '../../../../settings/settings';
 import { ConnectionDetails } from './connectionDetails/index';
+import { runOpenVpn } from '../../../../helpers/openVpn';
 
 const fs = require('fs');
 const w = window.require('electron').remote.getCurrentWindow();
 
-export const DrawerContent = () => {
+export const DrawerContent = ({ connection, setConnection }) => {
     const { handleSubmit, register, setValue } = useForm();
     // TODO: load from file and set here
     const [optionsConnectionTypeData, setOptionsConnectionTypeData] = useState(
@@ -99,6 +100,23 @@ export const DrawerContent = () => {
             mtu: data.mtu.value
         };
         console.log('connect', params);
+
+        var newConnection;
+        try {
+            newConnection = runOpenVpn(params);
+        } catch (error) {
+            console.error(error);
+            if (error.message === 'No OpenVPN found') {
+                const { dialog } = window.require('electron').remote;
+                console.log(dialog.showMessageBoxSync({
+                    type: 'error',
+                    title: 'Error',
+                    message: 'OpenVPN is not installed.'
+                }));
+            }
+        }
+        console.log(newConnection)
+        newConnection && setConnection(newConnection);
     }
 
     return (
@@ -196,7 +214,10 @@ export const DrawerContent = () => {
                         }
                     />
                 </div>
-                <button className="form-button">Connect</button>
+                <button
+                    className="form-button"
+                    disabled={connection && true}
+                >Connect</button>
             </form>
         </div>
     );

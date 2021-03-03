@@ -1,3 +1,5 @@
+import { settingsPath } from '../settings/settings';
+
 const isDev = require('electron-is-dev');
 const fs = require('fs');
 const childProcess = window
@@ -15,7 +17,7 @@ const getOpenVpnExePath = () => {
     if (fs.existsSync(exePath)) {
         return (isDev ? 'dev_' : '') + exePath;
     }
-    
+
     throw new Error('No OpenVPN found');
 }
 
@@ -23,7 +25,6 @@ export class OvpnOptions {
     proto = 'udp';
     host = '84.19.112.105';
     port = '1194';
-    gatewayFlag = 'def1';
     dnsAddresses = ['8.8.8.8', '8.8.4.4'];
     mtu = '1500';
 };
@@ -32,26 +33,24 @@ const escapeSpaces = (value) => {
     return value.replace(' ', '\"\ \"');
 }
 
-export const runOpenVpn = (configPath, profilePath, ovpnOptions) => {
-    console.log(configPath);
-    console.log(profilePath);
-    console.log(ovpnOptions);
+export const runOpenVpn = (ovpnOptions) => {
+    isDev && console.log(ovpnOptions);
     var proc = childProcess
         .execFile(
             escapeSpaces(getOpenVpnExePath()),
             [
-                `--config\ ${escapeSpaces(configPath)}`,
+                `--config\ ${escapeSpaces(settingsPath.ovpn)}`,
                 `--remote\ ${ovpnOptions.host}\ ${ovpnOptions.port}`,
                 `--proto\ ${ovpnOptions.proto}`,
-                `--auth-user-pass\ ${escapeSpaces(profilePath)}`,
-                `--redirect-gateway\ ${ovpnOptions.gatewayFlag}`,
-                Array.from(ovpnOptions.dnsAddresses,
+                `--auth-user-pass\ ${escapeSpaces(settingsPath.profile)}`,
+                ovpnOptions.dnsAddresses && '--redirect-gateway\ def1',
+                ovpnOptions.dnsAddresses && Array.from(ovpnOptions.dnsAddresses,
                     addr => `--dhcp-option\ DNS\ ${addr}`).join(' '),
-                `--mssfix\n ${'' + ovpnOptions.mtu}`
+                ovpnOptions.mtu && `--mssfix\n ${'' + ovpnOptions.mtu}`
             ],
             { shell: true });
 
-    console.log(proc);
+    isDev && console.log(proc.spawnargs);
 
     proc.on('SIGHUP', () => {
         console.log('received SIGHUP')
@@ -78,7 +77,7 @@ export const killWindowsProcess = (cp, pid) => {
     var proc = cp
         .spawn('taskkill', [`/PID\ ${pid}\ /T\ /F`],
             { shell: true });
-    
+
     proc.on('close', (code) => {
         console.log(`killed process PID=${pid} result=${code}`);
     });
