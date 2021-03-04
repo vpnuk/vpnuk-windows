@@ -2,12 +2,12 @@
 
 ## Development
 
-1. Install dependencies: `npm install`
-1. Run app `npm run start`
+1. Install dependencies: `yarn install`
+1. Run app `yarn run start`
 
 ## Release
 
-1. Build executable: `npm run build` (it takes a while)
+1. Build executable: `yarn run build` (it takes a while)
 1. Run installer: `release/vpnuk_installer.exe`
    1. Application will be installed to `<YOUR_USER_DIR>/AppData/Local/Programs/vpnuk`
    1. Desktop and start menu shortcuts will be created

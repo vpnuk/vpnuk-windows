@@ -22,7 +22,7 @@ const settingsPath = {
     ovpnObfucation: path.join(settingsFolder, 'openvpn-obfuscation-configuration.ovpn'),
     profile: path.join(settingsFolder, 'profile.txt'),
     settings: path.join(settingsFolder, 'settings.json'),
-}
+};
 exports.settingsPath = settingsPath;
 
 const dowloadOvpnConfig = (link, filePath) =>
@@ -119,9 +119,9 @@ exports.initializeSettings = () => {
                     ['shared', 'dedicated', 'dedicated11'])
             }
         });
-}
+};
 
-exports.EmptySettings = {
+const emptySettings = {
     connectionType: 'OpenVPN',
     protocol: '',
     port: '',
@@ -139,4 +139,5 @@ exports.EmptySettings = {
         login: '',
         password: ''
     }
-}
+};
+exports.emptySettings = emptySettings;

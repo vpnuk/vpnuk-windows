@@ -1,9 +1,10 @@
 const { app, BrowserWindow, dialog, ipcMain } = require('electron');
-const isDev = require('electron-is-dev');
 const path = require('path');
 const url = require('url');
 const { runOpenVpn, killWindowsProcess, killWindowsProcessSync } = require('./src/helpers/openVpn')
 let window, pid;
+
+const isDev = process.env.ELECTRON_ENV === 'Dev';
 
 function createWindow() {
     window = new BrowserWindow({

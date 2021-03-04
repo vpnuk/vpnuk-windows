@@ -1,6 +1,7 @@
 const { settingsPath } = require('../settings/settings');
-const isDev = require('electron-is-dev');
 const fs = require('fs');
+
+const isDev = process.env.ELECTRON_ENV === 'Dev'
 
 const getOpenVpnExePath = () => {
     var exeKey = '' + require('child_process')
@@ -14,11 +15,11 @@ const getOpenVpnExePath = () => {
     }
 
     throw new Error('No OpenVPN found');
-}
+};
 
 const escapeSpaces = (value) => {
     return value.replace(' ', '\"\ \"');
-}
+};
 
 exports.runOpenVpn = options => {
     isDev && console.log(options);
@@ -50,7 +51,7 @@ exports.runOpenVpn = options => {
     });
 
     return proc;
-}
+};
 
 exports.killWindowsProcess = (pid, callback) => {
     var proc = require('child_process')
@@ -59,7 +60,7 @@ exports.killWindowsProcess = (pid, callback) => {
     proc.on('close', code => {
         callback(code);
     });
-}
+};
 
 exports.killWindowsProcessSync = pid => {
     var code = require('child_process')
@@ -67,4 +68,4 @@ exports.killWindowsProcessSync = pid => {
         .exitCode;
     isDev && console.log(`kill process PID=${pid} result=${code}`);
     return code;
-}
+};

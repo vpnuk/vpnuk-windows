@@ -3,18 +3,20 @@ import './App.css';
 import { Layout } from 'antd';
 import { SideBar } from './components/sidebar/SideBar';
 import { ContentVPN } from './components/content/Content';
-import { initializeSettings, settingsPath, EmptySettings } from './settings/settings';
+const { initializeSettings, settingsPath, emptySettings } = require('./settings/settings')
 const { Content } = Layout;
-const isDev = require('electron-is-dev');
 const { ipcRenderer } = require('electron');
 const fs = require('fs');
 let setConnection;
+
+// TODO: get from main process
+const isDev = true;
 
 function App() {
     const [visible, setVisible] = useState(false);
     const [connection, setConnectionInner] = useState(null);
     const [commonSettings, setCommonSettings] = useState(null);
-    const [settings, setSettings] = useState(EmptySettings);
+    const [settings, setSettings] = useState(emptySettings);
 
     useEffect(() => {
         initializeSettings()
@@ -27,7 +29,7 @@ function App() {
                 }
                 else {
                     console.log('error reading settings', err);
-                    setSettings(EmptySettings);
+                    setSettings(emptySettings);
                 }
             }
         );
