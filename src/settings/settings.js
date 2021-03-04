@@ -20,7 +20,8 @@ const settingsPath = {
     servers: path.join(settingsFolder, 'servers.json'),
     ovpn: path.join(settingsFolder, 'openvpn-configuration.ovpn'),
     ovpnObfucation: path.join(settingsFolder, 'openvpn-obfuscation-configuration.ovpn'),
-    profile: path.join(settingsFolder, 'profile.txt')
+    profile: path.join(settingsFolder, 'profile.txt'),
+    settings: path.join(settingsFolder, 'settings.json'),
 }
 exports.settingsPath = settingsPath;
 
@@ -57,8 +58,8 @@ const dowloadJson = (link, filePath) =>
 const handlerServerDnsStructure = (arr) => [
     { value: null, label: 'No DNS' },
     ...arr.map(dnsItem => ({
-        value: dnsItem,
         label: dnsItem.name,
+        value: [dnsItem.primary, dnsItem.secondary]
     }))
 ];
 
@@ -118,4 +119,24 @@ exports.initializeSettings = () => {
                     ['shared', 'dedicated', 'dedicated11'])
             }
         });
+}
+
+exports.EmptySettings = {
+    connectionType: 'OpenVPN',
+    protocol: '',
+    port: '',
+    server: {
+        host: '',
+        name: '',
+        type: ''
+    },
+    dns: {
+        name: '',
+        addresses: null
+    },
+    mtu: '',
+    profile: {
+        login: '',
+        password: ''
+    }
 }

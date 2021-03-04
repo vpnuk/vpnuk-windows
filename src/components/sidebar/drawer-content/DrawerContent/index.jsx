@@ -13,56 +13,68 @@ import { settingsPath } from '../../../../settings/settings';
 import { ConnectionDetails } from './connectionDetails/index';
 
 const fs = require('fs');
+const isDev = require('electron-is-dev');
 const { ipcRenderer } = require('electron');
 
-export const DrawerContent = ({ connection, settings }) => {
+const findByLabelOrFirst = (arr, label) =>
+    arr.find(el => el.label === label) || arr[0];
+
+export const DrawerContent = ({ connection, commonSettings, settings, setSettings }) => {
     const { handleSubmit, register, setValue } = useForm();
-    // TODO: load from file and set here
-    const [optionsConnectionTypeData, setOptionsConnectionTypeData] = useState(
-        optionsConnectionType[0]
-    );
-    const [optionsMtuData, setOptionsMtuData] = useState(optionsMtu[0]);
+    const [connectionType, setConnectionType] = useState(
+        findByLabelOrFirst(optionsConnectionType, settings.connectionType));
     const [showMore, setShowMore] = useState(false);
     const [showMoreText, setShowMoreText] = useState('Show more');
-    const [radioValue, setRadioValue] = useState('SHARED');
-    const [checkboxValue, setCheckboxValue] = useState('SHARED');
-    const [shared, setShared] = useState(settings.servers.shared[0]);
-    const [dedicated, setDedicated] = useState(settings.servers.dedicated[0]);
-    const [dedicated11, setDedicated11] = useState(settings.servers.dedicated11[0]);
-    const [dnsData, setDnsData] = useState([]);
-    const [inputList, setInputList] = useState([{ firstName: '', lastName: '' }]);
-    const [radioValueConnection, setRadioValueConnection] = useState('TCP');
-    const [radioValueConnectionValue, setRadioValueConnectionValue] = useState('443');
-
-    const handleInputChange = (e, index) => {
+    const [killSwitchEnabled, setkillSwitchEnabled] = useState(false);
+    const [dnsData, setDnsData] = useState(
+        findByLabelOrFirst(commonSettings.dns, settings.dns.name));
+    const [mtu, setMtu] = useState(
+        optionsMtu.find(o => o.value === settings.mtu) || optionsMtu[0]);
+    const [protocol, setProtocol] = useState(settings.protocol || 'UDP');
+    const [port, setPort] = useState(settings.port || '1194');
+    const [profileList, setProfileList] = useState([settings.profile]);
+    const [serverType, setServerType] = useState(settings.server.type || 'SHARED');
+    const [shared, setShared] = useState(
+        findByLabelOrFirst(commonSettings.servers.shared, settings.server.name));
+    const [dedicated, setDedicated] = useState(
+        findByLabelOrFirst(commonSettings.servers.dedicated, settings.server.name));
+    const [dedicated11, setDedicated11] = useState(
+        findByLabelOrFirst(commonSettings.servers.dedicated11, settings.server.name));
+    
+    const handleProfileListChange = (e, index) => {
         const { name, value } = e.target;
-        const list = [...inputList];
+        const list = [...profileList];
         list[index][name] = value;
-        setInputList(list);
+        setProfileList(list);
     };
 
-    const handleRemoveClick = index => {
-        const list = [...inputList];
+    const handleRemoveProfile = index => {
+        const list = [...profileList];
         list.splice(index, 1);
-        setInputList(list);
+        setProfileList(list);
     };
 
-    const handleAddClick = () => {
-        setInputList([...inputList, { firstName: '', lastName: '' }]);
+    const handleAddProfile = () => {
+        setProfileList([...profileList, { login: '', password: '' }]);
     };
 
     const onChangeCheckbox = e => {
-        setCheckboxValue(e.target.checked);
-    }
+        setkillSwitchEnabled(e.target.checked);
+    };
 
     useEffect(() => {
-        setShared(settings.servers.shared);;
-        setDedicated(settings.servers.dedicated);
-        setDedicated11(settings.servers.dedicated11);
-        setDnsData(settings.dns);
-        setOptionsConnectionTypeData(optionsConnectionType);
-        setOptionsMtuData(optionsMtu);
-    }, []);
+        setShared(commonSettings.servers.shared);;
+        setDedicated(commonSettings.servers.dedicated);
+        setDedicated11(commonSettings.servers.dedicated11);
+        setDnsData(commonSettings.dns);
+        setConnectionType(optionsConnectionType);
+        setMtu(optionsMtu);
+    }, [
+        commonSettings.dns,
+        commonSettings.servers.shared,
+        commonSettings.servers.dedicated,
+        commonSettings.servers.dedicated11
+    ]);
 
     const handleShowMore = () => {
         if (!showMore) {
@@ -75,29 +87,51 @@ export const DrawerContent = ({ connection, settings }) => {
     };
 
     const saveButtonHandler = () => {
-        fs.writeFileSync(
-            settingsPath.profile,
-            `${inputList[0].firstName}\n${inputList[0].lastName}`);
+        settings.profile = profileList[0];
+        // JS clone object be like
+        setSettings(JSON.parse(JSON.stringify(settings, undefined, 2)));
+        saveProfile(profileList[0]);
     }
 
     const onChangeRadio = e => {
-        setRadioValue(e.target.value);
+        setServerType(e.target.value);
     }
     const onChangeRadioConnection = e => {
-        setRadioValueConnection(e.target.value);
+        setProtocol(e.target.value);
     }
     const onChangeRadioConnectionValue = e => {
-        setRadioValueConnectionValue(e.target.value);
+        setPort(e.target.value);
     }
 
     const handleConnect = data => {
-        ipcRenderer.send('connection-start', {
-            proto: radioValueConnection.toLowerCase(),
-            port: radioValueConnectionValue,
-            host: data.server?.value,
-            dnsAddresses: data.dns && [data.dns.value.primary, data.dns.value.secondary],
-            mtu: data.mtu.value
-        });
+        isDev && console.log('handleConnect', data);
+        var newSettings = {
+            connectionType: data.connectionType.value,
+            protocol: protocol,
+            port: port,
+            server: {
+                name: data.server?.label,
+                type: serverType,
+                host: data.server?.value,
+            },
+            dns: data.dns && {
+                name: data.dns.label,
+                addresses: data.dns.value
+            },
+            mtu: data.mtu.value,
+            profile: profileList[0]
+        };
+        isDev && console.log('handleConnect', newSettings);
+        setSettings(newSettings);
+        
+        saveProfile(newSettings.profile);
+        ipcRenderer.send('connection-start', newSettings);
+        
+        fs.writeFile(
+            settingsPath.settings,
+            JSON.stringify(newSettings, undefined, 2),
+            'utf8', _ => {}
+        );
     }
 
     return (
@@ -105,13 +139,13 @@ export const DrawerContent = ({ connection, settings }) => {
             <form onSubmit={handleSubmit(handleConnect)}>
                 <div className="form-titles">Connection Type</div>
                 <RHFInput
-                    as={<Select options={optionsConnectionTypeData} />}
+                    as={<Select options={connectionType} />}
                     //rules={{ required: true }}
                     name="connectionType"
                     register={register}
                     setValue={setValue}
                     className="form-select"
-                    defaultValue={optionsConnectionTypeData}
+                    defaultValue={connectionType}
                 />
                 <div type="more" onClick={handleShowMore} className="form-show-more">
                     {showMoreText}
@@ -130,31 +164,32 @@ export const DrawerContent = ({ connection, settings }) => {
                         register={register}
                         setValue={setValue}
                         className="form-select"
+                        defaultValue={dnsData}
                     />
                     <RHFInput
-                        as={<Select options={optionsMtuData} />}
+                        as={<Select options={mtu} />}
                         //rules={{ required: true }}
                         name="mtu"
                         register={register}
                         setValue={setValue}
                         className="form-select"
-                        defaultValue={optionsMtuData}
+                        defaultValue={mtu}
                     />
                     <ConnectionDetails
-                        radioValueConnection={radioValueConnection}
+                        radioValueConnection={protocol}
                         onChangeRadioConnection={onChangeRadioConnection}
-                        radioValueConnectionValue={radioValueConnectionValue}
+                        radioValueConnectionValue={port}
                         onChangeRadioConnectionValue={onChangeRadioConnectionValue}
                     />
                 </div>
                 <Profile
                     register={register}
                     setValue={setValue}
-                    handleInputChange={handleInputChange}
-                    handleRemoveClick={handleRemoveClick}
-                    handleAddClick={handleAddClick}
-                    inputList={inputList}
-                    setInputList={setInputList}
+                    handleInputChange={handleProfileListChange}
+                    handleRemoveClick={handleRemoveProfile}
+                    handleAddClick={handleAddProfile}
+                    inputList={profileList}
+                    setInputList={setProfileList}
                 />
                 <button
                     type="button"
@@ -163,7 +198,7 @@ export const DrawerContent = ({ connection, settings }) => {
                 <div className="form-titles">Server</div>
                 <div className="form-server-block">
                     <div className="form-server-block-radio">
-                        <Radio.Group onChange={onChangeRadio} defaultValue={radioValue}>
+                        <Radio.Group onChange={onChangeRadio} defaultValue={serverType}>
                             <Radio.Button value="SHARED">SHARED</Radio.Button>
                             <Radio.Button value="DEDICATED">DEDICATED</Radio.Button>
                             <Radio.Button value="1:1">1:1</Radio.Button>
@@ -173,9 +208,9 @@ export const DrawerContent = ({ connection, settings }) => {
                         as={
                             <Select
                                 options={
-                                    radioValue === "SHARED"
+                                    serverType === "SHARED"
                                         ? shared
-                                        : radioValue === "DEDICATED"
+                                        : serverType === "DEDICATED"
                                             ? dedicated
                                             : dedicated11
                                 }
@@ -187,9 +222,9 @@ export const DrawerContent = ({ connection, settings }) => {
                         setValue={setValue}
                         className="form-select"
                         defaultValue={
-                            radioValue === "SHARED"
+                            serverType === "SHARED"
                                 ? shared
-                                : radioValue === "DEDICATED"
+                                : serverType === "DEDICATED"
                                     ? dedicated
                                     : dedicated11
                         }
@@ -203,3 +238,10 @@ export const DrawerContent = ({ connection, settings }) => {
         </div>
     );
 };
+
+const saveProfile = profile => {
+    fs.writeFileSync(
+        settingsPath.profile,
+        `${profile.login}\n${profile.password}`);
+}
+

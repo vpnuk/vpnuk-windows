@@ -20,32 +20,24 @@ const escapeSpaces = (value) => {
     return value.replace(' ', '\"\ \"');
 }
 
-exports.runOpenVpn = ovpnOptions => {
-    isDev && console.log(ovpnOptions);
+exports.runOpenVpn = options => {
+    isDev && console.log(options);
     var proc = require('child_process')
         .execFile(
             escapeSpaces(getOpenVpnExePath()),
             [
                 `--config\ ${escapeSpaces(settingsPath.ovpn)}`,
-                `--remote\ ${ovpnOptions.host}\ ${ovpnOptions.port}`,
-                `--proto\ ${ovpnOptions.proto}`,
+                `--remote\ ${options.server.host}\ ${options.port}`,
+                `--proto\ ${options.protocol.toLowerCase() === 'tcp' ? 'tcp' : 'udp'}`,
                 `--auth-user-pass\ ${escapeSpaces(settingsPath.profile)}`,
-                ovpnOptions.dnsAddresses && '--redirect-gateway\ def1',
-                ovpnOptions.dnsAddresses && Array.from(ovpnOptions.dnsAddresses,
+                options.dns.addresses && '--redirect-gateway\ def1',
+                options.dns.addresses && Array.from(options.dns.addresses,
                     addr => `--dhcp-option\ DNS\ ${addr}`).join(' '),
-                ovpnOptions.mtu && `--mssfix\n ${'' + ovpnOptions.mtu}`
+                options.mtu && `--mssfix\n ${'' + options.mtu}`
             ],
             { shell: true });
 
     isDev && console.log(proc.spawnargs);
-
-    proc.on('SIGHUP', () => {
-        console.log('received SIGHUP')
-    });
-
-    proc.on('SIGTERM', () => {
-        console.log('received SIGTERM')
-    });
 
     proc.stdout.on('data', (data) => {
         console.log(`ovpn-out: ${data}`);
@@ -58,6 +50,15 @@ exports.runOpenVpn = ovpnOptions => {
     });
 
     return proc;
+}
+
+exports.killWindowsProcess = (pid, callback) => {
+    var proc = require('child_process')
+        .spawn('taskkill', [`/PID\ ${pid}\ /T\ /F`], { shell: true });
+
+    proc.on('close', code => {
+        callback(code);
+    });
 }
 
 exports.killWindowsProcessSync = pid => {

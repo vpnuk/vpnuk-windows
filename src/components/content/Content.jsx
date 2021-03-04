@@ -10,6 +10,8 @@ export const ContentVPN = ({ showDrawer, connection, settings }) => {
     const [swithStyle, setSwithStyle] = useState(
         "linear-gradient(to right, #97AAAA, #97AAAA)"
     );
+    const [login, setLogin] = useState('Account username');
+    const [serverName, setServerName] = useState('Server name')
 
     useEffect(() => {
         if (connection) {
@@ -21,15 +23,14 @@ export const ContentVPN = ({ showDrawer, connection, settings }) => {
         }
     }, [connection]);
 
+    useEffect(() => {
+        setLogin(settings.profile.login);
+        setServerName(settings.server.name);
+    }, [settings]);
+
     function onChange(checked) {
         if (checked) {
-            ipcRenderer.send('connection-start', {
-                prot: 'udp',
-                host: '84.19.112.105',
-                port: '1194',
-                dnsAddresses: ['8.8.8.8', '8.8.4.4'],
-                mtu: '1500'
-            });
+            ipcRenderer.send('connection-start', settings);
         } else {
             ipcRenderer.send('connection-stop', connection);
         }
@@ -64,8 +65,8 @@ export const ContentVPN = ({ showDrawer, connection, settings }) => {
                             <p>{connectedText}</p>
                         </div>
                         <div className="column-content_block-text">
-                            <p>Account username</p>
-                            <p>Server name</p>
+                            <p>{login}</p>
+                            <p>{serverName}</p>
                         </div>
                     </div>
                     <div className="column-block"></div>

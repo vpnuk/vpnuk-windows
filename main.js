@@ -2,7 +2,7 @@ const { app, BrowserWindow, dialog, ipcMain } = require('electron');
 const isDev = require('electron-is-dev');
 const path = require('path');
 const url = require('url');
-const { runOpenVpn, killWindowsProcessSync } = require('./src/helpers/openVpn')
+const { runOpenVpn, killWindowsProcess, killWindowsProcessSync } = require('./src/helpers/openVpn')
 let window, pid;
 
 function createWindow() {
@@ -30,7 +30,10 @@ function createWindow() {
 
     window.on('close', event => {
         isDev && console.log('window-close event')
-        pid && killWindowsProcessSync(pid);
+        if (pid) {
+            killWindowsProcessSync(pid);
+            pid = null;
+        }
         isDev && event.preventDefault();
     });
 
@@ -75,7 +78,9 @@ ipcMain.on('connection-start', (event, arg) => {
 
 ipcMain.on('connection-stop', (event, arg) => {
     isDev && console.log('connection-stop event', arg);
-    var code = killWindowsProcessSync(arg);
-    event.sender.send('connection-stopped', code);
-    pid = null;
+    killWindowsProcess(arg, code => {
+        isDev && console.log(`kill process PID=${arg} result=${code}`);
+        event.sender.send('connection-stopped', code);
+        pid = null;
+    });
 });

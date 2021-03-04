@@ -25,16 +25,16 @@ export function Profile({
               )}
             </div>
             <input
-              name="firstName"
+              name="login"
               placeholder="VPN username"
-              value={x.firstName}
+              value={x.login}
               onChange={(e) => handleInputChange(e, i)}
             />
             <input
               className="ml10"
-              name="lastName"
+              name="password"
               placeholder="VPN password"
-              value={x.lastName}
+              value={x.password}
               onChange={(e) => handleInputChange(e, i)}
             />
             <div className="buttons-wrapper">

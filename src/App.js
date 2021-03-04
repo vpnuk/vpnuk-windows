@@ -3,26 +3,38 @@ import './App.css';
 import { Layout } from 'antd';
 import { SideBar } from './components/sidebar/SideBar';
 import { ContentVPN } from './components/content/Content';
-import { initializeSettings } from './settings/settings';
+import { initializeSettings, settingsPath, EmptySettings } from './settings/settings';
 const { Content } = Layout;
 const isDev = require('electron-is-dev');
 const { ipcRenderer } = require('electron');
+const fs = require('fs');
 let setConnection;
 
 function App() {
     const [visible, setVisible] = useState(false);
     const [connection, setConnectionInner] = useState(null);
-    const [settings, setSettings] = useState(null);
-
-    useEffect(() => {
-        setConnection = setConnectionInner;
-        return () => setConnection = null
-    });
+    const [commonSettings, setCommonSettings] = useState(null);
+    const [settings, setSettings] = useState(EmptySettings);
 
     useEffect(() => {
         initializeSettings()
-            .then((settings) => setSettings(settings));
-    });
+            .then((settings) => setCommonSettings(settings));
+        fs.readFile(
+            settingsPath.settings,
+            'utf8', (err, data) => {
+                if (!err) {
+                    setSettings(JSON.parse(data));
+                }
+                else {
+                    console.log('error reading settings', err);
+                    setSettings(EmptySettings);
+                }
+            }
+        );
+
+        setConnection = setConnectionInner;
+        return () => setConnection = null;
+    }, []);
 
     const showDrawer = () => {
         setVisible(true);
@@ -36,7 +48,9 @@ function App() {
                     visible={visible}
                     setVisible={setVisible}
                     connection={connection}
-                    settings={settings} />
+                    commonSettings={commonSettings}
+                    settings={settings}
+                    setSettings={setSettings} />
                 <Content>
                     <ContentVPN
                         showDrawer={showDrawer}

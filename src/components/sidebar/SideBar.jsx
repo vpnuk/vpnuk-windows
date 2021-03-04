@@ -4,7 +4,7 @@ import { HeaderContent } from "./drawer-content/DrawerContent/Header/index";
 import { DrawerContent } from "./drawer-content/DrawerContent/index";
 import "./SideBar.css";
 
-export const SideBar = ({ visible, setVisible, connection, settings }) => {
+export const SideBar = ({ visible, setVisible, connection, commonSettings, settings, setSettings }) => {
     const onClose = () => {
         setVisible(false);
     };
@@ -22,7 +22,9 @@ export const SideBar = ({ visible, setVisible, connection, settings }) => {
                 drawerStyle={{ background: "#000000" }}>
                 <DrawerContent
                     connection={connection}
-                    settings={settings} />
+                    commonSettings={commonSettings}
+                    settings={settings}
+                    setSettings={setSettings} />
             </Drawer>
         </>
     );
