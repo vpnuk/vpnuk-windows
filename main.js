@@ -2,9 +2,8 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const isDev = require('electron-is-dev');
 const path = require('path');
 const url = require('url');
-
-let window;
-var quit = false;
+const { runOpenVpn, killWindowsProcessSync } = require('./src/helpers/openVpn')
+let window, pid;
 
 function createWindow() {
     window = new BrowserWindow({
@@ -30,32 +29,54 @@ function createWindow() {
     }
 
     window.on('close', event => {
-        if (!quit) {
-            window.webContents.send('connection-kill');
-            event.preventDefault();
-        }
+        isDev && console.log('window-close event')
+        pid && killWindowsProcessSync(pid);
+        isDev && event.preventDefault();
     });
 
     window.on('closed', () => {
         window = null;
-    })
+    });
 }
 
-ipcMain.on('app-quit', _ => {
-    quit = true;
-    window.close();
-});
-
-app.on('ready', createWindow)
+app.on('ready', createWindow);
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
         app.quit();
     }
-})
+});
 
 app.on('activate', () => {
     if (window === null) {
         createWindow();
     }
-})
+});
+
+ipcMain.on('connection-start', (event, arg) => {
+    isDev && console.log('connection-start event');
+    var newConnection;
+    try {
+        newConnection = runOpenVpn(arg);
+    } catch (error) {
+        isDev && console.error(error);
+        if (error.message === 'No OpenVPN found') {
+            const { dialog } = window.require('electron').remote;
+            console.log(dialog.showMessageBoxSync({
+                type: 'error',
+                title: 'Error',
+                message: 'OpenVPN is not installed.'
+            }));
+        }
+    }
+    isDev && console.log(newConnection.pid, newConnection.exitCode);
+    newConnection && event.sender.send('connection-started', newConnection.pid);
+    newConnection && (pid = newConnection.pid);
+});
+
+ipcMain.on('connection-stop', (event, arg) => {
+    isDev && console.log('connection-stop event', arg);
+    var code = killWindowsProcessSync(arg);
+    event.sender.send('connection-stopped', code);
+    pid = null;
+});

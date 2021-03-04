@@ -1,4 +1,4 @@
-import axios from 'axios';
+const axios = require('axios');
 const fs = require('fs');
 
 const baseAddress = 'https://www.serverlistvault.com/';
@@ -13,7 +13,7 @@ const settingsLink = {
 const path = require('path');
 // This folder should be created during the installation process
 const settingsFolder = path.resolve(require('process').env.APPDATA + '\\VPNUK');
-export const settingsPath = {
+const settingsPath = {
     folder: settingsFolder,
     versions: path.join(settingsFolder, 'versions.json'),
     dns: path.join(settingsFolder, 'dns.json'),
@@ -22,7 +22,7 @@ export const settingsPath = {
     ovpnObfucation: path.join(settingsFolder, 'openvpn-obfuscation-configuration.ovpn'),
     profile: path.join(settingsFolder, 'profile.txt')
 }
-
+exports.settingsPath = settingsPath;
 
 const dowloadOvpnConfig = (link, filePath) =>
     axios
@@ -72,7 +72,7 @@ const handlerServerTypesStructure = (arr, types) =>
             }))
     })));
 
-export const initializeSettings = () => {
+exports.initializeSettings = () => {
     if (!fs.existsSync(settingsPath.folder)) {
         fs.mkdirSync(settingsPath.folder);
     };

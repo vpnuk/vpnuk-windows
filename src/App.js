@@ -1,15 +1,22 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./App.css";
 import { Layout } from "antd";
 import { SideBar } from "./components/sidebar/SideBar";
 import { ContentVPN } from "./components/content/Content";
 
 const { Content } = Layout;
-const { ipcRenderer } = require('electron')
+const isDev = require('electron-is-dev');
+const { ipcRenderer } = require('electron');
+let setConnection;
 
 function App() {
     const [visible, setVisible] = useState(false);
-    const [connection, setConnection] = useState(null);
+    const [connection, setConnectionInner] = useState(null);
+
+    useEffect(() => {
+        setConnection = setConnectionInner;
+        return () => setConnection = null
+    });
 
     const showDrawer = () => {
         setVisible(true);
@@ -22,24 +29,25 @@ function App() {
                     showDrawer={showDrawer}
                     visible={visible}
                     setVisible={setVisible}
-                    connection={connection}
-                    setConnection={setConnection} />
+                    connection={connection} />
                 <Content>
                     <ContentVPN
                         showDrawer={showDrawer}
-                        connection={connection}
-                        setConnection={setConnection} />
+                        connection={connection} />
                 </Content>
             </Layout>
         </div>
     );
 }
 
-ipcRenderer.on('connection-kill', event => {
-    console.log('kill event')
-    // todo: kill connection process via message to main process (send pid)
-    
-    event.sender.send('app-quit')
-})
+ipcRenderer.on('connection-started', (_, arg) => {
+    isDev && console.log('connection-started event', arg);
+    setConnection(arg);
+});
+
+ipcRenderer.on('connection-stopped', (_, arg) => {
+    isDev && console.log('connection-stopped event', arg);
+    setConnection(null);
+});
 
 export default App;

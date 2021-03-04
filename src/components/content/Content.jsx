@@ -3,11 +3,11 @@ import WorldImage from '../../assets/world.png';
 import SettingsImage from '../../assets/settings.png';
 import { Switch } from 'antd';
 import './Content.css';
-import { runOpenVpn, OvpnOptions, killWindowsProcess } from '../../helpers/openVpn';
 import { initializeSettings } from '../../settings/settings';
+const { ipcRenderer } = require('electron');
 const w = window.require('electron').remote.getCurrentWindow();
 
-export const ContentVPN = ({ showDrawer, connection, setConnection }) => {
+export const ContentVPN = ({ showDrawer, connection }) => {
     const [connectedText, setConnectedText] = useState('Disconnected');
     const [swithStyle, setSwithStyle] = useState(
         "linear-gradient(to right, #97AAAA, #97AAAA)"
@@ -33,27 +33,15 @@ export const ContentVPN = ({ showDrawer, connection, setConnection }) => {
 
     function onChange(checked) {
         if (checked) {
-            var newConnection;
-            try {
-                newConnection = runOpenVpn(new OvpnOptions());
-            } catch (error) {
-                console.error(error);
-                if (error.message === 'No OpenVPN found') {
-                    const { dialog } = window.require('electron').remote;
-                    console.log(dialog.showMessageBoxSync({
-                        type: 'error',
-                        title: 'Error',
-                        message: 'OpenVPN is not installed.'
-                    }));
-                }
-            }
-            console.log(newConnection)
-            newConnection && setConnection(newConnection);
+            ipcRenderer.send('connection-start', {
+                prot: 'udp',
+                host: '84.19.112.105',
+                port: '1194',
+                dnsAddresses: ['8.8.8.8', '8.8.4.4'],
+                mtu: '1500'
+            });
         } else {
-            killWindowsProcess(
-                window.require('electron').remote.require('child_process'),
-                connection.pid);
-            setConnection(null);
+            ipcRenderer.send('connection-stop', connection);
         }
     }
 

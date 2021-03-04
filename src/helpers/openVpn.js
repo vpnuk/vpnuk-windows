@@ -1,14 +1,9 @@
-import { settingsPath } from '../settings/settings';
-
+const { settingsPath } = require('../settings/settings');
 const isDev = require('electron-is-dev');
 const fs = require('fs');
-const childProcess = window
-    .require('electron')
-    .remote
-    .require('child_process');
 
 const getOpenVpnExePath = () => {
-    var exeKey = '' + childProcess
+    var exeKey = '' + require('child_process')
         .spawnSync('cmd', ['/c\ reg\ query\ HKLM\\SOFTWARE\\OpenVPN\\\ /v\ exe_path'],
             { shell: true })
         .stdout;
@@ -21,21 +16,13 @@ const getOpenVpnExePath = () => {
     throw new Error('No OpenVPN found');
 }
 
-export class OvpnOptions {
-    proto = 'udp';
-    host = '84.19.112.105';
-    port = '1194';
-    dnsAddresses = ['8.8.8.8', '8.8.4.4'];
-    mtu = '1500';
-};
-
 const escapeSpaces = (value) => {
     return value.replace(' ', '\"\ \"');
 }
 
-export const runOpenVpn = (ovpnOptions) => {
+exports.runOpenVpn = (ovpnOptions) => {
     isDev && console.log(ovpnOptions);
-    var proc = childProcess
+    var proc = require('child_process')
         .execFile(
             escapeSpaces(getOpenVpnExePath()),
             [
@@ -73,20 +60,10 @@ export const runOpenVpn = (ovpnOptions) => {
     return proc;
 }
 
-export const killWindowsProcess = (cp, pid) => {
-    var proc = cp
-        .spawn('taskkill', [`/PID\ ${pid}\ /T\ /F`],
-            { shell: true });
-
-    proc.on('close', (code) => {
-        console.log(`killed process PID=${pid} result=${code}`);
-    });
-}
-
-export const killWindowsProcessSync = (pid) => {
+exports.killWindowsProcessSync = pid => {
     var code = require('child_process')
-      .spawnSync('taskkill', [`/PID\ ${pid}\ /T\ /F`], { shell: true })
-      .exitCode;
-    console.log(`kill process PID=${pid} result=${code}`);
-  }
-  
+        .spawnSync('taskkill', [`/PID\ ${pid}\ /T\ /F`], { shell: true })
+        .exitCode;
+    isDev && console.log(`kill process PID=${pid} result=${code}`);
+    return code;
+}
