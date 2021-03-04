@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, dialog, ipcMain } = require('electron');
 const isDev = require('electron-is-dev');
 const path = require('path');
 const url = require('url');
@@ -61,7 +61,6 @@ ipcMain.on('connection-start', (event, arg) => {
     } catch (error) {
         isDev && console.error(error);
         if (error.message === 'No OpenVPN found') {
-            const { dialog } = window.require('electron').remote;
             console.log(dialog.showMessageBoxSync({
                 type: 'error',
                 title: 'Error',

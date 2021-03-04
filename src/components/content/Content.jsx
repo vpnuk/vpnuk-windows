@@ -3,23 +3,13 @@ import WorldImage from '../../assets/world.png';
 import SettingsImage from '../../assets/settings.png';
 import { Switch } from 'antd';
 import './Content.css';
-import { initializeSettings } from '../../settings/settings';
 const { ipcRenderer } = require('electron');
-const w = window.require('electron').remote.getCurrentWindow();
 
-export const ContentVPN = ({ showDrawer, connection }) => {
+export const ContentVPN = ({ showDrawer, connection, settings }) => {
     const [connectedText, setConnectedText] = useState('Disconnected');
     const [swithStyle, setSwithStyle] = useState(
         "linear-gradient(to right, #97AAAA, #97AAAA)"
     );
-
-    useEffect(() => {
-        initializeSettings()
-            .then((options) => {
-                // todo: appOptions -> from App.js
-                w.appOptions = options;
-            });
-    }, []);
 
     useEffect(() => {
         if (connection) {

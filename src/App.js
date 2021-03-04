@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
-import "./App.css";
-import { Layout } from "antd";
-import { SideBar } from "./components/sidebar/SideBar";
-import { ContentVPN } from "./components/content/Content";
-
+import React, { useEffect, useState } from 'react';
+import './App.css';
+import { Layout } from 'antd';
+import { SideBar } from './components/sidebar/SideBar';
+import { ContentVPN } from './components/content/Content';
+import { initializeSettings } from './settings/settings';
 const { Content } = Layout;
 const isDev = require('electron-is-dev');
 const { ipcRenderer } = require('electron');
@@ -12,10 +12,16 @@ let setConnection;
 function App() {
     const [visible, setVisible] = useState(false);
     const [connection, setConnectionInner] = useState(null);
+    const [settings, setSettings] = useState(null);
 
     useEffect(() => {
         setConnection = setConnectionInner;
         return () => setConnection = null
+    });
+
+    useEffect(() => {
+        initializeSettings()
+            .then((settings) => setSettings(settings));
     });
 
     const showDrawer = () => {
@@ -29,11 +35,13 @@ function App() {
                     showDrawer={showDrawer}
                     visible={visible}
                     setVisible={setVisible}
-                    connection={connection} />
+                    connection={connection}
+                    settings={settings} />
                 <Content>
                     <ContentVPN
                         showDrawer={showDrawer}
-                        connection={connection} />
+                        connection={connection}
+                        settings={settings} />
                 </Content>
             </Layout>
         </div>

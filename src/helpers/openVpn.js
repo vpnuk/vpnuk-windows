@@ -20,7 +20,7 @@ const escapeSpaces = (value) => {
     return value.replace(' ', '\"\ \"');
 }
 
-exports.runOpenVpn = (ovpnOptions) => {
+exports.runOpenVpn = ovpnOptions => {
     isDev && console.log(ovpnOptions);
     var proc = require('child_process')
         .execFile(

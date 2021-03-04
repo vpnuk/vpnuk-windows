@@ -68,7 +68,7 @@ const handlerServerTypesStructure = (arr, types) =>
             .filter(server => server.type === type)
             .map(server => ({
                 label: server.location.name,
-                value: server
+                value: server.address
             }))
     })));
 

@@ -14,9 +14,8 @@ import { ConnectionDetails } from './connectionDetails/index';
 
 const fs = require('fs');
 const { ipcRenderer } = require('electron');
-const w = window.require('electron').remote.getCurrentWindow();
 
-export const DrawerContent = ({ connection }) => {
+export const DrawerContent = ({ connection, settings }) => {
     const { handleSubmit, register, setValue } = useForm();
     // TODO: load from file and set here
     const [optionsConnectionTypeData, setOptionsConnectionTypeData] = useState(
@@ -27,9 +26,9 @@ export const DrawerContent = ({ connection }) => {
     const [showMoreText, setShowMoreText] = useState('Show more');
     const [radioValue, setRadioValue] = useState('SHARED');
     const [checkboxValue, setCheckboxValue] = useState('SHARED');
-    const [shared, setShared] = useState(w.appOptions.servers.shared[0]);
-    const [dedicated, setDedicated] = useState(w.appOptions.servers.dedicated[0]);
-    const [dedicated11, setDedicated11] = useState(w.appOptions.servers.dedicated11[0]);
+    const [shared, setShared] = useState(settings.servers.shared[0]);
+    const [dedicated, setDedicated] = useState(settings.servers.dedicated[0]);
+    const [dedicated11, setDedicated11] = useState(settings.servers.dedicated11[0]);
     const [dnsData, setDnsData] = useState([]);
     const [inputList, setInputList] = useState([{ firstName: '', lastName: '' }]);
     const [radioValueConnection, setRadioValueConnection] = useState('TCP');
@@ -57,10 +56,10 @@ export const DrawerContent = ({ connection }) => {
     }
 
     useEffect(() => {
-        setShared(w.appOptions.servers.shared);;
-        setDedicated(w.appOptions.servers.dedicated);
-        setDedicated11(w.appOptions.servers.dedicated11);
-        setDnsData(w.appOptions.dns);
+        setShared(settings.servers.shared);;
+        setDedicated(settings.servers.dedicated);
+        setDedicated11(settings.servers.dedicated11);
+        setDnsData(settings.dns);
         setOptionsConnectionTypeData(optionsConnectionType);
         setOptionsMtuData(optionsMtu);
     }, []);
@@ -95,7 +94,7 @@ export const DrawerContent = ({ connection }) => {
         ipcRenderer.send('connection-start', {
             proto: radioValueConnection.toLowerCase(),
             port: radioValueConnectionValue,
-            host: data.server?.value.address,
+            host: data.server?.value,
             dnsAddresses: data.dns && [data.dns.value.primary, data.dns.value.secondary],
             mtu: data.mtu.value
         });
