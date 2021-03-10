@@ -85,3 +85,7 @@ ipcMain.on('connection-stop', (event, arg) => {
         pid = null;
     });
 });
+
+ipcMain.on('is-dev-request', event => {
+    event.sender.send('is-dev-response', isDev);
+});

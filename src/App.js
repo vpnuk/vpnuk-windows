@@ -7,12 +7,11 @@ const { initializeSettings, settingsPath, emptySettings } = require('./settings/
 const { Content } = Layout;
 const { ipcRenderer } = require('electron');
 const fs = require('fs');
-let setConnection;
-
-// TODO: get from main process
-const isDev = true;
+let setConnection, isDev;
 
 function App() {
+    ipcRenderer.send('is-dev-request');
+
     const [visible, setVisible] = useState(false);
     const [connection, setConnectionInner] = useState(null);
     const [commonSettings, setCommonSettings] = useState(null);
@@ -64,14 +63,19 @@ function App() {
     );
 }
 
-ipcRenderer.on('connection-started', (_, arg) => {
-    isDev && console.log('connection-started event', arg);
-    setConnection(arg);
+ipcRenderer.on('connection-started', (_, pid) => {
+    isDev && console.log('connection-started event', pid);
+    setConnection(pid);
 });
 
 ipcRenderer.on('connection-stopped', (_, arg) => {
     isDev && console.log('connection-stopped event', arg);
     setConnection(null);
+});
+
+ipcRenderer.on('is-dev-response', (_, arg) => {
+    isDev = arg;
+    exports.isDev = isDev;
 });
 
 export default App;

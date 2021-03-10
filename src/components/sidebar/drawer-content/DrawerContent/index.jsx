@@ -9,14 +9,10 @@ import {
     optionsConnectionType,
     optionsMtu
 } from '../../../../settings/constants';
-//import { settingsPath } from '../../../../settings/settings';
 import { ConnectionDetails } from './connectionDetails/index';
 const { settingsPath } = require('../../../../settings/settings');
 const fs = require('fs');
 const { ipcRenderer } = require('electron');
-
-// TODO: get from main process
-const isDev = true;
 
 const findByLabelOrFirst = (arr, label) =>
     arr.find(el => el.label === label) || arr[0];
@@ -106,6 +102,7 @@ export const DrawerContent = ({ connection, commonSettings, settings, setSetting
     }
 
     const handleConnect = data => {
+        const { isDev } = require('../../../../App');
         isDev && console.log('handleConnect', data);
         var newSettings = {
             connectionType: data.connectionType.value,
