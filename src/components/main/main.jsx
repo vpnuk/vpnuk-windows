@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { Switch } from 'antd';
 import WorldImage from '../../assets/world.png';
 import SettingsImage from '../../assets/settings.png';
-import { Switch } from 'antd';
-import './Content.css';
+import './main.css';
 const { ipcRenderer } = require('electron');
 
-export const ContentVPN = ({ showDrawer, connection, settings }) => {
+export const MainPage = ({ showDrawer, connection, settings }) => {
     const [connectedText, setConnectedText] = useState('Disconnected');
     const [swithStyle, setSwithStyle] = useState(
         "linear-gradient(to right, #97AAAA, #97AAAA)"

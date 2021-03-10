@@ -17,7 +17,29 @@
 }
 .ant-drawer-close {
   color: #fff;
+  width: 70px;
+  height: 70px;
 }
 .ant-drawer-close:hover {
   color: grey;
+}
+
+.settings-button-modal {
+  display: flex;
+  cursor: pointer;
+}
+.settings-button-modal img {
+  width: 40px;
+  height: 40px;
+}
+.settings-button-modal div p {
+  font-style: normal;
+  font-weight: normal;
+  font-size: 24px;
+  color: #ffffff;
+  margin: 0px 0px 0px 10px;
+}
+.settings-button-modal div {
+  display: flex;
+  align-items: center;
 }

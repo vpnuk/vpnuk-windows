@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import './App.css';
 import { Layout } from 'antd';
-import { SideBar } from './components/sidebar/SideBar';
-import { ContentVPN } from './components/content/Content';
+import './app.css';
+import { Sidebar } from './components/sidebar/sidebar';
+import { MainPage } from './components/main/main';
 const { initializeSettings, settingsPath, emptySettings } = require('./settings/settings')
-const { Content } = Layout;
 const { ipcRenderer } = require('electron');
 const fs = require('fs');
 let setConnection, isDev;
@@ -44,7 +43,7 @@ function App() {
     return (
         <div className="App">
             <Layout style={{ height: "100%" }}>
-                <SideBar
+                <Sidebar
                     showDrawer={showDrawer}
                     visible={visible}
                     setVisible={setVisible}
@@ -52,12 +51,12 @@ function App() {
                     commonSettings={commonSettings}
                     settings={settings}
                     setSettings={setSettings} />
-                <Content>
-                    <ContentVPN
+                <Layout>
+                    <MainPage
                         showDrawer={showDrawer}
                         connection={connection}
                         settings={settings} />
-                </Content>
+                </Layout>
             </Layout>
         </div>
     );

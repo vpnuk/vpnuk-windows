@@ -69,7 +69,8 @@ const handlerServerTypesStructure = (arr, types) =>
             .filter(server => server.type === type)
             .map(server => ({
                 label: server.location.name,
-                value: server.address
+                host: server.address,
+                type: server.type
             }))
     })));
 
@@ -121,7 +122,7 @@ exports.initializeSettings = () => {
         });
 };
 
-const emptySettings = {
+exports.emptySettings = {
     connectionType: 'OpenVPN',
     protocol: '',
     port: '',
@@ -140,4 +141,33 @@ const emptySettings = {
         password: ''
     }
 };
-exports.emptySettings = emptySettings;
+
+const _emptyProfile = {
+    id: '0',
+    label: 'Default',
+    config: {
+        credentials: {
+            login: '',
+            password: ''
+        },
+        server: {
+            host: '',
+            label: '',
+            type: ''
+        },
+        port: '',
+        protocol: '',
+        dns: {
+            name: '',
+            addresses: null // ['IP1', 'IP2']
+        },
+        mtu: ''
+    }
+};
+exports._emptySettings = {
+    currentType: 'OpenVpn',
+    currentProfile: 'Default',
+    profiles: {
+        'OpenVpn': [_emptyProfile]
+    }
+};
