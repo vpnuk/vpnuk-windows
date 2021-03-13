@@ -10,10 +10,12 @@ import {
     optionsMtu
 } from '../../../../settings/constants';
 import { ConnectionDetails } from './connectionDetails/index';
-import { copyObject, findByLabelOrFirst } from '../../../../helpers/utils';
 const { settingsPath } = require('../../../../settings/settings');
 const fs = require('fs');
 const { ipcRenderer } = require('electron');
+
+const findByLabelOrFirst = (arr, label) =>
+    arr.find(el => el.label === label) || arr[0];
 
 export const DrawerContent = ({ connection, commonSettings, settings, setSettings }) => {
     const { handleSubmit, register, setValue } = useForm();
@@ -36,7 +38,7 @@ export const DrawerContent = ({ connection, commonSettings, settings, setSetting
         findByLabelOrFirst(commonSettings.servers.dedicated, settings.server.name));
     const [dedicated11, setDedicated11] = useState(
         findByLabelOrFirst(commonSettings.servers.dedicated11, settings.server.name));
-    
+
     const handleProfileListChange = (e, index) => {
         const { name, value } = e.target;
         const list = [...profileList];
@@ -84,7 +86,7 @@ export const DrawerContent = ({ connection, commonSettings, settings, setSetting
 
     const saveButtonHandler = () => {
         settings.profile = profileList[0];
-        setSettings(copyObject(settings));
+        //setSettings(copyObject(settings));
         saveProfileSync(profileList[0]);
     }
 
@@ -119,14 +121,14 @@ export const DrawerContent = ({ connection, commonSettings, settings, setSetting
         };
         isDev && console.log('handleConnect', newSettings);
         setSettings(newSettings);
-        
+
         saveProfileSync(newSettings.profile);
         ipcRenderer.send('connection-start', newSettings);
-        
+
         fs.writeFile(
             settingsPath.settings,
             JSON.stringify(newSettings, undefined, 2),
-            'utf8', _ => {}
+            'utf8', _ => { }
         );
     }
 

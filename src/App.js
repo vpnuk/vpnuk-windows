@@ -1,38 +1,29 @@
 import React, { useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { Layout } from 'antd';
 import './app.css';
 import { Sidebar } from './components/sidebar/sidebar';
 import { MainPage } from './components/main/main';
-const { initializeSettings, settingsPath, emptySettings } = require('./settings/settings')
+import { setDns, setServers } from './reducers/catalogSlice';
+import { setPid } from './reducers/connectionSlice';
+import { initializeCatalogs } from './utils/catalogs';
 const { ipcRenderer } = require('electron');
-const fs = require('fs');
-let setConnection, isDev;
+let isDev, setConnection;
 
 function App() {
     ipcRenderer.send('is-dev-request');
 
+    const dispatch = useDispatch();
     const [visible, setVisible] = useState(false);
-    const [connection, setConnectionInner] = useState(null);
-    const [commonSettings, setCommonSettings] = useState(null);
-    const [settings, setSettings] = useState(emptySettings);
 
     useEffect(() => {
-        initializeSettings()
-            .then((settings) => setCommonSettings(settings));
-        fs.readFile(
-            settingsPath.settings,
-            'utf8', (err, data) => {
-                if (!err) {
-                    setSettings(JSON.parse(data));
-                }
-                else {
-                    console.log('error reading settings', err);
-                    setSettings(emptySettings);
-                }
-            }
-        );
-
-        setConnection = setConnectionInner;
+        initializeCatalogs()
+            .then(catalog => {
+                dispatch(setDns(catalog.dns));
+                dispatch(setServers(catalog.servers));
+            });
+        
+        setConnection = pid => dispatch(setPid(pid));
         return () => setConnection = null;
     }, []);
 
@@ -44,23 +35,21 @@ function App() {
         <div className="App">
             <Layout style={{ height: "100%" }}>
                 <Sidebar
-                    showDrawer={showDrawer}
                     visible={visible}
-                    setVisible={setVisible}
-                    connection={connection}
-                    commonSettings={commonSettings}
-                    settings={settings}
-                    setSettings={setSettings} />
+                    setVisible={setVisible} />
                 <Layout>
                     <MainPage
-                        showDrawer={showDrawer}
-                        connection={connection}
-                        settings={settings} />
+                        showDrawer={showDrawer} />
                 </Layout>
             </Layout>
         </div>
     );
 }
+
+ipcRenderer.on('is-dev-response', (_, arg) => {
+    isDev = arg;
+    exports.isDev = isDev;
+});
 
 ipcRenderer.on('connection-started', (_, pid) => {
     isDev && console.log('connection-started event', pid);
@@ -72,9 +61,11 @@ ipcRenderer.on('connection-stopped', (_, arg) => {
     setConnection(null);
 });
 
-ipcRenderer.on('is-dev-response', (_, arg) => {
-    isDev = arg;
-    exports.isDev = isDev;
+window.addEventListener('contextmenu', event => {
+    if (isDev) {
+        event.preventDefault();
+        ipcRenderer.send('show-context-menu', { x: event.x, y: event.y });
+    }
 });
 
 export default App;

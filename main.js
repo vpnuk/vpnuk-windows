@@ -1,9 +1,12 @@
-const { app, BrowserWindow, dialog, ipcMain } = require('electron');
+const { app, BrowserWindow, dialog, ipcMain, Menu } = require('electron');
 const path = require('path');
 const url = require('url');
-const { runOpenVpn, killWindowsProcess, killWindowsProcessSync } = require('./src/helpers/openVpn')
-let window, pid;
+const { runOpenVpn, killWindowsProcess, killWindowsProcessSync } =
+    require('./src/utils/openVpn')
+const ElectronStore = require('electron-store');
+ElectronStore.initRenderer();
 
+let window, pid;
 const isDev = process.env.ELECTRON_ENV === 'Dev';
 
 function createWindow() {
@@ -89,3 +92,11 @@ ipcMain.on('connection-stop', (event, arg) => {
 ipcMain.on('is-dev-request', event => {
     event.sender.send('is-dev-response', isDev);
 });
+
+ipcMain.on('show-context-menu', (event, args) => {
+    const menu = Menu.buildFromTemplate([{
+        label: 'Inspect Element',
+        click: () => { window.inspectElement(args.x, args.y) }
+    }])
+    menu.popup(BrowserWindow.fromWebContents(event.sender))
+})

@@ -1,40 +1,23 @@
+import { ipcRenderer } from 'electron';
 import React, { useState, useEffect } from 'react';
+import { CSSTransition } from 'react-transition-group';
+import { useSelector } from 'react-redux';
 import { Switch } from 'antd';
 import WorldImage from '../../assets/world.png';
 import SettingsImage from '../../assets/settings.png';
 import './main.css';
-const { ipcRenderer } = require('electron');
+import {
+    selectLogin,
+    selectServerName,
+    selectCurrentProfile
+} from '../../reducers/settingsSlice';
+import { selectPid } from '../../reducers/connectionSlice';
 
-export const MainPage = ({ showDrawer, connection, settings }) => {
-    const [connectedText, setConnectedText] = useState('Disconnected');
-    const [swithStyle, setSwithStyle] = useState(
-        "linear-gradient(to right, #97AAAA, #97AAAA)"
-    );
-    const [login, setLogin] = useState('Account username');
-    const [serverName, setServerName] = useState('Server name')
-
-    useEffect(() => {
-        if (connection) {
-            setConnectedText('Connected');
-            setSwithStyle("linear-gradient(to right, #1ACEB8, #0BBFBA)");
-        } else {
-            setConnectedText('Disconnected');
-            setSwithStyle("linear-gradient(to right, #97AAAA, #5B6A6A)");
-        }
-    }, [connection]);
-
-    useEffect(() => {
-        setLogin(settings.profile.login);
-        setServerName(settings.server.name);
-    }, [settings]);
-
-    function onChange(checked) {
-        if (checked) {
-            ipcRenderer.send('connection-start', settings);
-        } else {
-            ipcRenderer.send('connection-stop', connection);
-        }
-    }
+export const MainPage = ({ showDrawer }) => {
+    const connection = useSelector(selectPid);
+    const login = useSelector(selectLogin);
+    const serverName = useSelector(selectServerName);
+    const profile = useSelector(selectCurrentProfile);
 
     return (
         <>
@@ -54,15 +37,20 @@ export const MainPage = ({ showDrawer, connection, settings }) => {
                     <div className="column-block column-content_block">
                         <div className="column-content_block-title">PRIVACY MODE</div>
                         <div className="column-content_block-check">
-                            <Switch
-                                onChange={onChange}
-                                checked={connection && true}
-                                className="switch"
-                                style={{
-                                    background: swithStyle,
-                                }}
-                            />
-                            <p>{connectedText}</p>
+                            <CSSTransition in={connection} timeout={360} classNames="switch">
+                                <Switch
+                                    onChange={checked => {
+                                        if (checked) {
+                                            ipcRenderer.send('connection-start', profile);
+                                        } else {
+                                            ipcRenderer.send('connection-stop', connection);
+                                        }
+                                    }}
+                                    checked={connection && true}
+                                    className="switch"
+                                />
+                            </CSSTransition>
+                            <p>{connection ? 'Connected' : 'Disconnected'}</p>
                         </div>
                         <div className="column-content_block-text">
                             <p>{login}</p>

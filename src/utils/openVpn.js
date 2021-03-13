@@ -1,4 +1,4 @@
-const { settingsPath } = require('../settings/settings');
+const { settingsPath } = require('./constants');
 const fs = require('fs');
 
 const isDev = process.env.ELECTRON_ENV === 'Dev'
@@ -23,18 +23,23 @@ const escapeSpaces = (value) => {
 
 exports.runOpenVpn = options => {
     isDev && console.log(options);
+
+    fs.writeFileSync(
+        settingsPath.profile,
+        `${options.credentials.login}\n${options.credentials.password}`);
+
     var proc = require('child_process')
         .execFile(
             escapeSpaces(getOpenVpnExePath()),
             [
                 `--config\ ${escapeSpaces(settingsPath.ovpn)}`,
-                `--remote\ ${options.server.host}\ ${options.port}`,
-                `--proto\ ${options.protocol.toLowerCase() === 'tcp' ? 'tcp' : 'udp'}`,
+                `--remote\ ${options.server.host}\ ${options.details.port}`,
+                `--proto\ ${options.details.protocol.toLowerCase() === 'tcp' ? 'tcp' : 'udp'}`,
                 `--auth-user-pass\ ${escapeSpaces(settingsPath.profile)}`,
-                options.dns.addresses && '--redirect-gateway\ def1',
-                options.dns.addresses && Array.from(options.dns.addresses,
+                options.details.dns.value && '--redirect-gateway\ def1',
+                options.details.dns.value && Array.from(options.details.dns.value,
                     addr => `--dhcp-option\ DNS\ ${addr}`).join(' '),
-                options.mtu && `--mssfix\n ${'' + options.mtu}`
+                options.details.mtu?.value && `--mssfix\n ${'' + options.details.mtu.value}`
             ],
             { shell: true });
 

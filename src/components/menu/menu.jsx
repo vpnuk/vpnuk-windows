@@ -1,61 +1,61 @@
-import React, { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { RHFInput } from 'react-hook-form-input';
+import { ipcRenderer } from 'electron';
+import React from 'react';
+import { useSelector, useDispatch, connect } from 'react-redux';
 import Select from 'react-select';
 import { Profile } from '../profile/profile';
-import { findByLabelOrFirst } from '../../helpers/utils';
-import { optionsConnectionType } from '../../settings/constants';
+import { optionsConnectionType } from '../../utils/constants';
+import {
+    selectConnectionType,
+    setConnectionType,
+    selectCurrentProfile,
+    selectProfilesAvailable,
+    setCurrentProfile
+} from '../../reducers/settingsSlice';
+import { selectPid } from '../../reducers/connectionSlice';
+import './menu.css';
 
-import { _emptySettings as settings } from '../../settings/settings';
+export const Menu = () => {
+    const dispatch = useDispatch();
 
-//{connection, commonSettings, settings, setSettings}
-export const Menu = ({ commonSettings }) => {
-    const { handleSubmit, register, setValue } = useForm();
-    const [connectionType, setConnectionType] = useState(
-        findByLabelOrFirst(optionsConnectionType, settings.currentType));
-    // todo: 0 -> currentProfile or empty one
-    const [profile, setProfile] = useState(settings.profiles[settings.currentType][0]);
+    const connection = useSelector(selectPid);
+    const connectionType = useSelector(selectConnectionType);
+    const profiles = useSelector(selectProfilesAvailable);
+    const profile = useSelector(selectCurrentProfile);
 
-    var currentProfile = settings.profiles[settings.currentType][0];
-
-    useEffect(() => {
-        setConnectionType(optionsConnectionType);
-        setProfile(settings.profiles['OpenVpn']);
-    }, []);
-
-    // todo: make changes on select value change
-    const printHandler = data => {
-        console.log(data);
+    const printHandler = () => {
+        console.log(connectionType, profile, connection);
     }
 
     // todo: profile add new option/button
     return (
-        <form onSubmit={handleSubmit(printHandler)}>
+        <>
             <div className="form-titles">Connection Type</div>
-            <RHFInput
-                as={<Select options={connectionType} />}
+            <Select
                 name="connectionType"
-                register={register}
-                setValue={setValue}
                 className="form-select"
-                defaultValue={connectionType}
-            />
+                options={optionsConnectionType}
+                defaultValue={optionsConnectionType.find(oct => oct.value === connectionType.value)}
+                onChange={value => dispatch(setConnectionType(value))} />
             <div className="form-titles">Profile</div>
-            <RHFInput
-                as={<Select options={profile} />}
+            <Select
                 name="profile"
-                register={register}
-                setValue={setValue}
                 className="form-select"
-                defaultValue={profile}
-            />
-            <Profile
-                profile={currentProfile}
-                setProfile={setProfile}
-                commonSettings={commonSettings} />
-            <button
-                className="form-button"
-            >Print</button>
-        </form>
+                options={profiles}
+                value={profile}
+                onChange={value => dispatch(setCurrentProfile(value.id))} />
+            <Profile />
+            <button className="form-button" onClick={() => {
+                if (connection) {
+                    ipcRenderer.send('connection-stop', connection);
+                }
+                else {
+                    ipcRenderer.send('connection-start',
+                        profiles.find(p => p.id === profile.id));
+                }
+            }}>
+                {connection ? 'Disconnect' : 'Connect'}
+            </button>
+            <button className="form-button" onClick={() => printHandler()}>Print</button>
+        </>
     );
 };
