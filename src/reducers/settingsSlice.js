@@ -1,19 +1,26 @@
 import { createSlice } from '@reduxjs/toolkit';
+import { v4 as uuid } from 'uuid';
 
-const _emptyProfile = {
-    type: 'OpenVPN',
-    id: '0',
-    label: 'Default',
-    credentials: {
+class Profile {
+    constructor(
+        type = 'OpenVPN',
+        label = 'New profile',
+        id = uuid()
+    ) {
+        this.type = type;
+        this.label = label ?? 'New profile';
+        this.id = id;
+    }
+    credentials = {
         login: '',
         password: ''
-    },
-    server: {
+    };
+    server = {
         host: '',
         label: '',
         type: 'shared'
-    },
-    details: {
+    };
+    details = {
         port: '1194',
         protocol: 'UDP',
         dns: { label: 'No DNS' }, // value: []
@@ -25,12 +32,18 @@ const _currentProfile = settings =>
     settings.profiles
         .find(p => p.id === settings.currentProfile);
 
+const _profilesAvailable = settings =>
+    settings.profiles
+        .filter(p => p.type === settings.connectionType.value);;
+
+const defaultId = uuid();
+
 export const settingsSlice = createSlice({
     name: 'settings',
     initialState: {
         connectionType: { value: 'OpenVPN', label: 'OpenVPN' },
-        profiles: [_emptyProfile],
-        currentProfile: '0'
+        profiles: [new Profile('OpenVPN', 'Default', defaultId)],
+        currentProfile: defaultId
     },
     reducers: {
         increment: state => {
@@ -44,6 +57,26 @@ export const settingsSlice = createSlice({
         },
         setProfileName: (state, action) => {
             _currentProfile(state).label = action.payload;
+        },
+        addProfile: (state, action) => {
+            var profile = new Profile(
+                state.connectionType.value,
+                action.payload
+            );
+            state.profiles = [
+                ...state.profiles,
+                profile
+            ];
+            state.currentProfile = profile.id;
+        },
+        deleteProfile: (state, action) => {
+            var newProfiles = state.profiles.filter(p =>
+                p.id !== action.payload);
+            state.profiles = newProfiles?.length
+                ? newProfiles // not empty
+                : [new Profile(state.connectionType.value, 'Default')];
+            var available = _profilesAvailable(state);
+            state.currentProfile = available[available.length - 1].id;
         },
         setLogin: (state, action) => {
             _currentProfile(state).credentials.login = action.payload;
@@ -74,6 +107,8 @@ export const {
     setConnectionType,
     setCurrentProfile,
     setProfileName,
+    addProfile,
+    deleteProfile,
     setLogin,
     setPassword,
     setServer,
@@ -87,11 +122,10 @@ export const selectConnectionType = state =>
     state.settings.connectionType;
 
 export const selectCurrentProfile = state =>
-    _currentProfile(state.settings) ?? _emptyProfile;
+    _currentProfile(state.settings) ?? new Profile();
 
 export const selectProfilesAvailable = state =>
-    state.settings.profiles
-        .filter(p => p.type === state.settings.connectionType.value);
+    _profilesAvailable(state.settings);
 
 export const selectServer = state =>
     selectCurrentProfile(state).server;

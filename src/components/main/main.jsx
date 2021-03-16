@@ -37,7 +37,7 @@ export const MainPage = ({ showDrawer }) => {
                     <div className="column-block column-content_block">
                         <div className="column-content_block-title">PRIVACY MODE</div>
                         <div className="column-content_block-check">
-                            <CSSTransition in={connection} timeout={360} classNames="switch">
+                            <CSSTransition in={connection && true} timeout={360} classNames="switch">
                                 <Switch
                                     onChange={checked => {
                                         if (checked) {

@@ -7,15 +7,16 @@ import {
     selectCurrentProfile,
     setProfileName,
     setLogin,
-    setPassword
+    setPassword,
+    deleteProfile
 } from '../../reducers/settingsSlice';
 
 export const Profile = () => {
     const dispatch = useDispatch();
     const profile = useSelector(selectCurrentProfile);
-    
+
     const [showMore, setShowMore] = useState(false);
-    
+
     return (
         <>
             <div className="form-profile-block">
@@ -26,6 +27,12 @@ export const Profile = () => {
                         value={profile.label}
                         onChange={e => dispatch(setProfileName(e.target.value))}
                     />
+                    <button
+                        className="form-button"
+                        onClick={() => dispatch(deleteProfile(profile.id))}
+                    >
+                        Delete
+                    </button>
                     <div className="form-titles">Credentials</div>
                     <input
                         name="login"

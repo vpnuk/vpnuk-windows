@@ -71,6 +71,7 @@
     border-color: #97aaaa;
     margin-bottom: 10px;
     transition: background-color 0.18s linear;
+    background-image: linear-gradient(to right, #97AAAA80, #5B6A6A);
 }
 .switch::after {
     width: 84px;

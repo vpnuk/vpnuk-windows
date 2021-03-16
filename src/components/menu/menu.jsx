@@ -1,7 +1,8 @@
 import { ipcRenderer } from 'electron';
 import React from 'react';
-import { useSelector, useDispatch, connect } from 'react-redux';
-import Select from 'react-select';
+import { useSelector, useDispatch } from 'react-redux';
+import Select from 'react-select'
+import CreatableSelect from "react-select/creatable";
 import { Profile } from '../profile/profile';
 import { optionsConnectionType } from '../../utils/constants';
 import {
@@ -9,10 +10,12 @@ import {
     setConnectionType,
     selectCurrentProfile,
     selectProfilesAvailable,
-    setCurrentProfile
+    setCurrentProfile,
+    addProfile
 } from '../../reducers/settingsSlice';
 import { selectPid } from '../../reducers/connectionSlice';
 import './menu.css';
+import { isDev } from '../../app';
 
 export const Menu = () => {
     const dispatch = useDispatch();
@@ -22,11 +25,6 @@ export const Menu = () => {
     const profiles = useSelector(selectProfilesAvailable);
     const profile = useSelector(selectCurrentProfile);
 
-    const printHandler = () => {
-        console.log(connectionType, profile, connection);
-    }
-
-    // todo: profile add new option/button
     return (
         <>
             <div className="form-titles">Connection Type</div>
@@ -37,12 +35,14 @@ export const Menu = () => {
                 defaultValue={optionsConnectionType.find(oct => oct.value === connectionType.value)}
                 onChange={value => dispatch(setConnectionType(value))} />
             <div className="form-titles">Profile</div>
-            <Select
+            <CreatableSelect
                 name="profile"
                 className="form-select"
                 options={profiles}
+                getOptionValue={option => option.label}
                 value={profile}
-                onChange={value => dispatch(setCurrentProfile(value.id))} />
+                onChange={value => dispatch(setCurrentProfile(value.id))}
+                onCreateOption={label => dispatch(addProfile(label))} />
             <Profile />
             <button className="form-button" onClick={() => {
                 if (connection) {
@@ -55,7 +55,8 @@ export const Menu = () => {
             }}>
                 {connection ? 'Disconnect' : 'Connect'}
             </button>
-            <button className="form-button" onClick={() => printHandler()}>Print</button>
+            {isDev && <button className="form-button" onClick={() =>
+                console.log(connectionType, profile, connection)}>Print</button>}
         </>
     );
 };

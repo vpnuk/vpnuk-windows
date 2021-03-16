@@ -38,6 +38,9 @@
     z-index: 1000;
     margin-top: -45px;
 }
+.form-select > div:first-of-type > div:first-of-type {
+    padding-left: 18px;
+}
 .form-select > div div div {
     color: #fff;
 }
