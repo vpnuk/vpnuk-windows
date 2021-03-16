@@ -1,5 +1,5 @@
 import { ipcRenderer } from 'electron';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import Select from 'react-select'
 import CreatableSelect from "react-select/creatable";
@@ -14,6 +14,7 @@ import {
     addProfile
 } from '../../reducers/settingsSlice';
 import { selectPid } from '../../reducers/connectionSlice';
+import {annotateItemLabel} from '../../utils/visual';
 import './menu.css';
 import { isDev } from '../../app';
 
@@ -24,6 +25,11 @@ export const Menu = () => {
     const connectionType = useSelector(selectConnectionType);
     const profiles = useSelector(selectProfilesAvailable);
     const profile = useSelector(selectCurrentProfile);
+    const [connectionTypes, setConnectionTypes] = useState([]);
+
+    useEffect(() => {
+        setConnectionTypes(annotateItemLabel(optionsConnectionType, '(Coming soon)'));
+    }, []);
 
     return (
         <>
@@ -31,9 +37,9 @@ export const Menu = () => {
             <Select
                 name="connectionType"
                 className="form-select"
-                options={optionsConnectionType}
-                defaultValue={optionsConnectionType.find(oct => oct.value === connectionType.value)}
-                onChange={value => dispatch(setConnectionType(value))} />
+                options={connectionTypes}
+                defaultValue={connectionTypes.find(oct => oct.value === connectionType)}
+                onChange={option => dispatch(setConnectionType(option.value))} />
             <div className="form-titles">Profile</div>
             <CreatableSelect
                 name="profile"

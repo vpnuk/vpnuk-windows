@@ -1,11 +1,12 @@
-exports.optionsConnectionType = [
+const optionsConnectionType = [
     { value: 'OpenVPN', label: 'OpenVPN' },
-    { value: 'IKEv2', label: 'IKEv2' },
-    { value: 'L2TP', label: 'L2TP' },
-    { value: 'PPTP', label: 'PPTP' },
-    { value: 'WireGuard', label: 'WireGuard' },
-    { value: 'OpenConnect', label: 'OpenConnect' },
+    { value: 'IKEv2', label: 'IKEv2', isDisabled: true },
+    { value: 'L2TP', label: 'L2TP', isDisabled: true },
+    { value: 'PPTP', label: 'PPTP', isDisabled: true },
+    { value: 'WireGuard', label: 'WireGuard', isDisabled: true },
+    { value: 'OpenConnect', label: 'OpenConnect', isDisabled: true }
 ];
+exports.optionsConnectionType = optionsConnectionType;
 
 exports.optionsMtu = [
     { value: '1500', label: 'MTU: 1500' },

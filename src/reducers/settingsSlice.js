@@ -34,14 +34,14 @@ const _currentProfile = settings =>
 
 const _profilesAvailable = settings =>
     settings.profiles
-        .filter(p => p.type === settings.connectionType.value);;
+        .filter(p => p.type === settings.connectionType);;
 
 const defaultId = uuid();
 
 export const settingsSlice = createSlice({
     name: 'settings',
     initialState: {
-        connectionType: { value: 'OpenVPN', label: 'OpenVPN' },
+        connectionType: 'OpenVPN',
         profiles: [new Profile('OpenVPN', 'Default', defaultId)],
         currentProfile: defaultId
     },
@@ -60,7 +60,7 @@ export const settingsSlice = createSlice({
         },
         addProfile: (state, action) => {
             var profile = new Profile(
-                state.connectionType.value,
+                state.connectionType,
                 action.payload
             );
             state.profiles = [
@@ -74,7 +74,7 @@ export const settingsSlice = createSlice({
                 p.id !== action.payload);
             state.profiles = newProfiles?.length
                 ? newProfiles // not empty
-                : [new Profile(state.connectionType.value, 'Default')];
+                : [new Profile(state.connectionType, 'Default')];
             var available = _profilesAvailable(state);
             state.currentProfile = available[available.length - 1].id;
         },
