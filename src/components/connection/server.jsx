@@ -8,6 +8,7 @@ import {
     setServer
 } from '../../reducers/settingsSlice';
 import { selectServerCatalog } from '../../reducers/catalogSlice';
+import { selectOptionColors } from '../../utils/visual';
 
 export const Server = () => {
     const dispatch = useDispatch();
@@ -57,6 +58,7 @@ export const Server = () => {
             <Select
                 name="server"
                 className="form-select"
+                styles={selectOptionColors}
                 options={serverCatalog}
                 value={selectedServer}
                 getOptionValue={option => option.label}

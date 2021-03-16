@@ -14,7 +14,7 @@ import {
     addProfile
 } from '../../reducers/settingsSlice';
 import { selectPid } from '../../reducers/connectionSlice';
-import {annotateItemLabel} from '../../utils/visual';
+import { annotateItemLabel, selectOptionColors } from '../../utils/visual';
 import './menu.css';
 import { isDev } from '../../app';
 
@@ -37,6 +37,7 @@ export const Menu = () => {
             <Select
                 name="connectionType"
                 className="form-select"
+                styles={selectOptionColors}
                 options={connectionTypes}
                 defaultValue={connectionTypes.find(oct => oct.value === connectionType)}
                 onChange={option => dispatch(setConnectionType(option.value))} />
@@ -44,6 +45,7 @@ export const Menu = () => {
             <CreatableSelect
                 name="profile"
                 className="form-select"
+                styles={selectOptionColors}
                 options={profiles}
                 getOptionValue={option => option.label}
                 value={profile}

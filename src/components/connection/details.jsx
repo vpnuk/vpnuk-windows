@@ -13,6 +13,7 @@ import {
     setMtu
 } from '../../reducers/settingsSlice';
 import { optionsMtu, protoAndPorts } from '../../utils/constants';
+import { selectOptionColors } from '../../utils/visual';
 
 export const ConnectionDetails = () => {
     const dispatch = useDispatch();
@@ -30,12 +31,14 @@ export const ConnectionDetails = () => {
             <Select
                 name="dns"
                 className="form-select"
+                styles={selectOptionColors}
                 options={dnsCatalog}
                 defaultValue={dnsCatalog.find(v => v.label === details.dns.label)}
                 onChange={value => dispatch(setDns(value))} />
             <Select
                 name="mtu"
                 className="form-select"
+                styles={selectOptionColors}
                 options={optionsMtu}
                 defaultValue={optionsMtu.find(v => v.value === details.mtu.value)}
                 onChange={value => dispatch(setMtu(value))} />

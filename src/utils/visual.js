@@ -11,3 +11,21 @@ const annotateItemLabel = (items, annotation) => items.map(item => {
     return newItem;
 });
 exports.annotateItemLabel = annotateItemLabel;
+
+const selectOptionColors = {
+    option: (provided, state) => ({
+        ...provided,
+        backgroundColor:
+            state.isFocused
+                ? '#0BBFBA'
+                : state.isSelected
+                    ? '#5B6A6A'
+                    : null
+    }),
+    control: (provided, state) => ({
+        ...provided,
+        'box-shadow': state.isFocused ? '0 0 0 1px #0BBFBA' : null,
+        width: 200,
+    }),
+};
+exports.selectOptionColors = selectOptionColors;
