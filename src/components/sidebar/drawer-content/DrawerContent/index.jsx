@@ -38,7 +38,7 @@ export const DrawerContent = ({ connection, commonSettings, settings, setSetting
         findByLabelOrFirst(commonSettings.servers.dedicated, settings.server.name));
     const [dedicated11, setDedicated11] = useState(
         findByLabelOrFirst(commonSettings.servers.dedicated11, settings.server.name));
-    
+
     const handleProfileListChange = (e, index) => {
         const { name, value } = e.target;
         const list = [...profileList];
@@ -86,9 +86,8 @@ export const DrawerContent = ({ connection, commonSettings, settings, setSetting
 
     const saveButtonHandler = () => {
         settings.profile = profileList[0];
-        // JS clone object be like
-        setSettings(JSON.parse(JSON.stringify(settings, undefined, 2)));
-        saveProfile(profileList[0]);
+        //setSettings(copyObject(settings));
+        saveProfileSync(profileList[0]);
     }
 
     const onChangeRadio = e => {
@@ -102,7 +101,7 @@ export const DrawerContent = ({ connection, commonSettings, settings, setSetting
     }
 
     const handleConnect = data => {
-        const { isDev } = require('../../../../App');
+        const { isDev } = require('../../../../app');
         isDev && console.log('handleConnect', data);
         var newSettings = {
             connectionType: data.connectionType.value,
@@ -122,14 +121,14 @@ export const DrawerContent = ({ connection, commonSettings, settings, setSetting
         };
         isDev && console.log('handleConnect', newSettings);
         setSettings(newSettings);
-        
-        saveProfile(newSettings.profile);
+
+        saveProfileSync(newSettings.profile);
         ipcRenderer.send('connection-start', newSettings);
-        
+
         fs.writeFile(
             settingsPath.settings,
             JSON.stringify(newSettings, undefined, 2),
-            'utf8', _ => {}
+            'utf8', _ => { }
         );
     }
 
@@ -238,7 +237,7 @@ export const DrawerContent = ({ connection, commonSettings, settings, setSetting
     );
 };
 
-const saveProfile = profile => {
+const saveProfileSync = profile => {
     fs.writeFileSync(
         settingsPath.profile,
         `${profile.login}\n${profile.password}`);

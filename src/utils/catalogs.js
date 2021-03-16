@@ -1,5 +1,6 @@
 const axios = require('axios');
 const fs = require('fs');
+const { settingsPath } = require('./constants');
 
 const baseAddress = 'https://www.serverlistvault.com/';
 const settingsLink = {
@@ -9,21 +10,6 @@ const settingsLink = {
     ovpn: baseAddress + 'openvpn-configuration.ovpn',
     ovpnObfucation: baseAddress + 'openvpn-obfuscation-configuration.ovpn'
 }
-
-const path = require('path');
-// This folder should be created during the installation process
-const settingsFolder = path.resolve(require('process').env.APPDATA + '\\VPNUK');
-const settingsPath = {
-    folder: settingsFolder,
-    versions: path.join(settingsFolder, 'versions.json'),
-    dns: path.join(settingsFolder, 'dns.json'),
-    servers: path.join(settingsFolder, 'servers.json'),
-    ovpn: path.join(settingsFolder, 'openvpn-configuration.ovpn'),
-    ovpnObfucation: path.join(settingsFolder, 'openvpn-obfuscation-configuration.ovpn'),
-    profile: path.join(settingsFolder, 'profile.txt'),
-    settings: path.join(settingsFolder, 'settings.json'),
-};
-exports.settingsPath = settingsPath;
 
 const dowloadOvpnConfig = (link, filePath) =>
     axios
@@ -55,8 +41,8 @@ const dowloadJson = (link, filePath) =>
             console.log('error', error);
         });
 
-const handlerServerDnsStructure = (arr) => [
-    { value: null, label: 'No DNS' },
+const handlerServerDnsStructure = arr => [
+    { value: [], label: 'No DNS' },
     ...arr.map(dnsItem => ({
         label: dnsItem.name,
         value: [dnsItem.primary, dnsItem.secondary]
@@ -69,11 +55,12 @@ const handlerServerTypesStructure = (arr, types) =>
             .filter(server => server.type === type)
             .map(server => ({
                 label: server.location.name,
-                value: server.address
+                host: server.address,
+                type: server.type
             }))
     })));
 
-exports.initializeSettings = () => {
+exports.initializeCatalogs = () => {
     if (!fs.existsSync(settingsPath.folder)) {
         fs.mkdirSync(settingsPath.folder);
     };
@@ -83,13 +70,13 @@ exports.initializeSettings = () => {
         : null;
 
     return axios.get(settingsLink.versions)
-        .then((response) => {
+        .then(response => {
             return response.data;
         })
-        .catch((error) => {
+        .catch(error => {
             console.log('error', error);
         })
-        .then((newVers) => {
+        .then(newVers => {
             if (!oldVers && newVers) {
                 fs.writeFileSync(settingsPath.versions, JSON.stringify(newVers, undefined, 2));
             }
@@ -112,7 +99,7 @@ exports.initializeSettings = () => {
                 JSON.parse(fs.readFileSync(settingsPath.dns)),
                 JSON.parse(fs.readFileSync(settingsPath.servers))]);
         })
-        .then((result) => {
+        .then(result => {
             return {
                 dns: handlerServerDnsStructure(result[0].dns),
                 servers: handlerServerTypesStructure(result[1].servers,
@@ -120,24 +107,3 @@ exports.initializeSettings = () => {
             }
         });
 };
-
-const emptySettings = {
-    connectionType: 'OpenVPN',
-    protocol: '',
-    port: '',
-    server: {
-        host: '',
-        name: '',
-        type: ''
-    },
-    dns: {
-        name: '',
-        addresses: null
-    },
-    mtu: '',
-    profile: {
-        login: '',
-        password: ''
-    }
-};
-exports.emptySettings = emptySettings;

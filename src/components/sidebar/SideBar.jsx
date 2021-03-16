@@ -1,31 +1,36 @@
-import React from "react";
-import { Drawer } from "antd";
-import { HeaderContent } from "./drawer-content/DrawerContent/Header/index";
-import { DrawerContent } from "./drawer-content/DrawerContent/index";
-import "./SideBar.css";
+import React from 'react';
+import { Drawer } from 'antd';
+import './sidebar.css';
+import SettingsImage from '../../assets/settings.png';
+import { Menu } from '../menu/menu';
 
-export const SideBar = ({ visible, setVisible, connection, commonSettings, settings, setSettings }) => {
-    const onClose = () => {
-        setVisible(false);
-    };
+export const Sidebar = ({ visible, setVisible, connection }) => {
+
+    const onClose = () => setVisible(false);
 
     return (
-        <>
-            <Drawer
-                title={<HeaderContent />}
-                placement="left"
-                onClose={onClose}
-                visible={visible}
-                width={522}
-                closable
-                headerStyle={{ background: "#000000" }}
-                drawerStyle={{ background: "#000000" }}>
-                <DrawerContent
-                    connection={connection}
-                    commonSettings={commonSettings}
-                    settings={settings}
-                    setSettings={setSettings} />
-            </Drawer>
-        </>
+        <Drawer
+            title={<SettingsTitle />}
+            placement="left"
+            onClose={onClose}
+            visible={visible}
+            width={522}
+            closable
+            headerStyle={{ background: "#000000" }}
+            drawerStyle={{ background: "#000000" }}>
+
+            <Menu />
+        </Drawer>
+    );
+};
+
+const SettingsTitle = () => {
+    return (
+        <div className="settings-button-modal">
+            <img alt="settings-icon" src={`${SettingsImage}`} />
+            <div>
+                <p>Settings</p>
+            </div>
+        </div>
     );
 };
