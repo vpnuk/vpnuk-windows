@@ -1,3 +1,4 @@
+import { ipcRenderer } from 'electron';
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import Select from 'react-select';
@@ -15,7 +16,6 @@ import {
 } from '../../reducers/settingsSlice';
 import { optionsMtu, protoAndPorts } from '../../utils/constants';
 import { selectOptionColors } from '../../utils/visual';
-import { openLogFileExternal } from '../../utils/logs';
 
 export const ConnectionDetails = () => {
     const dispatch = useDispatch();
@@ -33,10 +33,7 @@ export const ConnectionDetails = () => {
             </Checkbox>
             <div
                 className="form-show-more-connection-log"
-                onClick={() => {
-                    console.log('onclick', profileId);
-                    openLogFileExternal(profileId);
-                }}
+                onClick={() => ipcRenderer.send('log-open', profileId)}
             >
                 View the connection log
             </div>

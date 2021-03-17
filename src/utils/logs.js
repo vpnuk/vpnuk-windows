@@ -18,9 +18,29 @@ const getLogFileStream = id => {
 exports.getLogFileStream = getLogFileStream;
 
 const openLogFileExternal = id => {
+    const logPath = getLogPath(id);
+
+    if (!fs.existsSync(logPath) || !fs.lstatSync(logPath).isFile()) {
+        throw new Error('No log file exists.');
+    }
+
     var proc = require('child_process')
-        .execFile('start', [getLogPath(id)]);
-    isDev && console.log(proc.spawnargs);
+        .execFile('explorer', [logPath]);
+
+    if (isDev) {
+        console.log(proc.spawnargs);
+
+        proc.stdout.on('data', data => {
+            console.log(data);
+        });
+        proc.stderr.on('data', data => {
+            console.log(data);
+        });
+        proc.on('close', code => {
+            console.log(code);
+        });
+    }
+
     return proc;
 }
 exports.openLogFileExternal = openLogFileExternal;

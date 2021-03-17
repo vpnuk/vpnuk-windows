@@ -1,8 +1,17 @@
 const { BrowserWindow, dialog, ipcMain, Menu } = require('electron');
 const { runOpenVpn, killWindowsProcess } = require('./src/utils/openVpn');
-const { getLogFileStream } = require('./src/utils/logs');
+const { getLogFileStream, openLogFileExternal } = require('./src/utils/logs');
 
 const isDev = process.env.ELECTRON_ENV === 'Dev';
+
+const showMessageBoxOnError = (error, title = 'Error') => {
+    isDev && console.error(error);
+    console.log(dialog.showMessageBoxSync({
+        type: 'error',
+        title: title,
+        message: error.message
+    }));
+}
 
 ipcMain.on('connection-start', (event, profile) => {
     isDev && console.log('connection-start event');
@@ -18,14 +27,7 @@ ipcMain.on('connection-start', (event, profile) => {
                 event.sender.send('connection-stopped', code);
             });
     } catch (error) {
-        isDev && console.error(error);
-        if (error.message === 'No OpenVPN found') {
-            console.log(dialog.showMessageBoxSync({
-                type: 'error',
-                title: 'Error',
-                message: 'OpenVPN is not installed.'
-            }));
-        }
+        showMessageBoxOnError(error, 'Error starting connection');
     }
     isDev && console.log(newConnection.pid, newConnection.exitCode);
     newConnection && event.sender.send('connection-started', newConnection.pid);
@@ -51,4 +53,13 @@ ipcMain.on('context-menu-show', (event, args) => {
         click: () => { window.inspectElement(args.x, args.y) }
     }])
     menu.popup(BrowserWindow.fromWebContents(event.sender))
+})
+
+ipcMain.on('log-open', (_, profileId) => {
+    try {
+        openLogFileExternal(profileId);
+    }
+    catch (error) {
+        showMessageBoxOnError(error, 'Error opening log file');
+    }
 })

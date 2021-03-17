@@ -14,7 +14,7 @@ const getOpenVpnExePath = () => {
         return (isDev ? 'dev_' : '') + exePath;
     }
 
-    throw new Error('No OpenVPN found');
+    throw new Error('No OpenVPN found.');
 };
 
 const escapeSpaces = (value) => {
