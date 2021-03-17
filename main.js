@@ -3,6 +3,7 @@ const path = require('path');
 const url = require('url');
 const { runOpenVpn, killWindowsProcess, killWindowsProcessSync } =
     require('./src/utils/openVpn')
+const { getLogFileStream } = require('./src/utils/logs');
 const ElectronStore = require('electron-store');
 ElectronStore.initRenderer();
 
@@ -60,11 +61,19 @@ app.on('activate', () => {
     }
 });
 
-ipcMain.on('connection-start', (event, arg) => {
+ipcMain.on('connection-start', (event, profile) => {
     isDev && console.log('connection-start event');
+    // todo: validate arg (Profile);
     var newConnection;
     try {
-        newConnection = runOpenVpn(arg);
+        var stream = getLogFileStream(profile.id);
+        // onError => exception
+        newConnection = runOpenVpn(profile, stream, stream,
+            code => {
+                stream.end();
+                isDev && console.log(`ovpn exited with code ${code}`);
+                event.sender.send('connection-stopped', code);
+            });
     } catch (error) {
         isDev && console.error(error);
         if (error.message === 'No OpenVPN found') {

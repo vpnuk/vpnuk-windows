@@ -1,7 +1,7 @@
 const { settingsPath } = require('./constants');
 const fs = require('fs');
 
-const isDev = process.env.ELECTRON_ENV === 'Dev'
+const isDev = process.env.ELECTRON_ENV === 'Dev';
 
 const getOpenVpnExePath = () => {
     var exeKey = '' + require('child_process')
@@ -21,7 +21,20 @@ const escapeSpaces = (value) => {
     return value.replace(' ', '\"\ \"');
 };
 
-exports.runOpenVpn = options => {
+exports.runOpenVpn = (
+    options,
+    outStream = process.stdout,
+    errStream = process.stderr,
+    onExitHandler = code => {
+        isDev && console.log(`ovpn exited with code ${code}`);
+    },
+    onErrorHandler = errData => {
+        isDev && console.log(`ovpn-error: ${errData}`);
+    },
+    onDataHandler = data => {
+        isDev && console.log(`ovpn-out: ${data}`);
+    }
+) => {
     isDev && console.log(options);
 
     fs.writeFileSync(
@@ -45,15 +58,11 @@ exports.runOpenVpn = options => {
 
     isDev && console.log(proc.spawnargs);
 
-    proc.stdout.on('data', (data) => {
-        console.log(`ovpn-out: ${data}`);
-    });
-    proc.stderr.on('data', (data) => {
-        console.log(`ovpn-error: ${data}`);
-    });
-    proc.on('close', (code) => {
-        console.log(`ovpn exited with code ${code}`);
-    });
+    proc.stdout.pipe(outStream);
+    proc.stderr.pipe(errStream);
+    proc.stdout.on('data', onDataHandler);
+    proc.stderr.on('data', onErrorHandler);        
+    proc.on('close', onExitHandler);
 
     return proc;
 };
