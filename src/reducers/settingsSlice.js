@@ -122,7 +122,7 @@ export const selectConnectionType = state =>
     state.settings.connectionType;
 
 export const selectCurrentProfile = state =>
-    _currentProfile(state.settings) ?? new Profile();
+    _currentProfile(state.settings);
 
 export const selectProfilesAvailable = state =>
     _profilesAvailable(state.settings);

@@ -4,7 +4,7 @@ import './sidebar.css';
 import SettingsImage from '../../assets/settings.png';
 import { Menu } from '../menu/menu';
 
-export const Sidebar = ({ visible, setVisible, connection }) => {
+export const Sidebar = ({ visible, setVisible }) => {
 
     const onClose = () => setVisible(false);
 

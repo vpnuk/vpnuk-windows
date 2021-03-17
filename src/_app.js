@@ -64,7 +64,7 @@ ipcRenderer.on('connection-stopped', (_, arg) => {
 window.addEventListener('contextmenu', event => {
     if (isDev) {
         event.preventDefault();
-        ipcRenderer.send('show-context-menu', { x: event.x, y: event.y });
+        ipcRenderer.send('context-menu-show', { x: event.x, y: event.y });
     }
 });
 

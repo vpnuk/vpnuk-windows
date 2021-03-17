@@ -10,15 +10,18 @@ import {
     setPort,
     setProtocol,
     setDns,
-    setMtu
+    setMtu,
+    selectCurrentProfile
 } from '../../reducers/settingsSlice';
 import { optionsMtu, protoAndPorts } from '../../utils/constants';
 import { selectOptionColors } from '../../utils/visual';
+import { openLogFileExternal } from '../../utils/logs';
 
 export const ConnectionDetails = () => {
     const dispatch = useDispatch();
     const dnsCatalog = useSelector(selectDnsCalalog);
     const details = useSelector(selectDetails);
+    const profileId = useSelector(selectCurrentProfile).id;
 
     return (
         <>
@@ -28,6 +31,15 @@ export const ConnectionDetails = () => {
             >
                 Kill Switch
             </Checkbox>
+            <div
+                className="form-show-more-connection-log"
+                onClick={() => {
+                    console.log('onclick', profileId);
+                    openLogFileExternal(profileId);
+                }}
+            >
+                View the connection log
+            </div>
             <Select
                 name="dns"
                 className="form-select"
@@ -60,7 +72,7 @@ export const ConnectionDetails = () => {
                     onChange={e => dispatch(setPort(e.target.value))}
                     defaultValue={details.port}
                 >
-                    {protoAndPorts.find(pp => pp.label === details.protocol).ports.map(port => 
+                    {protoAndPorts.find(pp => pp.label === details.protocol).ports.map(port =>
                         <Radio.Button key={port} value={port} checked={port === details.port}>
                             {port}
                         </Radio.Button>)}

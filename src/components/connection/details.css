@@ -31,3 +31,14 @@
 .ant-checkbox-input:focus + .ant-checkbox-inner {
     border-color: #fff;
 }
+
+.form-show-more-connection-log {
+    font-style: normal;
+    font-weight: normal;
+    font-size: 16px;
+    line-height: 19px;
+    text-decoration-line: underline;
+    color: #ffffff;
+    margin: 10px 0px;
+  }
+  
