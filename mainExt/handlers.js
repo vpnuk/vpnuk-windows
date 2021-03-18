@@ -1,8 +1,7 @@
 const { BrowserWindow, dialog, ipcMain, Menu } = require('electron');
-const { runOpenVpn, killWindowsProcess } = require('./src/utils/openVpn');
-const { getLogFileStream, openLogFileExternal } = require('./src/utils/logs');
-
-const isDev = process.env.ELECTRON_ENV === 'Dev';
+const { runOpenVpn, killWindowsProcess } = require('../src/utils/openVpn');
+const { getLogFileStream, openLogFileExternal } = require('../src/utils/logs');
+const { isDev, setPid } = require('../main');
 
 const showMessageBoxOnError = (error, title = 'Error') => {
     isDev && console.error(error);
@@ -19,27 +18,38 @@ ipcMain.on('connection-start', (event, profile) => {
     var newConnection;
     try {
         var stream = getLogFileStream(profile.id);
-        // onError => exception
+        // ? onError => exception
         newConnection = runOpenVpn(profile, stream, stream,
             code => {
                 stream.end();
                 isDev && console.log(`ovpn exited with code ${code}`);
-                event.sender.send('connection-stopped', code);
+                connectionStopped(code, event);
             });
     } catch (error) {
         showMessageBoxOnError(error, 'Error starting connection');
     }
     isDev && console.log(newConnection.pid, newConnection.exitCode);
-    newConnection && event.sender.send('connection-started', newConnection.pid);
-    newConnection && (pid = newConnection.pid);
+    // todo: never null, have to handle "immediatly stopped" case
+    if (newConnection) {
+        const { tray } = require('../main');
+        event.sender.send('connection-started', newConnection.pid);
+        setPid(newConnection.pid);
+        tray.setEnabledState(`Connected to ${profile.server.label}`);
+    }
 });
+
+connectionStopped = (code, event) => {
+    const { tray } = require('../main');
+    event.sender.send('connection-stopped', code);
+    tray.setDisabledState('Disconnected');
+    setPid(null);
+}
 
 ipcMain.on('connection-stop', (event, arg) => {
     isDev && console.log('connection-stop event', arg);
     killWindowsProcess(arg, code => {
         isDev && console.log(`kill process PID=${arg} result=${code}`);
-        event.sender.send('connection-stopped', code);
-        pid = null;
+        connectionStopped(code, event);
     });
 });
 
@@ -48,12 +58,13 @@ ipcMain.on('is-dev-request', event => {
 });
 
 ipcMain.on('context-menu-show', (event, args) => {
+    const { window } = require('../main');
     const menu = Menu.buildFromTemplate([{
         label: 'Inspect Element',
         click: () => { window.inspectElement(args.x, args.y) }
     }])
     menu.popup(BrowserWindow.fromWebContents(event.sender))
-})
+});
 
 ipcMain.on('log-open', (_, profileId) => {
     try {
@@ -62,4 +73,4 @@ ipcMain.on('log-open', (_, profileId) => {
     catch (error) {
         showMessageBoxOnError(error, 'Error opening log file');
     }
-})
+});

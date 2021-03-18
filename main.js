@@ -4,9 +4,12 @@ const url = require('url');
 const { killWindowsProcessSync } = require('./src/utils/openVpn');
 const ElectronStore = require('electron-store');
 ElectronStore.initRenderer();
+const AppTray = require('./mainExt/tray');
 
-let window, pid;
+let window, pid, tray;
+
 const isDev = process.env.ELECTRON_ENV === 'Dev';
+exports.isDev = isDev;
 
 function createWindow() {
     window = new BrowserWindow({
@@ -19,6 +22,7 @@ function createWindow() {
             nodeIntegrationInWorker: true
         }
     });
+    exports.window = window;
 
     if (isDev) {
         window.loadURL('http://localhost:3000/');
@@ -45,7 +49,11 @@ function createWindow() {
     });
 }
 
-app.on('ready', createWindow);
+app.on('ready', () => {
+    createWindow();
+    tray = new AppTray(() => window.focus());
+    exports.tray = tray;
+});
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
@@ -59,4 +67,7 @@ app.on('activate', () => {
     }
 });
 
-require('./mainHandlers');
+const setPid = value => pid = value;
+exports.setPid = setPid;
+
+require('./mainExt/handlers');
