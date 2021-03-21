@@ -1,7 +1,12 @@
 const { BrowserWindow, dialog, ipcMain, Menu } = require('electron');
 const { runOpenVpn, killWindowsProcess } = require('../src/utils/openVpn');
 const { getLogFileStream, openLogFileExternal } = require('../src/utils/logs');
-const { getDefaultGatewaySync } = require('../src/utils/routing');
+const {
+    getDefaultGatewaySync,
+    defaultRoute,
+    addRouteSync,
+    deleteRouteSync
+} = require('../src/utils/routing');
 const { isDev, setPid } = require('../main');
 
 const showMessageBoxOnError = (error, title = 'Error') => {
@@ -13,18 +18,31 @@ const showMessageBoxOnError = (error, title = 'Error') => {
     }));
 }
 
-ipcMain.on('connection-start', (event, profile) => {
-    isDev && console.log('connection-start event');
+ipcMain.on('connection-start', (event, args) => {
+    isDev && console.log('connection-start event', args);
+    const { profile, gateway } = args;
     // todo: validate arg (Profile);
+
     var newConnection;
     try {
         var stream = getLogFileStream(profile.id);
+
+        if (profile.killSwitchEnabled && !isDev) {
+            deleteRouteSync(gateway, defaultRoute);
+            addRouteSync(profile.server.host, gateway);
+            isDev && console.log('kill switch UP');
+        }
+
         // ? onError => exception
         newConnection = runOpenVpn(profile, stream, stream,
             code => {
                 stream.end();
                 isDev && console.log(`ovpn exited with code ${code}`);
-                connectionStopped(code, event);
+                connectionStopped(code, event.sender,
+                    profile.killSwitchEnabled && !isDev && {
+                        host: profile.server.host,
+                        gateway
+                    });
             });
     } catch (error) {
         showMessageBoxOnError(error, 'Error starting connection');
@@ -39,20 +57,32 @@ ipcMain.on('connection-start', (event, profile) => {
     }
 });
 
-connectionStopped = (code, event) => {
-    const { tray } = require('../main');
-    event.sender.send('connection-stopped', code);
-    tray.setDisabledState('Disconnected');
-    setPid(null);
-}
-
-ipcMain.on('connection-stop', (event, arg) => {
-    isDev && console.log('connection-stop event', arg);
-    killWindowsProcess(arg, code => {
-        isDev && console.log(`kill process PID=${arg} result=${code}`);
-        connectionStopped(code, event);
+ipcMain.on('connection-stop', (event, args) => {
+    isDev && console.log('connection-stop event', args);
+    const { pid, profile, gateway } = args;
+    killWindowsProcess(pid, code => {
+        isDev && console.log(`kill process PID=${pid} result=${code}`);
+        connectionStopped(code, event.sender,
+            profile.killSwitchEnabled && !isDev && {
+                host: profile.server.host,
+                gateway
+            });
     });
 });
+
+
+const connectionStopped = (code, sender, killSwitchEnabled = null) => {
+    const { tray } = require('../main');
+    sender.send('connection-stopped', code);
+    tray.setDisabledState('Disconnected');
+    setPid(null);
+    if (killSwitchEnabled) {
+        const { host, gateway } = killSwitchEnabled;
+        deleteRouteSync(host);
+        addRouteSync(defaultRoute, gateway);
+        isDev && console.log('kill switch DOWN');
+    }
+}
 
 ipcMain.on('is-dev-request', event => {
     isDev && console.log('is-dev-request event');
