@@ -36,7 +36,7 @@ function createWindow() {
     }
 
     window.on('close', event => {
-        isDev && console.log('window-close event')
+        isDev && console.log('window-close event');
         if (pid) {
             killWindowsProcessSync(pid);
             pid = null;
@@ -57,9 +57,12 @@ app.on('ready', () => {
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
-        tray = null;
         app.quit();
     }
+});
+
+app.on('before-quit', () => {
+    tray.destroy();
 });
 
 app.on('activate', () => {

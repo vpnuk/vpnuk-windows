@@ -36,6 +36,7 @@ class AppTray {
         this.#tray.setContextMenu(
             Menu.buildFromTemplate(contextMenuTemplate));
         this.#tray.setToolTip(tooltipBase);
+        this.destroy = this.#tray.destroy;
     }
 
     setEnabledState = message =>
@@ -43,7 +44,7 @@ class AppTray {
 
     setDisabledState = message =>
         this.#setTrayState('disabled', message);
-        
+    
     #tray = null;
 
     #setTrayState = (state, message) => {
