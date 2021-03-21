@@ -5,26 +5,31 @@ import './app.css';
 import { Sidebar } from './components/sidebar/sidebar';
 import { MainPage } from './components/main/main';
 import { setDns, setServers } from './reducers/catalogSlice';
-import { setPid } from './reducers/connectionSlice';
+import { setPid, setGateway as setGatewayInner } from './reducers/connectionSlice';
 import { initializeCatalogs } from './utils/catalogs';
 const { ipcRenderer } = require('electron');
-let isDev, setConnection;
+let isDev, setConnection, setGateway;
 
 function App() {
-    ipcRenderer.send('is-dev-request');
-
     const dispatch = useDispatch();
     const [visible, setVisible] = useState(false);
 
     useEffect(() => {
+        ipcRenderer.send('is-dev-request');
+        setGateway = gw => dispatch(setGatewayInner(gw));
+        ipcRenderer.send('default-gateway-request');
+
         initializeCatalogs()
             .then(catalog => {
                 dispatch(setDns(catalog.dns));
                 dispatch(setServers(catalog.servers));
             });
-        
+
         setConnection = pid => dispatch(setPid(pid));
-        return () => setConnection = null;
+        return () => {
+            setConnection = null;
+            setGateway = null;
+        }
     }, []);
 
     const showDrawer = () => {
@@ -49,6 +54,11 @@ function App() {
 ipcRenderer.on('is-dev-response', (_, arg) => {
     isDev = arg;
     exports.isDev = isDev;
+});
+
+ipcRenderer.on('default-gateway-response', (_, arg) => {
+    isDev && console.log('default-gateway-response event', arg);
+    setGateway(arg);
 });
 
 ipcRenderer.on('connection-started', (_, pid) => {

@@ -1,6 +1,7 @@
 const { BrowserWindow, dialog, ipcMain, Menu } = require('electron');
 const { runOpenVpn, killWindowsProcess } = require('../src/utils/openVpn');
 const { getLogFileStream, openLogFileExternal } = require('../src/utils/logs');
+const { getDefaultGatewaySync } = require('../src/utils/routing');
 const { isDev, setPid } = require('../main');
 
 const showMessageBoxOnError = (error, title = 'Error') => {
@@ -54,6 +55,7 @@ ipcMain.on('connection-stop', (event, arg) => {
 });
 
 ipcMain.on('is-dev-request', event => {
+    isDev && console.log('is-dev-request event');
     event.sender.send('is-dev-response', isDev);
 });
 
@@ -73,4 +75,10 @@ ipcMain.on('log-open', (_, profileId) => {
     catch (error) {
         showMessageBoxOnError(error, 'Error opening log file');
     }
+});
+
+ipcMain.on('default-gateway-request', event => {
+    isDev && console.log('default-gateway-request event');
+    event.sender.send('default-gateway-response',
+        getDefaultGatewaySync());
 });

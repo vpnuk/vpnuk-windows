@@ -12,7 +12,9 @@ import {
     setProtocol,
     setDns,
     setMtu,
-    selectCurrentProfile
+    selectCurrentProfile,
+    setKillSwitch,
+    selectKillSwitch
 } from '../../reducers/settingsSlice';
 import { optionsMtu, protoAndPorts } from '../../utils/constants';
 import { selectOptionColors } from '../../utils/visual';
@@ -22,11 +24,13 @@ export const ConnectionDetails = () => {
     const dnsCatalog = useSelector(selectDnsCalalog);
     const details = useSelector(selectDetails);
     const profileId = useSelector(selectCurrentProfile).id;
+    const killSwitchEnabled = useSelector(selectKillSwitch);
 
     return (
         <>
             <Checkbox
-                onChange={e => console.log(e.target.checked)}
+                checked={killSwitchEnabled}
+                onChange={e => dispatch(setKillSwitch(e.target.checked))}
                 style={{ color: "#fff" }}
             >
                 Kill Switch
