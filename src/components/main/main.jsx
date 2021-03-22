@@ -11,13 +11,17 @@ import {
     selectServerName,
     selectCurrentProfile
 } from '../../reducers/settingsSlice';
-import { selectPid } from '../../reducers/connectionSlice';
+import {
+    selectPid,
+    selectGateway
+} from '../../reducers/connectionSlice';
 
 export const MainPage = ({ showDrawer }) => {
-    const connection = useSelector(selectPid);
+    const pid = useSelector(selectPid);
     const login = useSelector(selectLogin);
     const serverName = useSelector(selectServerName);
     const profile = useSelector(selectCurrentProfile);
+    const gateway = useSelector(selectGateway);
 
     return (
         <>
@@ -37,20 +41,20 @@ export const MainPage = ({ showDrawer }) => {
                     <div className="column-block column-content_block">
                         <div className="column-content_block-title">PRIVACY MODE</div>
                         <div className="column-content_block-check">
-                            <CSSTransition in={connection && true} timeout={360} classNames="switch">
+                            <CSSTransition in={pid && true} timeout={360} classNames="switch">
                                 <Switch
                                     onChange={checked => {
                                         if (checked) {
-                                            ipcRenderer.send('connection-start', profile);
+                                            ipcRenderer.send('connection-start', { profile, gateway });
                                         } else {
-                                            ipcRenderer.send('connection-stop', connection);
+                                            ipcRenderer.send('connection-stop', { pid, profile, gateway });
                                         }
                                     }}
-                                    checked={connection && true}
+                                    checked={pid && true}
                                     className="switch"
                                 />
                             </CSSTransition>
-                            <p>{connection ? 'Connected' : 'Disconnected'}</p>
+                            <p>{pid ? 'Connected' : 'Disconnected'}</p>
                         </div>
                         <div className="column-content_block-text">
                             <p>{login}</p>

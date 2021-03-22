@@ -24,7 +24,7 @@ const selectOptionColors = {
     }),
     control: (provided, state) => ({
         ...provided,
-        'box-shadow': state.isFocused ? '0 0 0 1px #0BBFBA' : null,
+        boxShadow: state.isFocused ? '0 0 0 1px #0BBFBA' : null,
         width: 200,
     }),
 };

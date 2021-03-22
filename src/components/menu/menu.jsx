@@ -13,7 +13,10 @@ import {
     setCurrentProfile,
     addProfile
 } from '../../reducers/settingsSlice';
-import { selectPid } from '../../reducers/connectionSlice';
+import {
+    selectPid,
+    selectGateway
+} from '../../reducers/connectionSlice';
 import { annotateItemLabel, selectOptionColors } from '../../utils/visual';
 import './menu.css';
 import { isDev } from '../../app';
@@ -21,10 +24,11 @@ import { isDev } from '../../app';
 export const Menu = () => {
     const dispatch = useDispatch();
 
-    const connection = useSelector(selectPid);
+    const pid = useSelector(selectPid);
     const connectionType = useSelector(selectConnectionType);
     const profiles = useSelector(selectProfilesAvailable);
     const profile = useSelector(selectCurrentProfile);
+    const gateway = useSelector(selectGateway);
     const [connectionTypes, setConnectionTypes] = useState([]);
 
     useEffect(() => {
@@ -53,18 +57,22 @@ export const Menu = () => {
                 onCreateOption={label => dispatch(addProfile(label))} />
             <Profile />
             <button className="form-button" onClick={() => {
-                if (connection) {
-                    ipcRenderer.send('connection-stop', connection);
+                if (pid) {
+                    ipcRenderer.send('connection-stop',  { pid, profile, gateway });
                 }
                 else {
                     ipcRenderer.send('connection-start',
-                        profiles.find(p => p.id === profile.id));
+                        {
+                            profile: profiles.find(p => p.id === profile.id),
+                            gateway
+                        }
+                    );
                 }
             }}>
-                {connection ? 'Disconnect' : 'Connect'}
+                {pid ? 'Disconnect' : 'Connect'}
             </button>
             {isDev && <button className="form-button" onClick={() =>
-                console.log(connectionType, profile, connection)}>Print</button>}
+                console.log(connectionType, profile, pid)}>Print</button>}
         </>
     );
 };

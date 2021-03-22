@@ -26,6 +26,7 @@ class Profile {
         dns: { label: 'No DNS' }, // value: []
         mtu: { value: '1500' }
     }
+    killSwitchEnabled = false;
 };
 
 const _currentProfile = settings =>
@@ -98,6 +99,9 @@ export const settingsSlice = createSlice({
         },
         setMtu: (state, action) => {
             _currentProfile(state).details.mtu = action.payload;
+        },
+        setKillSwitch: (state, action) => {
+            _currentProfile(state).killSwitchEnabled = action.payload || false;
         }
     }
 });
@@ -115,7 +119,8 @@ export const {
     setPort,
     setProtocol,
     setDns,
-    setMtu
+    setMtu,
+    setKillSwitch
 } = settingsSlice.actions;
 
 export const selectConnectionType = state =>
@@ -138,5 +143,8 @@ export const selectLogin = state =>
 
 export const selectDetails = state =>
     selectCurrentProfile(state).details;
+
+export const selectKillSwitch = state =>
+    selectCurrentProfile(state).killSwitchEnabled;
 
 export default settingsSlice.reducer;
