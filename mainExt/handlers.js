@@ -1,11 +1,17 @@
 const { BrowserWindow, dialog, ipcMain, Menu } = require('electron');
-const { runOpenVpn, killWindowsProcess } = require('../src/utils/openVpn');
+const {
+    runOpenVpn,
+    killWindowsProcess,
+    getOvpnAdapterNamesSync
+} = require('../src/utils/openVpn');
 const { getLogFileStream, openLogFileExternal } = require('../src/utils/logs');
 const {
     getDefaultGatewaySync,
     defaultRoute,
     addRouteSync,
-    deleteRouteSync
+    deleteRouteSync,
+    getIPv6AdaptersSync,
+    disableIPv6Sync
 } = require('../src/utils/routing');
 const { isDev, setPid } = require('../main');
 
@@ -111,4 +117,15 @@ ipcMain.on('default-gateway-request', event => {
     isDev && console.log('default-gateway-request event');
     event.sender.send('default-gateway-response',
         getDefaultGatewaySync());
+});
+
+ipcMain.on('ipv6-fix', () => {
+    isDev && console.log('ipv6-fix event');
+    const ovpnAdapters = getOvpnAdapterNamesSync();
+    getIPv6AdaptersSync().forEach(adapter => {
+        if (adapter.ipv6Enabled && ovpnAdapters.some(_ => _ === adapter.name)) {
+            const code = disableIPv6Sync(adapter.name);
+            isDev && console.log(`IPv6 disabled for ${adapter.name} with code ${code}`);
+        }
+    });
 });
