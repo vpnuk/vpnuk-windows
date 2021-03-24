@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import Select from 'react-select'
 import CreatableSelect from "react-select/creatable";
 import { Profile } from '../profile/profile';
-import { optionsConnectionType } from '../../utils/constants';
+import { optionsConnectionType } from '@modules/constants.js';
 import {
     selectConnectionType,
     setConnectionType,
@@ -17,7 +17,7 @@ import {
     selectPid,
     selectGateway
 } from '../../reducers/connectionSlice';
-import { annotateItemLabel, selectOptionColors } from '../../utils/visual';
+import { annotateItemLabel, selectOptionColors } from '../../styles';
 import './menu.css';
 import { isDev } from '../../app';
 

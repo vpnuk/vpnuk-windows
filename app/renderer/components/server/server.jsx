@@ -8,7 +8,7 @@ import {
     setServer
 } from '../../reducers/settingsSlice';
 import { selectServerCatalog } from '../../reducers/catalogSlice';
-import { selectOptionColors } from '../../utils/visual';
+import { selectOptionColors } from '../../styles';
 
 export const Server = () => {
     const dispatch = useDispatch();

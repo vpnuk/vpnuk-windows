@@ -3,8 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { CSSTransition } from 'react-transition-group';
 import { useSelector } from 'react-redux';
 import { Switch } from 'antd';
-import WorldImage from '../../assets/world.png';
-import SettingsImage from '../../assets/settings.png';
+import WorldImage from '@assets/world.png';
+import SettingsImage from '@assets/settings.png';
 import './main.css';
 import {
     selectLogin,

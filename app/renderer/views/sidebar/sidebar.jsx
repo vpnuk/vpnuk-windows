@@ -1,8 +1,8 @@
 import React from 'react';
 import { Drawer } from 'antd';
 import './sidebar.css';
-import SettingsImage from '../../assets/settings.png';
-import { Menu } from '../menu/menu';
+import SettingsImage from '@assets/settings.png';
+import { Menu } from '../../components/menu/menu';
 
 export const Sidebar = ({ visible, setVisible }) => {
 

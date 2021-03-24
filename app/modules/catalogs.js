@@ -1,6 +1,6 @@
 const axios = require('axios');
 const fs = require('fs');
-const { settingsPath } = require('./constants');
+const { settingsPath } = require('@modules/constants');
 
 const baseAddress = 'https://www.serverlistvault.com/';
 const settingsLink = {

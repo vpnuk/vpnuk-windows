@@ -1,9 +1,9 @@
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
-const { killWindowsProcessSync } = require('./src/utils/openVpn');
+const { killWindowsProcessSync } = require('./utils/openVpn');
+const AppTray = require('./tray');
 const ElectronStore = require('electron-store');
 ElectronStore.initRenderer();
-const AppTray = require('./mainExt/tray');
 
 let window, pid, tray;
 
@@ -14,6 +14,7 @@ function createWindow() {
     window = new BrowserWindow({
         width: isDev ? 1280 : 720,
         height: 960,
+        icon: path.join(__dirname, '../../public/favicon.ico'),
         webPreferences: {
             webSecurity: false,
             nodeIntegration: true,
@@ -26,7 +27,7 @@ function createWindow() {
     isDev && window.webContents.openDevTools();
     window.loadURL(isDev
         ? 'http://localhost:3000/'
-        : 'file:///' + path.join(__dirname, './build/index.html'));
+        : 'file:///' + path.join(__dirname, '../../build/index.html'));
 
     window.on('close', event => {
         isDev && console.log('window-close event');
@@ -67,4 +68,4 @@ app.on('activate', () => {
 const setPid = value => pid = value;
 exports.setPid = setPid;
 
-require('./mainExt/handlers');
+require('./handlers');

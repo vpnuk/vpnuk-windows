@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import './profile.css';
-import { Server } from '../connection/server';
-import { ConnectionDetails } from '../connection/details';
+import { Server } from '../server/server';
+import { ConnectionDetails } from '../details/details';
 import {
     selectCurrentProfile,
     setProfileName,

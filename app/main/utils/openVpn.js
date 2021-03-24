@@ -1,5 +1,5 @@
 const cp = require('child_process');
-const { settingsPath } = require('./constants');
+const { settingsPath } = require('../../modules/constants');
 const fs = require('fs');
 
 const isDev = process.env.ELECTRON_ENV === 'Dev';

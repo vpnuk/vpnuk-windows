@@ -1,7 +1,7 @@
 import { createStore } from 'redux';
 import { persistStore, persistReducer } from 'redux-persist';
 import createElectronStorage from 'redux-persist-electron-storage';
-import { settingsFolder } from './utils/constants';
+import { settingsFolder } from '@modules/constants.js';
 import rootReducer from './reducers';
 
 import ElectronStore from 'electron-store';

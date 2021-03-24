@@ -6,8 +6,8 @@
   },
   "version": "0.2.0",
   "description": "VPNUK desktop application",
-  "main": "main.js",
-  "config-overrides-path": "config-overrides.js",
+  "main": "app/main/main.js",
+  "config-overrides-path": "app/modules/config-overrides.js",
   "homepage": "./",
   "private": true,
   "fs": "empty",
@@ -50,9 +50,9 @@
     },
     "files": [
       "build/**/*",
-      "src/utils/*",
-      "mainExt/*",
-      "main.js"
+      "app/main/**/*",
+      "app/modules/**/*",
+      "app/assets/**/*"
     ],
     "extends": null
   },

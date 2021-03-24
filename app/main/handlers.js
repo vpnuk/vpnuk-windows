@@ -3,8 +3,8 @@ const {
     runOpenVpn,
     killWindowsProcess,
     getOvpnAdapterNamesSync
-} = require('../src/utils/openVpn');
-const { getLogFileStream, openLogFileExternal } = require('../src/utils/logs');
+} = require('./utils/openVpn');
+const { getLogFileStream, openLogFileExternal } = require('./utils/logs');
 const {
     getDefaultGatewaySync,
     defaultRoute,
@@ -12,8 +12,8 @@ const {
     deleteRouteSync,
     getIPv6AdaptersSync,
     disableIPv6Sync
-} = require('../src/utils/routing');
-const { isDev, setPid } = require('../main');
+} = require('./utils/routing');
+const { isDev, setPid } = require('./main');
 
 const showMessageBoxOnError = (error, title = 'Error') => {
     isDev && console.error(error);
@@ -56,7 +56,7 @@ ipcMain.on('connection-start', (event, args) => {
     isDev && console.log(newConnection.pid, newConnection.exitCode);
     // todo: never null, have to handle "immediatly stopped" case
     if (newConnection) {
-        const { tray } = require('../main');
+        const { tray } = require('./main');
         event.sender.send('connection-started', newConnection.pid);
         setPid(newConnection.pid);
         tray.setEnabledState(`Connected to ${profile.server.label}`);
@@ -78,7 +78,7 @@ ipcMain.on('connection-stop', (event, args) => {
 
 
 const connectionStopped = (code, sender, killSwitchEnabled = null) => {
-    const { tray } = require('../main');
+    const { tray } = require('./main');
     sender.send('connection-stopped', code);
     tray.setDisabledState('Disconnected');
     setPid(null);
@@ -96,7 +96,7 @@ ipcMain.on('is-dev-request', event => {
 });
 
 ipcMain.on('context-menu-show', (event, args) => {
-    const { window } = require('../main');
+    const { window } = require('./main');
     const menu = Menu.buildFromTemplate([{
         label: 'Inspect Element',
         click: () => { window.inspectElement(args.x, args.y) }

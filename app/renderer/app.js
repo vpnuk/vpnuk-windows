@@ -2,12 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { Layout } from 'antd';
 import './app.css';
-import { Sidebar } from './components/sidebar/sidebar';
-import { MainPage } from './components/main/main';
+import { Sidebar } from './views/sidebar/sidebar';
+import { MainPage } from './views/main/main';
 import { setDns, setServers } from './reducers/catalogSlice';
 import { setPid, setGateway as setGatewayInner } from './reducers/connectionSlice';
-import { initializeCatalogs } from './utils/catalogs';
+import { initializeCatalogs } from '@modules/catalogs.js';
 const { ipcRenderer } = require('electron');
+
 let isDev, setConnection, setGateway;
 
 function App() {

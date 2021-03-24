@@ -1,4 +1,4 @@
-const { settingsFolder } = require('./constants');
+const { settingsFolder } = require('../../modules/constants');
 const path = require('path');
 const fs = require('fs');
 const isDev = process.env.ELECTRON_ENV === 'Dev'

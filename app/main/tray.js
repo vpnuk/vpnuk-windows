@@ -8,7 +8,7 @@ const _icons = {
 };
 
 const iconPaths = Object.assign({}, ...Object.keys(_icons).map(key => ({
-    [key]: path.join(__dirname, '../build/', _icons[key])
+    [key]: path.join(__dirname, '../assets', _icons[key])
 })));
 
 const icons = Object.assign({}, ...Object.keys(iconPaths).map(key => ({

@@ -16,8 +16,8 @@ import {
     setKillSwitch,
     selectKillSwitch
 } from '../../reducers/settingsSlice';
-import { optionsMtu, protoAndPorts } from '../../utils/constants';
-import { selectOptionColors } from '../../utils/visual';
+import { optionsMtu, protoAndPorts } from '@modules/constants.js';
+import { selectOptionColors } from '../../styles';
 
 export const ConnectionDetails = () => {
     const dispatch = useDispatch();
