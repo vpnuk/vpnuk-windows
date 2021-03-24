@@ -49,9 +49,9 @@ exports.runOpenVpn = (
             `--remote\ ${options.server.host}\ ${options.details.port}`,
             `--proto\ ${options.details.protocol.toLowerCase() === 'tcp' ? 'tcp' : 'udp'}`,
             `--auth-user-pass\ ${escapeSpaces(settingsPath.profile)}`,
-            options.details.dns.value?.length && '--redirect-gateway\ def1',
-            options.details.dns.value?.length && Array.from(options.details.dns.value,
-                addr => `--dhcp-option\ DNS\ ${addr}`).join(' '),
+            options.details.dns.value?.length ? '--redirect-gateway\ def1' : '',
+            options.details.dns.value?.length ? Array.from(options.details.dns.value,
+                addr => `--dhcp-option\ DNS\ ${addr}`).join(' ') : '',
             options.details.mtu?.value && `--mssfix\n ${'' + options.details.mtu.value}`
         ],
         { shell: true });

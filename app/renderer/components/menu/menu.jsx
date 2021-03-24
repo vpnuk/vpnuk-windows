@@ -43,7 +43,7 @@ export const Menu = () => {
                 className="form-select"
                 styles={selectOptionColors}
                 options={connectionTypes}
-                defaultValue={connectionTypes.find(oct => oct.value === connectionType)}
+                value={connectionTypes.find(oct => oct.value === connectionType)}
                 onChange={option => dispatch(setConnectionType(option.value))} />
             <div className="form-titles">Profile</div>
             <CreatableSelect
