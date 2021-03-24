@@ -121,11 +121,17 @@ ipcMain.on('default-gateway-request', event => {
 
 ipcMain.on('ipv6-fix', () => {
     isDev && console.log('ipv6-fix event');
-    const ovpnAdapters = getOvpnAdapterNamesSync();
-    getIPv6AdaptersSync().forEach(adapter => {
-        if (adapter.ipv6Enabled && ovpnAdapters.some(_ => _ === adapter.name)) {
-            const code = disableIPv6Sync(adapter.name);
-            isDev && console.log(`IPv6 disabled for ${adapter.name} with code ${code}`);
-        }
-    });
+    try {
+        const ovpnAdapters = getOvpnAdapterNamesSync();
+        getIPv6AdaptersSync().forEach(adapter => {
+            if (adapter.ipv6Enabled && ovpnAdapters.some(_ => _ === adapter.name)) {
+                const code = disableIPv6Sync(adapter.name);
+                isDev && console.log(`IPv6 disabled for ${adapter.name} with code ${code}`);
+            }
+        });
+    }
+    catch (error) {
+        (error.message !== 'No OpenVPN found.')
+            && console.error('ipv6-fix error', error.message);
+    }
 });

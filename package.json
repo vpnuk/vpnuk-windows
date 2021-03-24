@@ -1,5 +1,5 @@
 {
-  "name": "vpnuk",
+  "name": "VPNUK",
   "author": {
     "name": "Mikhail Kryuchkov",
     "email": "kryuchkovm@outlook.com"
@@ -50,9 +50,8 @@
     },
     "files": [
       "build/**/*",
-      "node_modules/**/*",
-      "src/helpers/*",
-      "src/settings/*",
+      "src/utils/*",
+      "mainExt/*",
       "main.js"
     ],
     "extends": null

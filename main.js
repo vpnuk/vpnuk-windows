@@ -14,7 +14,6 @@ function createWindow() {
     window = new BrowserWindow({
         width: isDev ? 1280 : 720,
         height: 960,
-        icon: path.join(__dirname, './public/favicon.ico'),
         webPreferences: {
             webSecurity: false,
             nodeIntegration: true,
@@ -23,12 +22,11 @@ function createWindow() {
     });
     exports.window = window;
 
-    if (isDev) {
-        window.loadURL('http://localhost:3000/');
-        window.webContents.openDevTools();
-    } else {
-        window.loadURL('file:///' + path.join(__dirname, './build/index.html'));
-    }
+    !isDev && window.removeMenu()
+    isDev && window.webContents.openDevTools();
+    window.loadURL(isDev
+        ? 'http://localhost:3000/'
+        : 'file:///' + path.join(__dirname, './build/index.html'));
 
     window.on('close', event => {
         isDev && console.log('window-close event');

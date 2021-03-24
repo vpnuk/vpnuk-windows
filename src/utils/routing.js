@@ -1,5 +1,4 @@
 const cp = require('child_process');
-const { stdout, stderr } = require('process');
 
 const defaultRoute = '0.0.0.0';
 exports.defaultRoute = defaultRoute;
