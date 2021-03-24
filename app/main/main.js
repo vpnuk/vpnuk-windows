@@ -55,10 +55,6 @@ app.on('window-all-closed', () => {
     }
 });
 
-app.on('before-quit', () => {
-    tray.destroy();
-});
-
 app.on('activate', () => {
     if (window === null) {
         createWindow();

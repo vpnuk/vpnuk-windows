@@ -4,7 +4,7 @@
     "name": "Mikhail Kryuchkov",
     "email": "kryuchkovm@outlook.com"
   },
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "VPNUK desktop application",
   "main": "app/main/main.js",
   "config-overrides-path": "app/modules/config-overrides.js",
