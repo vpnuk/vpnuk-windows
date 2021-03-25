@@ -58,7 +58,7 @@ export const Menu = () => {
             <Profile />
             <button className="form-button" onClick={() => {
                 if (pid) {
-                    ipcRenderer.send('connection-stop',  { pid, profile, gateway });
+                    ipcRenderer.send('connection-stop',  pid);
                 }
                 else {
                     ipcRenderer.send('connection-start',

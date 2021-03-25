@@ -5,7 +5,7 @@ const AppTray = require('./tray');
 const ElectronStore = require('electron-store');
 ElectronStore.initRenderer();
 
-let window, pid, tray;
+let window, tray;
 
 const isDev = process.env.ELECTRON_ENV === 'Dev';
 exports.isDev = isDev;
@@ -31,9 +31,10 @@ function createWindow() {
 
     window.on('close', event => {
         isDev && console.log('window-close event');
+        const { pid, setPid } = require('./handlers');
         if (pid) {
             killWindowsProcessSync(pid);
-            pid = null;
+            setPid(null);
         }
         isDev && event.preventDefault();
     });
@@ -60,8 +61,5 @@ app.on('activate', () => {
         createWindow();
     }
 });
-
-const setPid = value => pid = value;
-exports.setPid = setPid;
 
 require('./handlers');

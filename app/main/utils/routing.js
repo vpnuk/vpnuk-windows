@@ -13,17 +13,13 @@ exports.getDefaultGatewaySync = () =>
         .split(' ')
         .filter(_ => _)[2];
 
-exports.addRouteSync = (dst, gw) =>
-    cp.spawnSync('route', ['add', dst, 'MASK',
-        dst === defaultRoute
-            ? defaultRoute
-            : '255.255.255.255',
-        gw], { shell: true })
-        .status;
+exports.addRouteSync = (dst, gw, mask = '255.255.255.255') =>
+    cp.spawnSync('route', ['add', dst, 'MASK', mask, gw], { shell: true })
+        .stdout + '';
 
-exports.deleteRouteSync = (gw, dst = null) =>
+exports.deleteRouteSync = (dst, gw) =>
     cp.spawnSync('route', ['delete', dst, gw], { shell: true })
-        .status;
+        .stdout + '';
 
 exports.getIPv6AdaptersSync = () =>
     (cp.spawnSync('powershell',

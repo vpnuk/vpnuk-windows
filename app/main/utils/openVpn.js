@@ -5,6 +5,10 @@ const fs = require('fs');
 const isDev = process.env.ELECTRON_ENV === 'Dev';
 
 const getOpenVpnExePathSync = () => {
+    if (process.env.OVPN_EXT_PATH && isDev) {
+        return escapeSpaces(process.env.OVPN_EXT_PATH);
+    }
+
     var exeKey = '' + cp
         .spawnSync('cmd', ['/c\ reg\ query\ HKLM\\SOFTWARE\\OpenVPN\\\ /v\ exe_path'],
             { shell: true })

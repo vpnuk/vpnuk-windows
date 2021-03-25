@@ -47,7 +47,7 @@ export const MainPage = ({ showDrawer }) => {
                                         if (checked) {
                                             ipcRenderer.send('connection-start', { profile, gateway });
                                         } else {
-                                            ipcRenderer.send('connection-stop', { pid, profile, gateway });
+                                            ipcRenderer.send('connection-stop', pid);
                                         }
                                     }}
                                     checked={pid && true}

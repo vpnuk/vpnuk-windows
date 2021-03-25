@@ -13,7 +13,11 @@ const {
     getIPv6AdaptersSync,
     disableIPv6Sync
 } = require('./utils/routing');
-const { isDev, setPid } = require('./main');
+const isDev = process.env.ELECTRON_ENV === 'Dev';
+
+let pid = null;
+const setPid = value => pid = value;
+exports.setPid = setPid;
 
 const showMessageBoxOnError = (error, title = 'Error') => {
     isDev && console.error(error);
@@ -33,62 +37,47 @@ ipcMain.on('connection-start', (event, args) => {
     try {
         var stream = getLogFileStream(profile.id);
 
-        if (profile.killSwitchEnabled && !isDev) {
-            deleteRouteSync(gateway, defaultRoute);
-            addRouteSync(profile.server.host, gateway);
-            isDev && console.log('kill switch UP');
-        }
-
         // ? onError => exception
         newConnection = runOpenVpn(profile, stream, stream,
             code => {
                 stream.end();
+                pid = null;
                 isDev && console.log(`ovpn exited with code ${code}`);
-                connectionStopped(code, event.sender,
-                    profile.killSwitchEnabled && !isDev && {
-                        host: profile.server.host,
-                        gateway
-                    });
+                event.sender.send('connection-stopped');
+                const { tray } = require('./main');
+                tray.setDisabledState('Disconnected');
+                if (profile.killSwitchEnabled) {
+                    console.log(`addRoute ${defaultRoute} ${gateway}`,
+                        addRouteSync(defaultRoute, gateway).trim());
+                }
+                console.log(`deleteRoute ${defaultRoute} ${gateway}`,
+                    deleteRouteSync(profile.server.host, gateway).trim());
             });
     } catch (error) {
         showMessageBoxOnError(error, 'Error starting connection');
     }
     isDev && console.log(newConnection.pid, newConnection.exitCode);
-    // todo: never null, have to handle "immediatly stopped" case
+    // todo: newConnection never null, have to handle "immediatly stopped" case
     if (newConnection) {
-        const { tray } = require('./main');
+        if (profile.killSwitchEnabled) {
+            console.log(`addRoute ${defaultRoute} ${gateway}`,
+                addRouteSync(profile.server.host, gateway, '255.255.255.255').trim());
+            console.log(`deleteRoute ${defaultRoute} ${gateway}`,
+                deleteRouteSync(defaultRoute, gateway).trim());
+        }
+        pid = newConnection.pid;
         event.sender.send('connection-started', newConnection.pid);
-        setPid(newConnection.pid);
+        const { tray } = require('./main');
         tray.setEnabledState(`Connected to ${profile.server.label}`);
     }
 });
 
-ipcMain.on('connection-stop', (event, args) => {
-    isDev && console.log('connection-stop event', args);
-    const { pid, profile, gateway } = args;
+ipcMain.on('connection-stop', (_, pid) => {
+    isDev && console.log('connection-stop event', pid);
     killWindowsProcess(pid, code => {
-        isDev && console.log(`kill process PID=${pid} result=${code}`);
-        connectionStopped(code, event.sender,
-            profile.killSwitchEnabled && !isDev && {
-                host: profile.server.host,
-                gateway
-            });
+        isDev && console.log(`killed process PID=${pid} result=${code}`);
     });
 });
-
-
-const connectionStopped = (code, sender, killSwitchEnabled = null) => {
-    const { tray } = require('./main');
-    sender.send('connection-stopped', code);
-    tray.setDisabledState('Disconnected');
-    setPid(null);
-    if (killSwitchEnabled) {
-        const { host, gateway } = killSwitchEnabled;
-        deleteRouteSync(host);
-        addRouteSync(defaultRoute, gateway);
-        isDev && console.log('kill switch DOWN');
-    }
-}
 
 ipcMain.on('is-dev-request', event => {
     isDev && console.log('is-dev-request event');
@@ -123,6 +112,7 @@ ipcMain.on('ipv6-fix', () => {
     isDev && console.log('ipv6-fix event');
     try {
         const ovpnAdapters = getOvpnAdapterNamesSync();
+        isDev && console.log('ipv6-fix ovpnAdapters', ovpnAdapters);
         getIPv6AdaptersSync().forEach(adapter => {
             if (adapter.ipv6Enabled && ovpnAdapters.some(_ => _ === adapter.name)) {
                 const code = disableIPv6Sync(adapter.name);
@@ -133,5 +123,6 @@ ipcMain.on('ipv6-fix', () => {
     catch (error) {
         (error.message !== 'No OpenVPN found.')
             && console.error('ipv6-fix error', error.message);
+        showMessageBoxOnError(error, 'IPv6 disable');
     }
 });
