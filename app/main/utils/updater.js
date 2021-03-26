@@ -9,9 +9,8 @@ exports.downloadOvpnExe = async () => {
     const exePath = path.join(settingsPath.ovpnBinFolder, 'bin', 'openvpn.exe');
     if (fs.existsSync(exePath)) {
         exports.ovpnExePath = exePath;
-        return;
     }
-    
+
     var link = process.arch === 'x32'
         ? settingsLink.ovpn32zip
         : settingsLink.ovpn64zip;

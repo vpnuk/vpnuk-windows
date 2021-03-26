@@ -4,12 +4,19 @@ import { Layout } from 'antd';
 import './app.css';
 import { Sidebar } from './views/sidebar/sidebar';
 import { MainPage } from './views/main/main';
-import { setDns, setServers } from './reducers/catalogSlice';
-import { setConState, setGateway as setGatewayInner } from './reducers/connectionSlice';
+import {
+    setDns,
+    setServers,
+    setObfuscateAvailable as setObfuscateInner
+} from './reducers/catalogSlice';
+import {
+    setConState,
+    setGateway as setGatewayInner
+} from './reducers/connectionSlice';
 import { initializeCatalogs } from '@modules/catalogs.js';
 const { ipcRenderer } = require('electron');
 
-let isDev, setConnection, setGateway;
+let isDev, setConnection, setGateway, setObfuscateAvailable;
 
 function App() {
     const dispatch = useDispatch();
@@ -29,9 +36,12 @@ function App() {
             });
 
         setConnection = state => dispatch(setConState(state));
+        setObfuscateAvailable = value => dispatch(setObfuscateInner(value));
         return () => {
-            setConnection = null;
             setGateway = null;
+            
+            setConnection = null;
+            setObfuscateAvailable = null;
         }
     }, []);
 
@@ -67,6 +77,11 @@ ipcRenderer.on('default-gateway-response', (_, arg) => {
 ipcRenderer.on('connection-changed', (_, arg) => {
     isDev && console.log('connection-changed event', arg);
     setConnection(arg);
+});
+
+ipcRenderer.on('ovpn-bin-downloaded', (_, arg) => {
+    isDev && console.log('ovpn-bin-downloaded event', arg);
+    setObfuscateAvailable(arg);
 });
 
 window.addEventListener('contextmenu', event => {

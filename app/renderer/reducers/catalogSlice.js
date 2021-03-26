@@ -1,10 +1,13 @@
 import { createSlice } from '@reduxjs/toolkit';
+import { protoAndPorts } from '@modules/constants.js';
 
 export const catalogSlice = createSlice({
     name: 'catalog',
     initialState: {
         dns: [],
-        servers: {}
+        servers: {},
+        protoAndPorts: protoAndPorts,
+        isObfuscateAvailable: true
     },
     reducers: {
         setDns: (state, action) => {
@@ -12,16 +15,30 @@ export const catalogSlice = createSlice({
         },
         setServers: (state, action) => {
             state.servers = action.payload;
-        }
+        },
+        setObfuscateAvailable: (state, action) => {
+            state.isObfuscateAvailable = action.payload && true;
+            state.protoAndPorts = protoAndPorts.filter(pp =>
+                pp.label !== 'Obfuscation' ||
+                (pp.label === 'Obfuscation' && state.isObfuscateAvailable)
+            );
+        },
     }
 });
 
-export const { setDns, setServers } = catalogSlice.actions;
+export const {
+    setDns,
+    setServers,
+    setObfuscateAvailable
+} = catalogSlice.actions;
 
 export const selectDnsCalalog = state =>
     state.catalog.dns;
 
 export const selectServerCatalog = state =>
     state.catalog.servers;
+
+export const selectProtoAndPorts = state =>
+    state.catalog.protoAndPorts;
 
 export default catalogSlice.reducer;

@@ -134,8 +134,10 @@ ipcMain.on('ipv6-fix', async () => {
     }
 });
 
-ipcMain.on('ovpn-bin-download', async () => {
+ipcMain.on('ovpn-bin-download', async event => {
     isDev && console.log('ovpn-bin-download start');
     await downloadOvpnExe();
+    const { ovpnExePath } = require('./utils/updater');
+    event.sender.send('ovpn-bin-downloaded', ovpnExePath && true);
     isDev && console.log('ovpn-bin-download end');
 });

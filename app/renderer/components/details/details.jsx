@@ -5,7 +5,10 @@ import Select from 'react-select';
 import { Radio } from 'antd';
 import { Checkbox } from 'antd';
 import './details.css';
-import { selectDnsCalalog } from '../../reducers/catalogSlice';
+import {
+    selectDnsCalalog,
+    selectProtoAndPorts
+} from '../../reducers/catalogSlice';
 import {
     selectDetails,
     setPort,
@@ -16,7 +19,7 @@ import {
     setKillSwitch,
     selectKillSwitch
 } from '../../reducers/settingsSlice';
-import { optionsMtu, protoAndPorts } from '@modules/constants.js';
+import { optionsMtu } from '@modules/constants.js';
 import { selectOptionColors } from '../../styles';
 
 export const ConnectionDetails = () => {
@@ -25,6 +28,7 @@ export const ConnectionDetails = () => {
     const details = useSelector(selectDetails);
     const profileId = useSelector(selectCurrentProfile).id;
     const killSwitchEnabled = useSelector(selectKillSwitch);
+    const protoAndPorts = useSelector(selectProtoAndPorts);
 
     return (
         <>

@@ -55,7 +55,9 @@ exports.runOpenVpn = (
     var proc = cp.execFile(
         getOpenVpnExePathSync(),
         [
-            `--config\ ${escapeSpaces(settingsPath.ovpn)}`,
+            `--config\ ${options.details.protocol.toLowerCase() === 'obfuscation'
+                ? escapeSpaces(settingsPath.ovpnObfucation)
+                : escapeSpaces(settingsPath.ovpn)}`,
             `--remote\ ${options.server.host}\ ${options.details.port}`,
             `--proto\ ${options.details.protocol.toLowerCase() === 'tcp' ? 'tcp' : 'udp'}`,
             `--auth-user-pass\ ${escapeSpaces(settingsPath.profile)}`,
