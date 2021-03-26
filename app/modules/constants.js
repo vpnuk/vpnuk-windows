@@ -39,13 +39,24 @@ const path = require('path');
 const settingsFolder = path.resolve(require('process').env.APPDATA + '\\VPNUK');
 exports.settingsFolder = settingsFolder;
 
-const settingsPath = {
+exports.settingsPath = {
     folder: settingsFolder,
     versions: path.join(settingsFolder, 'versions.json'),
     dns: path.join(settingsFolder, 'dns.json'),
     servers: path.join(settingsFolder, 'servers.json'),
     ovpn: path.join(settingsFolder, 'openvpn-configuration.ovpn'),
     ovpnObfucation: path.join(settingsFolder, 'openvpn-obfuscation-configuration.ovpn'),
-    profile: path.join(settingsFolder, 'profile.txt')
+    profile: path.join(settingsFolder, 'profile.txt'),
+    ovpnBinFolder: path.join(settingsFolder, 'ovpnBin/')
 };
-exports.settingsPath = settingsPath;
+
+const baseAddress = 'https://www.serverlistvault.com/';
+exports.settingsLink = {
+    versions: baseAddress + 'versions.json',
+    dns: baseAddress + 'dns.json',
+    servers: baseAddress + 'servers.json',
+    ovpn: baseAddress + 'openvpn-configuration.ovpn',
+    ovpnObfucation: baseAddress + 'openvpn-obfuscation-configuration.ovpn',
+    ovpn64zip: baseAddress + 'openvpn251/openvpn-win64.zip',
+    ovpn32zip: baseAddress + 'openvpn251/openvpn-win32.zip',
+}

@@ -17,6 +17,7 @@ function App() {
 
     useEffect(() => {
         ipcRenderer.send('is-dev-request');
+        ipcRenderer.send('ovpn-bin-download');
         setGateway = gw => dispatch(setGatewayInner(gw));
         ipcRenderer.send('default-gateway-request');
         ipcRenderer.send('ipv6-fix');

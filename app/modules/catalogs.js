@@ -1,15 +1,6 @@
 const axios = require('axios');
 const fs = require('fs');
-const { settingsPath } = require('@modules/constants.js');
-
-const baseAddress = 'https://www.serverlistvault.com/';
-const settingsLink = {
-    versions: baseAddress + 'versions.json',
-    dns: baseAddress + 'dns.json',
-    servers: baseAddress + 'servers.json',
-    ovpn: baseAddress + 'openvpn-configuration.ovpn',
-    ovpnObfucation: baseAddress + 'openvpn-obfuscation-configuration.ovpn'
-}
+const { settingsPath, settingsLink } = require('@modules/constants.js');
 
 const dowloadOvpnConfig = (link, filePath) =>
     axios

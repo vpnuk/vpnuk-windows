@@ -66,6 +66,7 @@
     "electron-fetch": "^1.7.3",
     "electron-store": "^7.0.2",
     "fs": "0.0.1-security",
+    "node-stream-zip": "^1.13.2",
     "react": "^16.8.6",
     "react-burger-menu": "^2.7.1",
     "react-dom": "^16.8.6",

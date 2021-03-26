@@ -14,6 +14,7 @@ const {
     disableIPv6
 } = require('./utils/routing');
 const { connectionStates } = require('../modules/constants');
+const { downloadOvpnExe } = require('./utils/updater');
 
 const isDev = process.env.ELECTRON_ENV === 'Dev';
 
@@ -131,4 +132,10 @@ ipcMain.on('ipv6-fix', async () => {
             && console.error('ipv6-fix error', error.message);
         showMessageBoxOnError(error, 'IPv6 disable');
     }
+});
+
+ipcMain.on('ovpn-bin-download', async () => {
+    isDev && console.log('ovpn-bin-download start');
+    await downloadOvpnExe();
+    isDev && console.log('ovpn-bin-download end');
 });

@@ -10,6 +10,11 @@ const getOpenVpnExePathSync = () => {
         return escapeSpaces(process.env.OVPN_EXT_PATH);
     }
 
+    const { ovpnExePath } = require('./updater');
+    if (ovpnExePath) {
+        return escapeSpaces(ovpnExePath);
+    }
+
     var exeKey = '' + cp
         .spawnSync('cmd', ['/c\ reg\ query\ HKLM\\SOFTWARE\\OpenVPN\\\ /v\ exe_path'],
             { shell: true })
@@ -86,11 +91,10 @@ exports.killWindowsProcessSync = pid => {
     return code;
 };
 
-exports.getOvpnAdapterNames = async () => {
-    return (await spawnChild(getOpenVpnExePathSync(),
+exports.getOvpnAdapterNames = async () =>
+    (await spawnChild(getOpenVpnExePathSync(),
         ['--show-adapters'], { shell: true }))
         .split('\r\n')
         .filter(_ => _)
         .slice(1)
-        .map(line => line.substring(1, line.indexOf('\'', 1)));;
-};
+        .map(line => line.substring(1, line.indexOf('\'', 1)));
