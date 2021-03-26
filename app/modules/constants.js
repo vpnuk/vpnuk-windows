@@ -1,3 +1,11 @@
+const connectionStates = {
+    disconnected: 'Disconnected',
+    connecting: 'Connecting',
+    connected: 'Connected',
+};
+Object.freeze(connectionStates);
+exports.connectionStates = connectionStates;
+
 const optionsConnectionType = [
     { value: 'OpenVPN', label: 'OpenVPN' },
     { value: 'IKEv2', label: 'IKEv2', isDisabled: true },

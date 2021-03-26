@@ -1,14 +1,15 @@
 import { createSlice } from '@reduxjs/toolkit';
+import { connectionStates } from '@modules/constants.js';
 
 export const connectionSlice = createSlice({
     name: 'connection',
     initialState: {
-        pid: null,
+        conState: connectionStates.disconnected,
         gateway: null
     },
     reducers: {
-        setPid: (state, action) => {
-            state.pid = action.payload;
+        setConState: (state, action) => {
+            state.conState = action.payload;
         },
         setGateway: (state, action) => {
             state.gateway = action.payload;
@@ -16,10 +17,10 @@ export const connectionSlice = createSlice({
     }
 });
 
-export const { setPid, setGateway } = connectionSlice.actions;
+export const { setConState, setGateway } = connectionSlice.actions;
 
-export const selectPid = state =>
-    state.connection.pid;
+export const selectConState = state =>
+    state.connection.conState;
 
 export const selectGateway = state =>
     state.connection.gateway;

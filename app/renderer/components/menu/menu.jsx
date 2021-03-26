@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import Select from 'react-select'
 import CreatableSelect from "react-select/creatable";
 import { Profile } from '../profile/profile';
-import { optionsConnectionType } from '@modules/constants.js';
+import { optionsConnectionType, connectionStates } from '@modules/constants.js';
 import {
     selectConnectionType,
     setConnectionType,
@@ -14,7 +14,7 @@ import {
     addProfile
 } from '../../reducers/settingsSlice';
 import {
-    selectPid,
+    selectConState,
     selectGateway
 } from '../../reducers/connectionSlice';
 import { annotateItemLabel, selectOptionColors } from '../../styles';
@@ -24,7 +24,7 @@ import { isDev } from '../../app';
 export const Menu = () => {
     const dispatch = useDispatch();
 
-    const pid = useSelector(selectPid);
+    const connectionState = useSelector(selectConState);
     const connectionType = useSelector(selectConnectionType);
     const profiles = useSelector(selectProfilesAvailable);
     const profile = useSelector(selectCurrentProfile);
@@ -56,23 +56,28 @@ export const Menu = () => {
                 onChange={value => dispatch(setCurrentProfile(value.id))}
                 onCreateOption={label => dispatch(addProfile(label))} />
             <Profile />
-            <button className="form-button" onClick={() => {
-                if (pid) {
-                    ipcRenderer.send('connection-stop',  pid);
-                }
-                else {
-                    ipcRenderer.send('connection-start',
-                        {
-                            profile: profiles.find(p => p.id === profile.id),
-                            gateway
-                        }
-                    );
-                }
-            }}>
-                {pid ? 'Disconnect' : 'Connect'}
+            <button
+                className="form-button"
+                onClick={() => {
+                    if (connectionState !== connectionStates.disconnected) {
+                        ipcRenderer.send('connection-stop');
+                    }
+                    else if (connectionState === connectionStates.disconnected) {
+                        ipcRenderer.send('connection-start',
+                            {
+                                profile: profiles.find(p => p.id === profile.id),
+                                gateway
+                            }
+                        );
+                    }
+                }}
+            >
+                {connectionState !== connectionStates.disconnected
+                    ? 'Disconnect'
+                    : 'Connect'}
             </button>
             {isDev && <button className="form-button" onClick={() =>
-                console.log(connectionType, profile, pid)}>Print</button>}
+                console.log(connectionType, profile, connectionState)}>Print</button>}
         </>
     );
 };

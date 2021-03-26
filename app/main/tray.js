@@ -1,14 +1,15 @@
 const { Menu, Tray, nativeImage } = require('electron');
+const { connectionStates } = require('../modules/constants');
 const path = require('path');
 
-const _icons = {
-    'enabled': 'icon.png',
-    'disabled': 'icon_gray.png',
+const _icons = { // connectionStates
+    'disconnected': 'icon_gray.png',
     'connecting': 'icon_sepia.png',
+    'connected': 'icon.png'
 };
 
-const iconPaths = Object.assign({}, ...Object.keys(_icons).map(key => ({
-    [key]: path.join(__dirname, '../assets', _icons[key])
+const iconPaths = Object.assign({}, ...Object.keys(connectionStates).map(key => ({
+    [connectionStates[key]]: path.join(__dirname, '../assets', _icons[key])
 })));
 
 const icons = Object.assign({}, ...Object.keys(iconPaths).map(key => ({
@@ -21,13 +22,13 @@ const tooltipBase = 'VPN UK';
 
 const contextMenuTemplate = [
     { id: 'show', label: tooltipBase, type: 'normal', click: () => { } },
-    { id: 'status', label: 'Status: disabled', type: 'normal', enabled: false },
+    { id: 'status', label: 'Status: Disconnected', type: 'normal', enabled: false },
     { label: 'Quit', role: 'quit' }
 ];
 
 class AppTray {
     constructor(windowFocus = null) {
-        this.#tray = new Tray(icons.disabled);
+        this.#tray = new Tray(icons[connectionStates.disconnected]);
         if (windowFocus) {
             contextMenuTemplate
                 .find(item => item.id === 'show')
@@ -38,12 +39,15 @@ class AppTray {
         this.#tray.setToolTip(tooltipBase);
     }
 
-    setEnabledState = message =>
-        this.#setTrayState('enabled', message);
+    setConnectedState = message =>
+        this.#setTrayState(connectionStates.connected, message);
 
-    setDisabledState = message =>
-        this.#setTrayState('disabled', message);
+    setDisconnectedState = message =>
+        this.#setTrayState(connectionStates.disconnected, message);
     
+    setConnectingState = message =>
+        this.#setTrayState(connectionStates.connecting, message);
+
     #tray = null;
 
     #setTrayState = (state, message) => {

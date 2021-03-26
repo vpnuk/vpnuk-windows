@@ -1,6 +1,7 @@
 const cp = require('child_process');
-const { settingsPath } = require('../../modules/constants');
 const fs = require('fs');
+const { settingsPath } = require('../../modules/constants');
+const { spawnChild } = require('./async');
 
 const isDev = process.env.ELECTRON_ENV === 'Dev';
 
@@ -16,7 +17,7 @@ const getOpenVpnExePathSync = () => {
     var exePath = exeKey.substring(exeKey.indexOf('REG_SZ') + 6).trim();
 
     if (fs.existsSync(exePath)) {
-        return (isDev ? 'dev_' : '') + escapeSpaces(exePath);
+        return escapeSpaces(exePath);
     }
 
     throw new Error('No OpenVPN found.');
@@ -33,11 +34,11 @@ exports.runOpenVpn = (
     onExitHandler = code => {
         isDev && console.log(`ovpn exited with code ${code}`);
     },
-    onErrorHandler = errData => {
-        isDev && console.log(`ovpn-error: ${errData}`);
-    },
     onDataHandler = data => {
         isDev && console.log(`ovpn-out: ${data}`);
+    },
+    onErrorHandler = errData => {
+        isDev && console.log(`ovpn-error: ${errData}`);
     }
 ) => {
     isDev && console.log(options);
@@ -85,10 +86,11 @@ exports.killWindowsProcessSync = pid => {
     return code;
 };
 
-exports.getOvpnAdapterNamesSync = () =>
-    (cp.spawnSync(getOpenVpnExePathSync(), ['--show-adapters'], { shell: true })
-        .stdout + '')
+exports.getOvpnAdapterNames = async () => {
+    return (await spawnChild(getOpenVpnExePathSync(),
+        ['--show-adapters'], { shell: true }))
         .split('\r\n')
         .filter(_ => _)
         .slice(1)
-        .map(line => line.substring(1, line.indexOf('\'', 1)));
+        .map(line => line.substring(1, line.indexOf('\'', 1)));;
+};

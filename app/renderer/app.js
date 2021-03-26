@@ -5,7 +5,7 @@ import './app.css';
 import { Sidebar } from './views/sidebar/sidebar';
 import { MainPage } from './views/main/main';
 import { setDns, setServers } from './reducers/catalogSlice';
-import { setPid, setGateway as setGatewayInner } from './reducers/connectionSlice';
+import { setConState, setGateway as setGatewayInner } from './reducers/connectionSlice';
 import { initializeCatalogs } from '@modules/catalogs.js';
 const { ipcRenderer } = require('electron');
 
@@ -27,7 +27,7 @@ function App() {
                 dispatch(setServers(catalog.servers));
             });
 
-        setConnection = pid => dispatch(setPid(pid));
+        setConnection = state => dispatch(setConState(state));
         return () => {
             setConnection = null;
             setGateway = null;
@@ -63,14 +63,9 @@ ipcRenderer.on('default-gateway-response', (_, arg) => {
     setGateway(arg);
 });
 
-ipcRenderer.on('connection-started', (_, pid) => {
-    isDev && console.log('connection-started event', pid);
-    setConnection(pid);
-});
-
-ipcRenderer.on('connection-stopped', (_, arg) => {
-    isDev && console.log('connection-stopped event', arg);
-    setConnection(null);
+ipcRenderer.on('connection-changed', (_, arg) => {
+    isDev && console.log('connection-changed event', arg);
+    setConnection(arg);
 });
 
 window.addEventListener('contextmenu', event => {

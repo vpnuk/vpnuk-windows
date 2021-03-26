@@ -1,5 +1,5 @@
 import { ipcRenderer } from 'electron';
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { CSSTransition } from 'react-transition-group';
 import { useSelector } from 'react-redux';
 import { Switch } from 'antd';
@@ -12,12 +12,13 @@ import {
     selectCurrentProfile
 } from '../../reducers/settingsSlice';
 import {
-    selectPid,
+    selectConState,
     selectGateway
 } from '../../reducers/connectionSlice';
+import { connectionStates } from '@modules/constants.js';
 
 export const MainPage = ({ showDrawer }) => {
-    const pid = useSelector(selectPid);
+    const connectionState = useSelector(selectConState);
     const login = useSelector(selectLogin);
     const serverName = useSelector(selectServerName);
     const profile = useSelector(selectCurrentProfile);
@@ -41,20 +42,26 @@ export const MainPage = ({ showDrawer }) => {
                     <div className="column-block column-content_block">
                         <div className="column-content_block-title">PRIVACY MODE</div>
                         <div className="column-content_block-check">
-                            <CSSTransition in={pid && true} timeout={360} classNames="switch">
+                            <CSSTransition
+                                classNames="switch"
+                                in={connectionState === connectionStates.connected}
+                                timeout={360}
+                            >
                                 <Switch
+                                    className="switch"
                                     onChange={checked => {
-                                        if (checked) {
+                                        console.log('switch', checked, connectionState);
+                                        if (checked && connectionState === connectionStates.disconnected) {
                                             ipcRenderer.send('connection-start', { profile, gateway });
-                                        } else {
-                                            ipcRenderer.send('connection-stop', pid);
+                                        }
+                                        else {
+                                            ipcRenderer.send('connection-stop');
                                         }
                                     }}
-                                    checked={pid && true}
-                                    className="switch"
+                                    checked={connectionState !== connectionStates.disconnected}
                                 />
                             </CSSTransition>
-                            <p>{pid ? 'Connected' : 'Disconnected'}</p>
+                            <p>{connectionState}</p>
                         </div>
                         <div className="column-content_block-text">
                             <p>{login}</p>
