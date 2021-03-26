@@ -35,7 +35,7 @@ ipcMain.on('connection-start', (event, args) => {
     isDev && console.log('connection-start event', args);
     const { profile, gateway } = args;
     const { tray } = require('./main');
-                
+
     // todo: validate arg (Profile);
 
     var newConnection;
@@ -67,7 +67,7 @@ ipcMain.on('connection-start', (event, args) => {
                             deleteRouteSync(defaultRoute, gateway).trim());
                     }
                     pid = newConnection.pid;
-                    event.sender.send('connection-changed', connectionStates.connected); 
+                    event.sender.send('connection-changed', connectionStates.connected);
                     tray.setConnectedState(`Connected to ${profile.server.label}`);
                 }
             });
@@ -135,9 +135,12 @@ ipcMain.on('ipv6-fix', async () => {
 });
 
 ipcMain.on('ovpn-bin-download', async event => {
-    isDev && console.log('ovpn-bin-download start');
-    await downloadOvpnExe();
-    const { ovpnExePath } = require('./utils/updater');
-    event.sender.send('ovpn-bin-downloaded', ovpnExePath && true);
-    isDev && console.log('ovpn-bin-download end');
+    isDev && console.log('ovpn-bin-download event');
+    try {
+        const ovpnExePath = await downloadOvpnExe();
+        event.sender.send('ovpn-bin-downloaded', ovpnExePath && true);
+    }
+    catch (error) {
+        showMessageBoxOnError(error, 'OpenVPN download');
+    }
 });

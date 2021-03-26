@@ -1,14 +1,24 @@
-const axios = require('axios');
 const path = require('path');
 const fs = require('fs');
 const StreamZip = require('node-stream-zip');
-
+const { httpsGet, writeFile } = require('./async');
 const { settingsPath, settingsLink } = require('../../modules/constants');
+
+const isDev = process.env.ELECTRON_ENV === 'Dev'
+
+const checkExe = exePath => {
+    if (fs.existsSync(exePath)) {
+        exports.ovpnExePath = exePath;
+        isDev && console.log('downloadOvpnExe exe found + export');
+        return true;
+    }
+    return false;
+}
 
 exports.downloadOvpnExe = async () => {
     const exePath = path.join(settingsPath.ovpnBinFolder, 'bin', 'openvpn.exe');
-    if (fs.existsSync(exePath)) {
-        exports.ovpnExePath = exePath;
+    if (checkExe(exePath)) {
+        return exePath;
     }
 
     var link = process.arch === 'x32'
@@ -17,29 +27,20 @@ exports.downloadOvpnExe = async () => {
 
     const zipFile = path.join(settingsPath.folder,
         path.basename(settingsLink.ovpn64zip));
-    
-    const writer = fs.createWriteStream(zipFile);
 
-    const response = await axios({
-        url: link,
-        method: 'get',
-        responseType: 'stream'
-    });
+    const response = await httpsGet(link);
+    await writeFile(response, zipFile);
 
-    response.data.pipe(writer);
+    const zip = new StreamZip.async({ file: zipFile });
+    fs.mkdirSync(settingsPath.ovpnBinFolder, { recursive: true });
+    await zip.extract(null, settingsPath.ovpnBinFolder);
+    await zip.close();
 
-    writer.on('finish', async () => {
-        const zip = new StreamZip.async({ file: zipFile });
-        fs.mkdirSync(settingsPath.ovpnBinFolder, { recursive: true });
-        await zip.extract(null, settingsPath.ovpnBinFolder);
-        await zip.close();
-        
-        if (fs.existsSync(exePath)) {
-            exports.ovpnExePath = exePath;
-        }
-    });
+    fs.unlinkSync(zipFile);
 
-    writer.on('error', err => {
-        console.log('zip save error', err);
-    });
+    if (checkExe(exePath)) {
+        return exePath;
+    }
+
+    return null;
 }
