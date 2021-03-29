@@ -17,14 +17,14 @@ const selectOptionColors = {
         ...provided,
         backgroundColor:
             state.isFocused
-                ? '#0BBFBA'
+                ? '#444444'
                 : state.isSelected
                     ? '#5B6A6A'
                     : null
     }),
     control: (provided, state) => ({
         ...provided,
-        boxShadow: state.isFocused ? '0 0 0 1px #0BBFBA' : null,
+        boxShadow: state.isFocused ? '0 0 0 1px #444444' : null,
         width: 200,
     }),
 };

@@ -18,7 +18,7 @@ const icons = Object.assign({}, ...Object.keys(iconPaths).map(key => ({
         .resize({ width: 16, height: 16 })
 })));
 
-const tooltipBase = 'VPN UK';
+const tooltipBase = 'VPNUK';
 
 const contextMenuTemplate = [
     { id: 'show', label: tooltipBase, type: 'normal', click: () => { } },
