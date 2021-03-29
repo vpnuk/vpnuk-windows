@@ -1,7 +1,8 @@
 import { ipcRenderer } from 'electron';
 import React from 'react';
 import { CSSTransition } from 'react-transition-group';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import Select from 'react-select';
 import { Switch } from 'antd';
 import WorldImage from '@assets/world.png';
 import SettingsImage from '@assets/settings.png';
@@ -9,18 +10,24 @@ import './main.css';
 import {
     selectLogin,
     selectServerName,
-    selectCurrentProfile
-} from '../../reducers/settingsSlice';
+    selectCurrentProfile,
+    selectProfilesAvailable,
+    setCurrentProfile
+} from '@reducers/settingsSlice';
 import {
     selectConState,
     selectGateway
-} from '../../reducers/connectionSlice';
+} from '@reducers/connectionSlice';
+import { selectOptionColors } from '@styles';
 import { connectionStates } from '@modules/constants.js';
 
 export const MainPage = ({ showDrawer }) => {
+    const dispatch = useDispatch();
+
     const connectionState = useSelector(selectConState);
     const login = useSelector(selectLogin);
     const serverName = useSelector(selectServerName);
+    const profiles = useSelector(selectProfilesAvailable);
     const profile = useSelector(selectCurrentProfile);
     const gateway = useSelector(selectGateway);
 
@@ -63,6 +70,13 @@ export const MainPage = ({ showDrawer }) => {
                             </CSSTransition>
                             <p>{connectionState}</p>
                         </div>
+                        <Select
+                            name="profile-main"
+                            className="form-select"
+                            styles={selectOptionColors}
+                            options={profiles}
+                            value={profile}
+                            onChange={value => dispatch(setCurrentProfile(value.id))} />
                         <div className="column-content_block-text">
                             <p>{login}</p>
                             <p>{serverName}</p>

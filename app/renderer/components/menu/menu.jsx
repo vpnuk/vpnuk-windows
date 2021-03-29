@@ -1,7 +1,7 @@
 import { ipcRenderer } from 'electron';
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import Select from 'react-select'
+import Select from 'react-select';
 import CreatableSelect from "react-select/creatable";
 import { Profile } from '../profile/profile';
 import { optionsConnectionType, connectionStates } from '@modules/constants.js';
@@ -12,12 +12,12 @@ import {
     selectProfilesAvailable,
     setCurrentProfile,
     addProfile
-} from '../../reducers/settingsSlice';
+} from '@reducers/settingsSlice';
 import {
     selectConState,
     selectGateway
-} from '../../reducers/connectionSlice';
-import { annotateItemLabel, selectOptionColors } from '../../styles';
+} from '@reducers/connectionSlice';
+import { annotateItemLabel, selectOptionColors } from '@styles';
 import './menu.css';
 import { isDev } from '../../app';
 

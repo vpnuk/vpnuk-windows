@@ -8,7 +8,7 @@ import './details.css';
 import {
     selectDnsCalalog,
     selectProtoAndPorts
-} from '../../reducers/catalogSlice';
+} from '@reducers/catalogSlice';
 import {
     selectDetails,
     setPort,
@@ -18,9 +18,9 @@ import {
     selectCurrentProfile,
     setKillSwitch,
     selectKillSwitch
-} from '../../reducers/settingsSlice';
+} from '@reducers/settingsSlice';
 import { optionsMtu } from '@modules/constants.js';
-import { selectOptionColors } from '../../styles';
+import { selectOptionColors } from '@styles';
 
 export const ConnectionDetails = () => {
     const dispatch = useDispatch();

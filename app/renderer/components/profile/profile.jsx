@@ -9,7 +9,7 @@ import {
     setLogin,
     setPassword,
     deleteProfile
-} from '../../reducers/settingsSlice';
+} from '@reducers/settingsSlice';
 
 export const Profile = () => {
     const dispatch = useDispatch();
