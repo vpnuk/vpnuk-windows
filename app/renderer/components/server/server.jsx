@@ -6,9 +6,9 @@ import './server.css';
 import {
     selectServer,
     setServer
-} from '../../reducers/settingsSlice';
-import { selectServerCatalog } from '../../reducers/catalogSlice';
-import { selectOptionColors } from '../../styles';
+} from '@reducers/settingsSlice';
+import { selectServerCatalog } from '@reducers/catalogSlice';
+import { selectOptionColors } from '@styles';
 
 export const Server = () => {
     const dispatch = useDispatch();
@@ -21,7 +21,7 @@ export const Server = () => {
     useEffect(() => {
         setSelectedServer(selectСatalog(server.type)
             .find(s => s.label === server.label))
-    }, []);
+    }, [server]);
 
     useEffect(() => {
         setServerCatalog(selectСatalog(server.type.toLowerCase()));
@@ -62,10 +62,7 @@ export const Server = () => {
                 options={serverCatalog}
                 value={selectedServer}
                 getOptionValue={option => option.label}
-                onChange={value => {
-                    setSelectedServer(value);
-                    dispatch(setServer(value));
-                }} />
+                onChange={value => dispatch(setServer(value))} />
         </>
     );
 };

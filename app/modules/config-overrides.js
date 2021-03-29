@@ -1,11 +1,11 @@
 const { override, fixBabelImports, addBabelPlugin, addWebpackAlias } = require('customize-cra');
-const ModuleScopePlugin = require("react-dev-utils/ModuleScopePlugin");
-const path = require("path");
+const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin');
+const path = require('path');
 const fs = require('fs');
 
 const pathAliases = {
-    '@assets': path.resolve(__dirname, "../assets"),
-    '@modules': path.resolve(__dirname, "../modules")
+    '@reducers': path.resolve(__dirname, '../renderer/reducers'),
+    '@styles': path.resolve(__dirname, '../renderer/styles')
 };
 
 const targetOverride = config => {
@@ -13,10 +13,15 @@ const targetOverride = config => {
     return config;
 };
 
+const modulesAliases = {
+    '@assets': path.resolve(__dirname, '../assets'),
+    '@modules': path.resolve(__dirname, '../modules')
+};
+
 const ModuleScopeExceptionOverride = config => {
     config.resolve.plugins.forEach(plugin => {
         if (plugin instanceof ModuleScopePlugin) {
-            Object.values(pathAliases).forEach(folder => 
+            Object.values(modulesAliases).forEach(folder => 
                 fs.readdirSync(folder)
                     .forEach(file =>
                         plugin.allowedFiles.add(
@@ -27,6 +32,8 @@ const ModuleScopeExceptionOverride = config => {
     return config;
 };
 
+
+
 module.exports = {
     paths: (paths, _) => {
         paths.appSrc = path.resolve(__dirname, '../renderer');
@@ -34,6 +41,7 @@ module.exports = {
         return paths
     },
     webpack: override(
+        addWebpackAlias(modulesAliases),
         addWebpackAlias(pathAliases),
         ModuleScopeExceptionOverride,
         targetOverride,
