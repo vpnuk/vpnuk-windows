@@ -1,5 +1,6 @@
 const { BrowserWindow, dialog, ipcMain, Menu } = require('electron');
 const path = require('path');
+const publicIp = require('public-ip');
 const {
     runOpenVpn,
     killWindowsProcess,
@@ -85,18 +86,17 @@ ipcMain.on('connection-start', (event, args) => {
                 console.log(`deleteRoute ${profile.server.host} ${gateway}`,
                     deleteRouteSync(profile.server.host, gateway).trim());
             },
-            data => { // On stdout data
+            async data => { // On stdout data
                 isDev && console.log(`ovpn-out:\n${data}`);
                 if (data.includes('End ipconfig commands for register-dns')) {
                     if (profile.killSwitchEnabled) {
-                        // console.log(`addRoute ${defaultRoute} ${gateway}`,
-                        //     addRouteSync(profile.server.host, gateway).trim());
                         console.log(`deleteRoute ${defaultRoute} ${gateway}`,
                             deleteRouteSync(defaultRoute, gateway).trim());
                     }
                     pid = newConnection.pid;
+                    const ip = await publicIp.v4();
                     event.sender.send('connection-changed', connectionStates.connected);
-                    tray.setConnectedState(`Connected to ${profile.server.label}`);
+                    tray.setConnectedState(`Connected to ${profile.server.label}\nYour IP: ${ip}`);
                 }
             });
     } catch (error) {
