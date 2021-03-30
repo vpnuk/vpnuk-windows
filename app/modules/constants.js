@@ -17,6 +17,7 @@ const optionsConnectionType = [
 exports.optionsConnectionType = optionsConnectionType;
 
 exports.optionsMtu = [
+    { value: '', label: 'MTU: Default' },
     { value: '1500', label: 'MTU: 1500' },
     { value: '1450', label: 'MTU: 1450' },
     { value: '1400', label: 'MTU: 1400' },

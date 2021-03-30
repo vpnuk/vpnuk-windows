@@ -33,7 +33,7 @@ const dowloadJson = (link, filePath) =>
         });
 
 const handlerServerDnsStructure = arr => [
-    { value: [], label: 'No DNS' },
+    { value: [], label: 'DNS: Default' },
     ...arr.map(dnsItem => ({
         label: dnsItem.name,
         value: [dnsItem.primary, dnsItem.secondary]

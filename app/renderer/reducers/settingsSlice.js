@@ -23,8 +23,8 @@ class Profile {
     details = {
         port: '1194',
         protocol: 'UDP',
-        dns: { label: 'No DNS' }, // value: []
-        mtu: { value: '1500' }
+        dns: { label: 'DNS: Default' }, // value: []
+        mtu: { value: '' }
     }
     killSwitchEnabled = false;
 };
