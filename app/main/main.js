@@ -1,14 +1,13 @@
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
-const { killWindowsProcessSync } = require('./utils/openVpn');
 const AppTray = require('./tray');
 const ElectronStore = require('electron-store');
 ElectronStore.initRenderer();
 
-let window, tray;
-
 const isDev = process.env.ELECTRON_ENV === 'Dev';
 exports.isDev = isDev;
+
+let window, tray;
 
 function createWindow() {
     window = new BrowserWindow({
@@ -29,37 +28,52 @@ function createWindow() {
         ? 'http://localhost:3000/'
         : 'file:///' + path.join(__dirname, '../../build/index.html'));
 
-    window.on('close', event => {
+    window.on('close', _ => {
         isDev && console.log('window-close event');
-        const { pid, setPid } = require('./handlers');
-        if (pid) {
-            killWindowsProcessSync(pid);
-            setPid(null);
-        }
-        isDev && event.preventDefault();
+        const { closeConnectionSync } = require('./handlers');
+        closeConnectionSync();
     });
 
     window.on('closed', () => {
+        isDev && console.log('window-closed event');
         window = null;
     });
 }
 
-app.on('ready', () => {
-    createWindow();
-    tray = new AppTray(() => window.focus());
-    exports.tray = tray;
-});
+const gotTheLock = app.requestSingleInstanceLock()
 
-app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') {
-        app.quit();
-    }
-});
+if (gotTheLock) {
+    app.on('second-instance', (event, commandLine, workingDirectory) => {
+        if (window) {
+            if (window.isMinimized()) window.restore()
+            window.focus()
+        }
+    })
 
-app.on('activate', () => {
-    if (window === null) {
+    app.on('ready', () => {
         createWindow();
-    }
+        tray = new AppTray(() => window.focus());
+        exports.tray = tray;
+    });
+
+    app.on('window-all-closed', () => {
+        if (process.platform !== 'darwin') {
+            app.quit();
+        }
+    });
+
+    app.on('activate', () => {
+        if (window === null) {
+            createWindow();
+        }
+    });
+}
+else {
+    app.quit();
+}
+
+isDev && process.on('uncaughtException', error => {
+    console.log('uncaughtException', error);
 });
 
 require('./handlers');

@@ -18,7 +18,7 @@
     "react-eject": "react-app-rewired eject",
     "electron-start": "electron .",
     "start": "concurrently --kill-others \"cross-env BROWSER=none yarn run react-start\" \"wait-on http://localhost:3000 && cross-env ELECTRON_ENV=Dev electron .\"",
-    "electron-build": "electron-builder --x64 --ia32",
+    "electron-build": "electron-builder --x64",
     "build": "yarn run react-build && yarn run electron-build",
     "electron-build-x64": "electron-builder --x64 -c.nsis.artifactName=vpnuk_installer.x64.exe",
     "electron-build-ia32": "electron-builder --ia32 -c.nsis.artifactName=vpnuk_installer.ia32.exe",

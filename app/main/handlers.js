@@ -2,7 +2,8 @@ const { BrowserWindow, dialog, ipcMain, Menu } = require('electron');
 const {
     runOpenVpn,
     killWindowsProcess,
-    getOvpnAdapterNames
+    getOvpnAdapterNames,
+    killWindowsProcessSync
 } = require('./utils/openVpn');
 const { getLogFileStream, openLogFileExternal } = require('./utils/logs');
 const {
@@ -19,8 +20,6 @@ const { downloadOvpnExe } = require('./utils/updater');
 const isDev = process.env.ELECTRON_ENV === 'Dev';
 
 let pid = null;
-const setPid = value => pid = value;
-exports.setPid = setPid;
 
 const showMessageBoxOnError = (error, title = 'Error') => {
     isDev && console.error(error);
@@ -29,7 +28,16 @@ const showMessageBoxOnError = (error, title = 'Error') => {
         title: title,
         message: error.message
     }));
-}
+};
+
+const closeConnectionSync = () => {
+    isDev && console.log(`closeConnectionSync. pid=${pid}.`);
+    if (pid) {
+        killWindowsProcessSync(pid);
+        pid = null;
+    }
+};
+exports.closeConnectionSync = closeConnectionSync;
 
 ipcMain.on('connection-start', (event, args) => {
     isDev && console.log('connection-start event', args);
@@ -48,7 +56,14 @@ ipcMain.on('connection-start', (event, args) => {
                 stream.end();
                 pid = null;
                 isDev && console.log(`ovpn exited with code ${code}`);
-                event.sender.send('connection-changed', connectionStates.disconnected);
+                try { 
+                    event.sender.send('connection-changed', connectionStates.disconnected);
+                }
+                catch (error) { // sender (window) may be destroyed if app is closing
+                    if (error.message !== 'Object has been destroyed') {
+                        throw error;
+                    }
+                }
                 tray.setDisconnectedState('Disconnected');
                 if (profile.killSwitchEnabled) {
                     console.log(`addRoute ${defaultRoute} ${gateway}`,
@@ -58,7 +73,7 @@ ipcMain.on('connection-start', (event, args) => {
                     deleteRouteSync(profile.server.host, gateway).trim());
             },
             data => { // On stdout data
-                isDev && console.log(`ovpn-out: ${data}`);
+                isDev && console.log(`ovpn-out:\n${data}`);
                 if (data.includes('End ipconfig commands for register-dns')) {
                     if (profile.killSwitchEnabled) {
                         // console.log(`addRoute ${defaultRoute} ${gateway}`,
