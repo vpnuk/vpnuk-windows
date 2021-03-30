@@ -28,10 +28,13 @@ function createWindow() {
         ? 'http://localhost:3000/'
         : 'file:///' + path.join(__dirname, '../../build/index.html'));
 
-    window.on('close', _ => {
+    window.on('close', event => {
         isDev && console.log('window-close event');
         const { closeConnectionSync } = require('./handlers');
-        closeConnectionSync();
+        if (!closeConnectionSync()) {
+            isDev && console.log('window-close event cancelled');
+            event.preventDefault();
+        }
     });
 
     window.on('closed', () => {

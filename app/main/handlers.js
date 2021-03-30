@@ -1,4 +1,5 @@
 const { BrowserWindow, dialog, ipcMain, Menu } = require('electron');
+const path = require('path');
 const {
     runOpenVpn,
     killWindowsProcess,
@@ -31,11 +32,23 @@ const showMessageBoxOnError = (error, title = 'Error') => {
 };
 
 const closeConnectionSync = () => {
-    isDev && console.log(`closeConnectionSync. pid=${pid}.`);
-    if (pid) {
+    isDev && console.log(`closeConnectionSync. pid=${pid}`);
+    if (!pid) {
+        return true;
+    }
+    if (dialog.showMessageBoxSync({
+        type: 'warning',
+        icon: path.join(__dirname, '../assets/icon.ico'),
+        title: 'VPNUK Warning',
+        message: 'Connection is active right now',
+        buttons: ['Disconnect and exit', 'Cancel'],
+        cancelId: 1
+    }) !== 1) {
         killWindowsProcessSync(pid);
         pid = null;
+        return true;
     }
+    return false;
 };
 exports.closeConnectionSync = closeConnectionSync;
 
@@ -56,7 +69,7 @@ ipcMain.on('connection-start', (event, args) => {
                 stream.end();
                 pid = null;
                 isDev && console.log(`ovpn exited with code ${code}`);
-                try { 
+                try {
                     event.sender.send('connection-changed', connectionStates.disconnected);
                 }
                 catch (error) { // sender (window) may be destroyed if app is closing
