@@ -3,6 +3,7 @@ const path = require('path');
 const AppTray = require('./tray');
 const ElectronStore = require('electron-store');
 ElectronStore.initRenderer();
+const { autoUpdater } = require("electron-updater");
 
 const isDev = process.env.ELECTRON_ENV === 'Dev';
 exports.isDev = isDev;
@@ -57,6 +58,7 @@ if (gotTheLock) {
         createWindow();
         tray = new AppTray(() => window.focus());
         exports.tray = tray;
+        !isDev && autoUpdater.checkForUpdates();
     });
 
     app.on('window-all-closed', () => {
@@ -80,3 +82,4 @@ isDev && process.on('uncaughtException', error => {
 });
 
 require('./handlers');
+require('./updater');
