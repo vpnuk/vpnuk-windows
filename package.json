@@ -66,6 +66,7 @@
   },
   "dependencies": {
     "electron-store": "^7.0.2",
+    "electron-updater": "^4.3.8",
     "node-stream-zip": "^1.13.2",
     "public-ip": "^4.0.3"
   },
@@ -83,7 +84,6 @@
     "electron": "^10.0.0",
     "electron-builder": "^22.10.5",
     "electron-fetch": "^1.7.3",
-    "electron-updater": "^4.3.8",
     "fs": "0.0.1-security",
     "react": "^16.8.6",
     "react-app-rewire-less": "^2.1.3",
