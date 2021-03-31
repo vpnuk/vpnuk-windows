@@ -4,7 +4,7 @@
     "name": "Mikhail Kryuchkov",
     "email": "kryuchkovm@outlook.com"
   },
-  "version": "v0.4.0",
+  "version": "v0.4.1",
   "description": "VPNUK desktop application",
   "repository": {
     "type": "git",
@@ -40,7 +40,6 @@
         }
       ],
       "icon": "build/favicon.ico",
-      "publisherName": "Interexy LLC",
       "publish": [
         "github"
       ]

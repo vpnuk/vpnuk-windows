@@ -58,7 +58,9 @@ if (gotTheLock) {
         createWindow();
         tray = new AppTray(() => window.focus());
         exports.tray = tray;
-        !isDev && autoUpdater.checkForUpdates();
+        autoUpdater.autoDownload = false;
+        autoUpdater.allowPrerelease = true; // TODO: remove on release 1.0.0+
+        autoUpdater.checkForUpdates();
     });
 
     app.on('window-all-closed', () => {
