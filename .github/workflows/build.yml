@@ -17,6 +17,12 @@ jobs:
         with:
           node-version: 14
 
+      - name: Cache node_modules
+        uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1
         with:
