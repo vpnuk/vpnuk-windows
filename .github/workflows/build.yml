@@ -17,12 +17,16 @@ jobs:
         with:
           node-version: 14
 
-      - name: Cache node_modules & electron binaries
+      - name: Cache node_modules
         uses: actions/cache@v2
         with:
-          path: |
-            '**/node_modules'
-            '.cache/electron'
+          path: '**/node_modules'
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+
+      - name: Cache electron binaries
+        uses: actions/cache@v2
+        with:
+          path: '.cache/electron'
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
 
       - name: Build/release Electron app
