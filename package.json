@@ -13,7 +13,7 @@
   "fs": "empty",
   "scripts": {
     "react-start": "react-app-rewired start",
-    "react-build": "react-app-rewired build",
+    "react-build": "cross-env CI='' react-app-rewired build",
     "react-test": "react-app-rewired test",
     "react-eject": "react-app-rewired eject",
     "electron-start": "electron .",
