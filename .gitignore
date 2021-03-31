@@ -26,6 +26,7 @@ yarn-error.log*
 # temp files
 config.ovpn
 profile.txt
+.cache/**
 
 # yarn
 .yarn/*

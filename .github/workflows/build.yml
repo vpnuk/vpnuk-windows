@@ -17,10 +17,12 @@ jobs:
         with:
           node-version: 14
 
-      - name: Cache node_modules
+      - name: Cache node_modules & electron binaries
         uses: actions/cache@v2
         with:
-          path: '**/node_modules'
+          path: |
+            '**/node_modules'
+            '.cache/electron'
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
 
       - name: Build/release Electron app
@@ -34,4 +36,4 @@ jobs:
           build_script_name: 'react-build'
           # Arguments to pass to the electron-builder command,
           # e.g. configuration overrides
-          #args: ''
+          args: --publish onTagOrDraft -c.snap.publish=github
