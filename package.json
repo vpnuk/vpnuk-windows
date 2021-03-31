@@ -4,7 +4,7 @@
     "name": "Mikhail Kryuchkov",
     "email": "kryuchkovm@outlook.com"
   },
-  "version": "v0.3.1",
+  "version": "v0.3.2",
   "description": "VPNUK desktop application",
   "repository": {
     "type": "git",
@@ -44,9 +44,6 @@
       "publish": [
         "github"
       ]
-    },
-    "nsisWeb": {
-      "appPackageUrl": "localhost:666"
     },
     "directories": {
       "buildResources": "build",
