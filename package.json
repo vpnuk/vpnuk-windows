@@ -45,6 +45,9 @@
       "buildResources": "build",
       "output": "release"
     },
+    "electronDownload": {
+      "cache": ".cache/electron"
+    },
     "files": [
       "build/**/*",
       "app/main/**/*",
