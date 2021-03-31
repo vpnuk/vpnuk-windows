@@ -18,11 +18,8 @@
     "react-eject": "react-app-rewired eject",
     "electron-start": "electron .",
     "start": "concurrently --kill-others \"cross-env BROWSER=none yarn run react-start\" \"wait-on http://localhost:3000 && cross-env ELECTRON_ENV=Dev electron .\"",
-    "electron-build": "electron-builder --x64",
-    "build": "yarn run react-build && yarn run electron-build",
-    "electron-build-x64": "electron-builder --x64 -c.nsis.artifactName=vpnuk_installer.x64.exe",
-    "electron-build-ia32": "electron-builder --ia32 -c.nsis.artifactName=vpnuk_installer.ia32.exe",
-    "build-prod": "yarn run react-build && yarn run electron-build-x64 && yarn run electron-build-ia32"
+    "build": "yarn run react-build && yarn run electron-builder",
+    "electron-build-nsis": "electron-builder --x64 -c.nsis.artifactName=vpnuk_installer.x64.exe"
   },
   "build": {
     "productName": "VPNUK",
@@ -31,14 +28,18 @@
     "win": {
       "target": [
         {
-          "target": "nsis"
+          "target": "nsis-web",
+          "arch": [
+            "x64",
+            "ia32"
+          ]
         }
       ],
       "icon": "build/favicon.ico",
       "publisherName": "Interexy LLC"
     },
-    "nsis": {
-      "artifactName": "vpnuk_installer.exe"
+    "nsisWeb": {
+      "appPackageUrl": "localhost:666"
     },
     "directories": {
       "buildResources": "build",
