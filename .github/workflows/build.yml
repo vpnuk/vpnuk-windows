@@ -40,4 +40,4 @@ jobs:
           build_script_name: 'react-build'
           # Arguments to pass to the electron-builder command,
           # e.g. configuration overrides
-          args: --publish=onTagOrDraft -c.snap.publish=github
+          args: --publish=always

@@ -4,7 +4,7 @@
     "name": "Mikhail Kryuchkov",
     "email": "kryuchkovm@outlook.com"
   },
-  "version": "v0.3.1",
+  "version": "0.3.1",
   "description": "VPNUK desktop application",
   "repository": {
     "type": "git",
@@ -41,10 +41,9 @@
       ],
       "icon": "build/favicon.ico",
       "publisherName": "Interexy LLC",
-      "publish": {
-        "provider": "github",
-        "privare": "true"
-      }
+      "publish": [
+        "github"
+      ]
     },
     "nsisWeb": {
       "appPackageUrl": "localhost:666"
@@ -55,6 +54,10 @@
     },
     "electronDownload": {
       "cache": ".cache/electron"
+    },
+    "publish": {
+      "provider": "github",
+      "privare": "true"
     },
     "files": [
       "build/**/*",
