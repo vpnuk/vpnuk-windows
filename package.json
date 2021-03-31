@@ -6,6 +6,10 @@
   },
   "version": "0.3.1",
   "description": "VPNUK desktop application",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vpnuk/vpnuk-windows.git"
+  },
   "main": "app/main/main.js",
   "config-overrides-path": "app/modules/config-overrides.js",
   "homepage": "./",
@@ -36,7 +40,11 @@
         }
       ],
       "icon": "build/favicon.ico",
-      "publisherName": "Interexy LLC"
+      "publisherName": "Interexy LLC",
+      "publish": {
+        "provider": "github",
+        "privare": "true"
+      }
     },
     "nsisWeb": {
       "appPackageUrl": "localhost:666"
