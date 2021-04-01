@@ -50,7 +50,8 @@
       "allowToChangeInstallationDirectory": true,
       "installerHeader": "nsis/installerHeader.bmp",
       "installerSidebar": "nsis/installerSidebar.bmp",
-      "runAfterFinish": true
+      "runAfterFinish": true,
+      "include": "nsis/installer.nsh"
     },
     "directories": {
       "buildResources": "build",
