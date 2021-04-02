@@ -1,9 +1,9 @@
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
 const AppTray = require('./tray');
+const { enableAutoUpdate } = require("./updater");
 const ElectronStore = require('electron-store');
 ElectronStore.initRenderer();
-const { autoUpdater } = require("electron-updater");
 
 const isDev = process.env.ELECTRON_ENV === 'Dev';
 exports.isDev = isDev;
@@ -58,9 +58,7 @@ if (gotTheLock) {
         createWindow();
         tray = new AppTray(() => window.focus());
         exports.tray = tray;
-        autoUpdater.autoDownload = false;
-        autoUpdater.allowPrerelease = true; // TODO: remove on release 1.0.0+
-        autoUpdater.checkForUpdates();
+        enableAutoUpdate();
     });
 
     app.on('window-all-closed', () => {
@@ -84,4 +82,3 @@ isDev && process.on('uncaughtException', error => {
 });
 
 require('./handlers');
-require('./updater');

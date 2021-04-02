@@ -4,6 +4,13 @@ const path = require('path');
 
 const isDev = process.env.ELECTRON_ENV === 'Dev';
 
+const enableAutoUpdate = () => {
+    autoUpdater.autoDownload = false;
+    autoUpdater.allowPrerelease = true; // TODO: remove on release v1.0.0+
+    autoUpdater.checkForUpdates();
+};
+exports.enableAutoUpdate = enableAutoUpdate;
+
 const printUpdateStatus = (message, arg = null) => {
     isDev && console.log(message, arg);
 }
@@ -18,7 +25,7 @@ autoUpdater.on('update-available', info => {
         type: 'info',
         icon: path.join(__dirname, '../assets/icon.ico'),
         title: 'VPNUK Update available',
-        message: 'Download?',
+        message: `${info}\nDownload?`,
         buttons: ['Yes', 'No'],
         cancelId: 1
     }) !== 1) {
@@ -43,7 +50,7 @@ autoUpdater.on('update-downloaded', info => {
         type: 'info',
         icon: path.join(__dirname, '../assets/icon.ico'),
         title: 'VPNUK Update downloaded',
-        message: 'Install now?',
+        message: `${info}\nInstall now?`,
         buttons: ['Yes', 'No'],
         cancelId: 1
     }) !== 1) {

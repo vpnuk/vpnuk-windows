@@ -1,10 +1,10 @@
 {
-  "name": "VPNUK",
+  "name": "vpnuk",
   "author": {
     "name": "Mikhail Kryuchkov",
     "email": "kryuchkovm@outlook.com"
   },
-  "version": "v0.4.2",
+  "version": "v0.4.3",
   "description": "VPNUK desktop application",
   "repository": {
     "type": "git",
@@ -44,6 +44,15 @@
         "github"
       ]
     },
+    "nsisWeb": {
+      "oneClick": false,
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": true,
+      "installerHeader": "nsis/installerHeader.bmp",
+      "installerSidebar": "nsis/installerSidebar.bmp",
+      "runAfterFinish": true,
+      "include": "nsis/installer.nsh"
+    },
     "directories": {
       "buildResources": "build",
       "output": "release"
@@ -53,7 +62,7 @@
     },
     "publish": {
       "provider": "github",
-      "private": "true"
+      "private": true
     },
     "files": [
       "build/**/*",
