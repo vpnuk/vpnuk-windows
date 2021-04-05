@@ -1,5 +1,5 @@
 {
-  "name": "vpnuk",
+  "name": "VPNUK",
   "author": {
     "name": "Mikhail Kryuchkov",
     "email": "kryuchkovm@outlook.com"
@@ -40,12 +40,14 @@
         }
       ],
       "icon": "build/favicon.ico",
+      "requestedExecutionLevel": "requireAdministrator",
       "publish": [
         "github"
       ]
     },
     "nsisWeb": {
       "oneClick": false,
+      "perMachine": true,
       "allowElevation": true,
       "allowToChangeInstallationDirectory": true,
       "installerHeader": "nsis/installerHeader.bmp",
