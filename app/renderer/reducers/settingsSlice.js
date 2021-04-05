@@ -15,10 +15,10 @@ class Profile {
         login: '',
         password: ''
     };
+    serverType = 'shared';
     server = {
         host: '',
-        label: '',
-        type: 'shared'
+        label: ''
     };
     details = {
         port: '1194',
@@ -88,6 +88,9 @@ export const settingsSlice = createSlice({
         setServer: (state, action) => {
             _currentProfile(state).server = action.payload;
         },
+        setServerType: (state, action) => {
+            _currentProfile(state).serverType = action.payload;
+        },
         setPort: (state, action) => {
             _currentProfile(state).details.port = action.payload;
         },
@@ -116,6 +119,7 @@ export const {
     setLogin,
     setPassword,
     setServer,
+    setServerType,
     setPort,
     setProtocol,
     setDns,
@@ -134,6 +138,9 @@ export const selectProfilesAvailable = state =>
 
 export const selectServer = state =>
     selectCurrentProfile(state).server;
+
+export const selectServerType = state =>
+    selectCurrentProfile(state).serverType;
 
 export const selectServerName = state =>
     selectCurrentProfile(state).server.label;
