@@ -3,6 +3,11 @@
 	!insertMacro MUI_PAGE_WELCOME
 !macroEnd
 
+; ---------------------------------- COMMON -----------------------------------
+!include nsDialogs.nsh
+!include WordFunc.nsh
+!include x64.nsh
+
 !macro ClearStack
     ${Do}
         Pop $0
@@ -12,11 +17,41 @@ send:
 !macroend
 !define ClearStack "!insertmacro ClearStack"
 
-!include nsDialogs.nsh
-!include WordFunc.nsh
-!include x64.nsh
+!macro uninstallOvpn
+    ; old versions
+    ReadRegStr $0 HKLM SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\OpenVPN UninstallString
+    ${If} $0 != ""
+        nsExec::ExecToStack "$0 /S"  uninstall
+        Pop $0
+        Pop $0 ; Ruin inetc::get call if no pops made here
+        MessageBox MB_OK "Deleting OpenVPN"
+        Sleep 5000 ; Exec doesn't wait old uninstaller for some reason.
+                   ; May conflict with installer later.
+    ${EndIf}
+    ; new versions (2.5.x+)
+    nsExec::ExecToStack `wmic product where "name like 'OpenVPN _._.%'" get LocalPackage /format:list` 
+    Pop $0
+    Pop $0 ; LocalPackage=C:\Windows\Installer\1fb7bb.msi // No Instance(s) Available
+    ${WordFind} $0 "LocalPackage=" "E-1" $0
+    ${WordFind} $0 ".msi" "E+1{*" $0
+    StrLen $1 $0
+    ${If} $1 > 1
+        nsExec::ExecToStack "MsiExec.exe /x $0 /passive"
+    ${EndIf}
+!macroend
+!define uninstallOvpn "!insertmacro uninstallOvpn"
 
+!macro radioBtnClick
+    Pop $hwnd
+    nsDialogs::GetUserData $hwnd
+    pop $radioValue
+!macroend
+!define radioBtnClick "!insertmacro radioBtnClick"
+
+; ---------------------------------- INSTALL ----------------------------------
 !macro customPageAfterChangeDir
+
+; --------------- OVPN ----------------
     !pragma warning disable 6040 ; Disable 'LangString is not set in language table of language <lang>'
     LangString title 1033 "OpenVPN"
     LangString subtitle 1033 "OpenVPN installation"
@@ -55,7 +90,7 @@ send:
         ${NSD_OnClick} $hwnd radioBtnClick
         IntOp $height $height + 20
         StrCpy $radioValue "true"
-install_option_end:
+    install_option_end:
 
         StrCmp $ovpnPath "" use_option_end 0
         ${NSD_CreateRadioButton} 12 $height 100% 20 "Use installed OpenVPN $installedOvpnVer"
@@ -63,7 +98,7 @@ install_option_end:
         nsDialogs::SetUserData $hwnd "false"
         ${NSD_OnClick} $hwnd radioBtnClick
         StrCpy $radioValue "false"
-use_option_end:
+    use_option_end:
 
         ${NSD_Check} $hwnd
 
@@ -71,9 +106,7 @@ use_option_end:
     FunctionEnd
 
     Function radioBtnClick
-        Pop $hwnd
-        nsDialogs::GetUserData $hwnd
-        pop $radioValue
+        ${radioBtnClick}
     FunctionEnd
 
     Function getOvpnVersion
@@ -94,11 +127,8 @@ use_option_end:
             MessageBox MB_OK "Please specify your choice"
             Abort
         ${ElseIf} $radioValue == true
-            ReadRegStr $0 HKLM SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\OpenVPN UninstallString
-            ${If} $0 != ""
-                nsExec::ExecToStack "$0 /S" ; old versions uninstall
-                Sleep 5000 ; Exec doesn't wait old uninstaller for some reason.
-                           ; May conflict with installer later.
+            ${If} $ovpnPath != ""
+                ${uninstallOvpn}
             ${EndIf}
 
             ${If} ${RunningX64}
@@ -129,3 +159,62 @@ use_option_end:
     !pragma warning enable 6040 ; Enable back
 !macroend
 
+; --------------------------------- UNINSTALL ---------------------------------
+!macro customUninstallPage
+
+; --------------- OVPN ----------------
+    !pragma warning disable 6040
+    LangString title 1033 "OpenVPN"
+    LangString subtitle 1033 "OpenVPN uninstallation"
+    UninstPage custom un.OvpnPageCreate un.OvpnPageLeave
+
+    Var ovpnDialog
+    Var hwnd
+    Var radioValue
+
+    Function un.OvpnPageCreate
+        ReadRegStr $0 HKLM SOFTWARE\OpenVPN exe_path
+        ${If} $0 == ""
+            Abort
+        ${EndIf}
+
+        !insertmacro MUI_HEADER_TEXT $(title) $(subtitle)
+        nsDialogs::Create 1018
+        Pop $ovpnDialog
+        ${If} $ovpnDialog == error
+            Abort
+        ${EndIf}
+
+        ${NSD_CreateLabel} 0 0 100% 12u "Do you want to uninstall OpenVPN?"
+        Pop $hwnd
+
+        ${NSD_CreateRadioButton} 12 22 100% 20 "Yes"
+        pop $hwnd
+        nsDialogs::SetUserData $hwnd "true"
+        ${NSD_OnClick} $hwnd un.radioBtnClick
+
+        ${NSD_CreateRadioButton} 12 42 100% 20 "No"
+        pop $hwnd
+        nsDialogs::SetUserData $hwnd "false"
+        ${NSD_OnClick} $hwnd un.radioBtnClick
+
+        ${NSD_Check} $hwnd
+        StrCpy $radioValue "false"
+
+        nsDialogs::Show
+    FunctionEnd
+
+    Function un.radioBtnClick
+        ${radioBtnClick}
+    FunctionEnd
+
+    Function un.OvpnPageLeave
+        ${If} $radioValue == ""
+            MessageBox MB_OK "Please specify your choice"
+            Abort
+        ${ElseIf} $radioValue == true
+            ${uninstallOvpn}
+        ${EndIf}
+    FunctionEnd
+    !pragma warning enable 6040
+!macroend
