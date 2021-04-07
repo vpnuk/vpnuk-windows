@@ -1,10 +1,10 @@
 {
-  "name": "vpnuk",
+  "name": "VPNUK",
   "author": {
     "name": "Mikhail Kryuchkov",
     "email": "kryuchkovm@outlook.com"
   },
-  "version": "v0.4.3",
+  "version": "v0.4.4",
   "description": "VPNUK desktop application",
   "repository": {
     "type": "git",
@@ -40,18 +40,20 @@
         }
       ],
       "icon": "build/favicon.ico",
+      "requestedExecutionLevel": "requireAdministrator",
       "publish": [
         "github"
       ]
     },
     "nsisWeb": {
       "oneClick": false,
+      "perMachine": true,
       "allowElevation": true,
       "allowToChangeInstallationDirectory": true,
       "installerHeader": "nsis/installerHeader.bmp",
       "installerSidebar": "nsis/installerSidebar.bmp",
       "runAfterFinish": true,
-      "include": "nsis/installer.nsh"
+      "include": "nsis/extension.nsh"
     },
     "directories": {
       "buildResources": "build",
@@ -109,6 +111,9 @@
     "redux-persist-electron-storage": "^2.1.0",
     "uuid": "^8.3.2",
     "wait-on": "^5.2.1"
+  },
+  "resolutions": {
+    "**/app-builder-lib": "npm:app-builder-lib-mkfork@22.10.3"
   },
   "eslintConfig": {
     "extends": "react-app"
