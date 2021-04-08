@@ -22,8 +22,9 @@
     "react-eject": "react-app-rewired eject",
     "electron-start": "electron .",
     "nsis-plugin-copy": "xcopy /e /h /i .\\nsis\\Plugins\\* .\\build\\",
+    "build-react-nsis": "yarn run react-build && yarn run nsis-plugin-copy",
     "start": "concurrently --kill-others \"cross-env BROWSER=none yarn run react-start\" \"wait-on http://localhost:3000 && cross-env ELECTRON_ENV=Dev electron .\"",
-    "build": "yarn run react-build && yarn run nsis-plugin-copy && yarn run electron-builder"
+    "build": "yarn run build-react-nsis && yarn run electron-builder"
   },
   "build": {
     "productName": "VPNUK",
