@@ -58,6 +58,7 @@ send:
     Page custom ovpnPageCreate ovpnPageLeave
 
     Var ovpnVersion
+    Var ovpnInstallerUrl
     Var ovpnDialog
     Var ovpnPath
     Var installedOvpnVer
@@ -65,7 +66,7 @@ send:
     Var radioValue
     Var height
     Function ovpnPageCreate
-        StrCpy $ovpnVersion "2.5.1" ; TODO: get from build options
+        Call getFromVerionsJson
         StrCpy $height 22
         !insertmacro MUI_HEADER_TEXT $(title) $(subtitle)
         nsDialogs::Create 1018
@@ -122,6 +123,29 @@ send:
         ${EndIf}
     FunctionEnd
 
+    Function getFromVerionsJson
+        ${ClearStack}
+        inetc::get /NOCANCEL /SILENT "https://www.serverlistvault.com/versions.json" "$TEMP\versions.json" /END
+        Pop $0
+        ${If} $0 == "OK"
+            nsJSON::Set /file "$TEMP\versions.json"
+            
+            nsJSON::Get "openvpn" "version" /end
+            Pop $ovpnVersion
+
+            ${If} ${RunningX64}
+                StrCpy $1 "win64"
+            ${Else}
+                StrCpy $1 "win32"
+            ${EndIf}
+
+            nsJSON::Get "openvpn" "original" $1 /end
+            Pop $ovpnInstallerUrl
+        ${Else}
+            MessageBox MB_OK "Error loading versions.json:$\n$0"
+        ${EndIf}
+    FunctionEnd
+
     Function ovpnPageLeave
         ${If} $radioValue == ""
             MessageBox MB_OK "Please specify your choice"
@@ -131,14 +155,8 @@ send:
                 ${uninstallOvpn}
             ${EndIf}
 
-            ${If} ${RunningX64}
-                StrCpy $1 "amd64"
-            ${Else}
-                StrCpy $1 "x86"
-            ${EndIf}
-
             ${ClearStack}
-            inetc::get "https://swupdate.openvpn.org/community/releases/OpenVPN-$ovpnVersion-I601-$1.msi" "$TEMP\ovpnInstaller.msi" /nocancel
+            inetc::get $ovpnInstallerUrl "$TEMP\ovpnInstaller.msi" /nocancel
             Pop $1
             
             ${If} $1 == "OK"
