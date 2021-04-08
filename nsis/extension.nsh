@@ -160,7 +160,9 @@ send:
             Pop $1
             
             ${If} $1 == "OK"
-                nsExec::ExecToStack 'cmd /c "$TEMP\ovpnInstaller.msi" /passive'
+                nsExec::ExecToStack 'cmd /c "$TEMP\ovpnInstaller.msi" \
+                    ADDLOCAL=OpenVPN,OpenVPN.Service,Drivers,Drivers.TAPWindows6 \
+                    SELECT_ASSOCIATIONS=0 /passive'
                 Pop $0
                 
                 ${If} $0 != 0
