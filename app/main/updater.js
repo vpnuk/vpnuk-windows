@@ -24,8 +24,8 @@ autoUpdater.on('update-available', info => {
     if (dialog.showMessageBoxSync({
         type: 'info',
         icon: path.join(__dirname, '../assets/icon.ico'),
-        title: 'VPNUK Update available',
-        message: `${info}\nDownload?`,
+        title: 'VPNUK Update',
+        message: `New version (${info.version} from ${info.releaseDate}) is available.\nDownload?`,
         buttons: ['Yes', 'No'],
         cancelId: 1
     }) !== 1) {
@@ -49,8 +49,8 @@ autoUpdater.on('update-downloaded', info => {
     if (dialog.showMessageBoxSync({
         type: 'info',
         icon: path.join(__dirname, '../assets/icon.ico'),
-        title: 'VPNUK Update downloaded',
-        message: `${info}\nInstall now?`,
+        title: 'VPNUK Update',
+        message: `New version (${info.version} from ${info.releaseDate}) is downloaded.\Install now?`,
         buttons: ['Yes', 'No'],
         cancelId: 1
     }) !== 1) {
