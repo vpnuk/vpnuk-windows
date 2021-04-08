@@ -11,8 +11,7 @@ const optionsConnectionType = [
     { value: 'IKEv2', label: 'IKEv2', isDisabled: true },
     { value: 'L2TP', label: 'L2TP', isDisabled: true },
     { value: 'PPTP', label: 'PPTP', isDisabled: true },
-    { value: 'WireGuard', label: 'WireGuard', isDisabled: true },
-    { value: 'OpenConnect', label: 'OpenConnect', isDisabled: true }
+    { value: 'WireGuard', label: 'WireGuard', isDisabled: true }
 ];
 exports.optionsConnectionType = optionsConnectionType;
 
