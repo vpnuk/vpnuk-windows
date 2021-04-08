@@ -4,7 +4,7 @@
     "name": "Mikhail Kryuchkov",
     "email": "kryuchkovm@outlook.com"
   },
-  "version": "v0.4.4",
+  "version": "v0.4.5",
   "description": "VPNUK desktop application",
   "repository": {
     "type": "git",
@@ -21,9 +21,9 @@
     "react-test": "react-app-rewired test",
     "react-eject": "react-app-rewired eject",
     "electron-start": "electron .",
+    "nsis-plugin-copy": "xcopy /e /h /i .\\nsis\\Plugins\\* .\\build\\",
     "start": "concurrently --kill-others \"cross-env BROWSER=none yarn run react-start\" \"wait-on http://localhost:3000 && cross-env ELECTRON_ENV=Dev electron .\"",
-    "build": "yarn run react-build && yarn run electron-builder",
-    "electron-build-nsis": "electron-builder --x64 -c.nsis.artifactName=vpnuk_installer.x64.exe"
+    "build": "yarn run react-build && yarn run nsis-plugin-copy && yarn run electron-builder"
   },
   "build": {
     "productName": "VPNUK",
