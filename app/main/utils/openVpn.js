@@ -5,14 +5,13 @@ const { spawnChild } = require('./async');
 
 const isDev = process.env.ELECTRON_ENV === 'Dev';
 
-const getOpenVpnExePathSync = () => {
+const getOpenVpnExePathSync = (obfuscate = false) => {
     if (process.env.OVPN_EXT_PATH && isDev) {
         return escapeSpaces(process.env.OVPN_EXT_PATH);
     }
 
-    const { ovpnExePath } = require('./updater');
-    if (ovpnExePath) {
-        return escapeSpaces(ovpnExePath);
+    if (obfuscate && fs.existsSync(settingsPath.ovpnBinExe)) {
+        return escapeSpaces(settingsPath.ovpnBinExe);
     }
 
     var exeKey = '' + cp
@@ -52,10 +51,12 @@ exports.runOpenVpn = (
         settingsPath.profile,
         `${options.credentials.login}\n${options.credentials.password}`);
 
+    const obfuscate = options.details.protocol.toLowerCase() === 'obfuscation';
+
     var proc = cp.execFile(
-        getOpenVpnExePathSync(),
+        getOpenVpnExePathSync(obfuscate),
         [
-            `--config\ ${options.details.protocol.toLowerCase() === 'obfuscation'
+            `--config\ ${obfuscate
                 ? escapeSpaces(settingsPath.ovpnObfucation)
                 : escapeSpaces(settingsPath.ovpn)}`,
             `--remote\ ${options.server.host}\ ${options.details.port}`,

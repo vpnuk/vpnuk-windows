@@ -47,7 +47,8 @@ exports.settingsPath = {
     ovpn: path.join(settingsFolder, 'openvpn-configuration.ovpn'),
     ovpnObfucation: path.join(settingsFolder, 'openvpn-obfuscation-configuration.ovpn'),
     profile: path.join(settingsFolder, 'profile.txt'),
-    ovpnBinFolder: path.join(settingsFolder, 'ovpnBin/')
+    ovpnBinFolder: path.join(settingsFolder, 'ovpnBin/'),
+    ovpnBinExe: path.join(settingsFolder, 'ovpnBin', 'bin', 'openvpn.exe')
 };
 
 const baseAddress = 'https://www.serverlistvault.com/';
@@ -56,7 +57,5 @@ exports.settingsLink = {
     dns: baseAddress + 'dns.json',
     servers: baseAddress + 'servers.json',
     ovpn: baseAddress + 'openvpn-configuration.ovpn',
-    ovpnObfucation: baseAddress + 'openvpn-obfuscation-configuration.ovpn',
-    ovpn64zip: baseAddress + 'openvpn251/openvpn-win64.zip',
-    ovpn32zip: baseAddress + 'openvpn251/openvpn-win32.zip',
+    ovpnObfucation: baseAddress + 'openvpn-obfuscation-configuration.ovpn'
 }
