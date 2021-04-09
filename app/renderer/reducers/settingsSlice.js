@@ -47,9 +47,6 @@ export const settingsSlice = createSlice({
         currentProfile: defaultId
     },
     reducers: {
-        increment: state => {
-            state.value += 1
-        },
         setConnectionType: (state, action) => {
             state.connectionType = action.payload;
         },
@@ -110,7 +107,6 @@ export const settingsSlice = createSlice({
 });
 
 export const {
-    increment,
     setConnectionType,
     setCurrentProfile,
     setProfileName,

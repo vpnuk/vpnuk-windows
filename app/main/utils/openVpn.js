@@ -4,6 +4,7 @@ const { settingsPath } = require('../../modules/constants');
 const { spawnChild } = require('./async');
 
 const isDev = process.env.ELECTRON_ENV === 'Dev';
+const isIde = process.env.ELECTRON_IDE && true;
 
 const getOpenVpnExePathSync = (obfuscate = false) => {
     if (process.env.OVPN_EXT_PATH && isDev) {
@@ -54,7 +55,7 @@ exports.runOpenVpn = (
     const obfuscate = options.details.protocol.toLowerCase() === 'obfuscation';
 
     var proc = cp.execFile(
-        getOpenVpnExePathSync(obfuscate),
+        (isIde ? 'ide' : '') + getOpenVpnExePathSync(obfuscate),
         [
             `--config\ ${obfuscate
                 ? escapeSpaces(settingsPath.ovpnObfucation)

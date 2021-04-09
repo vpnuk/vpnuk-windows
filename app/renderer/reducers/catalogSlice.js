@@ -5,7 +5,11 @@ export const catalogSlice = createSlice({
     name: 'catalog',
     initialState: {
         dns: [],
-        servers: {},
+        servers: {
+            shared: [],
+            dedicated: [],
+            dedicated11: []
+        },
         protoAndPorts: protoAndPorts,
         isObfuscateAvailable: true
     },
