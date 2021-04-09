@@ -19,7 +19,7 @@ import {
 } from '@reducers/connectionSlice';
 import { annotateItemLabel, selectOptionColors } from '@styles';
 import './menu.css';
-import { isDev } from '../../app';
+import { isDev } from '@app';
 
 export const Menu = () => {
     const dispatch = useDispatch();

@@ -5,7 +5,8 @@ const fs = require('fs');
 
 const pathAliases = {
     '@reducers': path.resolve(__dirname, '../renderer/reducers'),
-    '@styles': path.resolve(__dirname, '../renderer/styles')
+    '@styles': path.resolve(__dirname, '../renderer/styles'),
+    '@app': path.resolve(__dirname, '../renderer/app')
 };
 
 const targetOverride = config => {

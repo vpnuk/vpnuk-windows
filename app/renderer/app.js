@@ -7,7 +7,7 @@ import { MainPage } from './views/main/main';
 import {
     setDns,
     setServers,
-    setObfuscateAvailable as setObfuscateInner
+    setObfuscateAvailable
 } from './reducers/catalogSlice';
 import {
     setConState,
@@ -16,7 +16,7 @@ import {
 import { initializeCatalogs } from '@modules/catalogs.js';
 const { ipcRenderer } = require('electron');
 
-let isDev, setConnection, setGateway, setObfuscateAvailable;
+let isDev, setConnection, setGateway;
 
 function App() {
     const dispatch = useDispatch();
@@ -24,7 +24,6 @@ function App() {
 
     useEffect(() => {
         ipcRenderer.send('is-dev-request');
-        ipcRenderer.send('ovpn-bin-download');
         setGateway = gw => dispatch(setGatewayInner(gw));
         ipcRenderer.send('default-gateway-request');
         ipcRenderer.send('ipv6-fix');
@@ -33,15 +32,13 @@ function App() {
             .then(catalog => {
                 dispatch(setDns(catalog.dns));
                 dispatch(setServers(catalog.servers));
+                dispatch(setObfuscateAvailable(catalog.obfucsateAvailable));
             });
 
         setConnection = state => dispatch(setConState(state));
-        setObfuscateAvailable = value => dispatch(setObfuscateInner(value));
         return () => {
-            setGateway = null;
-            
+            setGateway = null;    
             setConnection = null;
-            setObfuscateAvailable = null;
         }
     }, []);
 
@@ -77,11 +74,6 @@ ipcRenderer.on('default-gateway-response', (_, arg) => {
 ipcRenderer.on('connection-changed', (_, arg) => {
     isDev && console.log('connection-changed event', arg);
     setConnection(arg);
-});
-
-ipcRenderer.on('ovpn-bin-downloaded', (_, arg) => {
-    isDev && console.log('ovpn-bin-downloaded event', arg);
-    setObfuscateAvailable(arg);
 });
 
 window.addEventListener('contextmenu', event => {
