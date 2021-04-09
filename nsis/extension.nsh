@@ -44,7 +44,6 @@ send:
 !macro radioBtnClick
     Pop $hwnd
     nsDialogs::GetUserData $hwnd
-    pop $radioValue
 !macroend
 !define radioBtnClick "!insertmacro radioBtnClick"
 
@@ -58,16 +57,15 @@ send:
     Page custom ovpnPageCreate ovpnPageLeave
 
     Var ovpnVersion
-    Var ovpnInstallerUrl
-    Var ovpnDialog
     Var ovpnPath
     Var installedOvpnVer
+    Var ovpnInstallerUrl
+    Var ovpnDialog
     Var hwnd
     Var radioValue
     Var height
     Function ovpnPageCreate
-        Call getFromVerionsJson
-        StrCpy $height 22
+        StrCpy $height 12
         !insertmacro MUI_HEADER_TEXT $(title) $(subtitle)
         nsDialogs::Create 1018
         Pop $ovpnDialog
@@ -79,22 +77,23 @@ send:
         ${If} $ovpnPath != ""
             Call getOvpnVersion ; => $installedOvpnVer
         ${EndIf}
+        Call getFromVerionsJson
         
-        ${NSD_CreateLabel} 0 0 100% 12u "Select OpenVPN to use:"
+        ${NSD_CreateLabel} 0u 0u 100% 12u "Select OpenVPN to use:"
         Pop $hwnd
         
         StrCmp $ovpnPath "" +2 0
         StrCmp $ovpnVersion $installedOvpnVer install_option_end 0
-        ${NSD_CreateRadioButton} 12 $height 100% 20 "Install OpenVPN $ovpnVersion"
+        ${NSD_CreateRadioButton} 12u "$height\u" 100% 12u "Install OpenVPN $ovpnVersion"
         pop $hwnd
         nsDialogs::SetUserData $hwnd "true"
         ${NSD_OnClick} $hwnd radioBtnClick
-        IntOp $height $height + 20
+        IntOp $height $height + 12
         StrCpy $radioValue "true"
     install_option_end:
 
         StrCmp $ovpnPath "" use_option_end 0
-        ${NSD_CreateRadioButton} 12 $height 100% 20 "Use installed OpenVPN $installedOvpnVer"
+        ${NSD_CreateRadioButton} 12u "$height\u" 100% 12u "Use installed OpenVPN $installedOvpnVer"
         pop $hwnd
         nsDialogs::SetUserData $hwnd "false"
         ${NSD_OnClick} $hwnd radioBtnClick
@@ -108,6 +107,7 @@ send:
 
     Function radioBtnClick
         ${radioBtnClick}
+        Pop $radioValue
     FunctionEnd
 
     Function getOvpnVersion
@@ -182,15 +182,16 @@ send:
 ; --------------------------------- UNINSTALL ---------------------------------
 !macro customUninstallPage
 
-; --------------- OVPN ----------------
+; -------------- Extras ---------------
     !pragma warning disable 6040
-    LangString title 1033 "OpenVPN"
-    LangString subtitle 1033 "OpenVPN uninstallation"
+    LangString title 1033 "Uninstallation extras"
+    LangString subtitle 1033 "Choose additional options"
     UninstPage custom un.OvpnPageCreate un.OvpnPageLeave
 
     Var ovpnDialog
     Var hwnd
-    Var radioValue
+    Var ovpnFlag
+    Var userDataFlag
 
     Function un.OvpnPageCreate
         ReadRegStr $0 HKLM SOFTWARE\OpenVPN exe_path
@@ -205,36 +206,77 @@ send:
             Abort
         ${EndIf}
 
-        ${NSD_CreateLabel} 0 0 100% 12u "Do you want to uninstall OpenVPN?"
+    ; -------------- OpenVPN --------------
+        ${NSD_CreateLabel} 0u 0u 100% 12u "Uninstall OpenVPN"
         Pop $hwnd
 
-        ${NSD_CreateRadioButton} 12 22 100% 20 "Yes"
+        ${NSD_CreateRadioButton} 12u 12u 100% 12u "Yes"
         pop $hwnd
         nsDialogs::SetUserData $hwnd "true"
-        ${NSD_OnClick} $hwnd un.radioBtnClick
+        ${NSD_OnClick} $hwnd un.ovpnRadioClick
+        ${NSD_AddStyle} $hwnd ${WS_GROUP}
 
-        ${NSD_CreateRadioButton} 12 42 100% 20 "No"
+        ${NSD_CreateRadioButton} 12u 24u 100% 12u "No"
         pop $hwnd
         nsDialogs::SetUserData $hwnd "false"
-        ${NSD_OnClick} $hwnd un.radioBtnClick
+        ${NSD_OnClick} $hwnd un.ovpnRadioClick
 
         ${NSD_Check} $hwnd
-        StrCpy $radioValue "false"
+        StrCpy $ovpnFlag "false"
+    
+    ; ------------- User data -------------
+        ${NSD_CreateLabel} 0u 36u 100% 12u "Clear application user data"
+        Pop $hwnd
 
+        ${NSD_CreateRadioButton} 12u 48u 100% 12u "Yes"
+        pop $hwnd
+        nsDialogs::SetUserData $hwnd "true"
+        ${NSD_OnClick} $hwnd un.dataRadioClick
+        ${NSD_AddStyle} $hwnd ${WS_GROUP}
+
+        ${NSD_CreateRadioButton} 12u 60u 100% 12u "No"
+        pop $hwnd
+        nsDialogs::SetUserData $hwnd "false"
+        ${NSD_OnClick} $hwnd un.dataRadioClick
+
+        ${NSD_Check} $hwnd
+        StrCpy $userDataFlag "false"
+
+    ; -------------------------------------
         nsDialogs::Show
     FunctionEnd
 
-    Function un.radioBtnClick
+    Function un.ovpnRadioClick
         ${radioBtnClick}
+        Pop $ovpnFlag
+    FunctionEnd
+
+    Function un.dataRadioClick
+        ${radioBtnClick}
+        Pop $userDataFlag
     FunctionEnd
 
     Function un.OvpnPageLeave
-        ${If} $radioValue == ""
+        ${If} $ovpnFlag == ""
+        ${OrIf} $userDataFlag == ""
             MessageBox MB_OK "Please specify your choice"
             Abort
-        ${ElseIf} $radioValue == true
+        ${EndIf}
+        SetShellVarContext current
+
+        ; ----------- Updater cache -----------
+        RMDir /r "$LOCALAPPDATA\vpnuk-updater"
+
+        ; -------------- OpenVPN --------------
+        ${If} $ovpnFlag == true
             ${uninstallOvpn}
         ${EndIf}
+        
+        ; ------------- User data -------------
+        ${If} $userDataFlag == true
+            RMDir /r "$APPDATA\VPNUK"
+        ${EndIf}
+        SetShellVarContext all
     FunctionEnd
     !pragma warning enable 6040
 !macroend
