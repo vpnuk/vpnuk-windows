@@ -4,7 +4,7 @@
     "name": "Mikhail Kryuchkov",
     "email": "kryuchkovm@outlook.com"
   },
-  "version": "v0.4.5",
+  "version": "v0.4.6",
   "description": "VPNUK desktop application",
   "repository": {
     "type": "git",
@@ -23,7 +23,7 @@
     "electron-start": "electron .",
     "nsis-plugin-copy": "xcopy /e /h /i .\\nsis\\Plugins\\* .\\build\\",
     "build-react-nsis": "yarn run react-build && yarn run nsis-plugin-copy",
-    "start": "concurrently --kill-others \"cross-env BROWSER=none yarn run react-start\" \"wait-on http://localhost:3000 && cross-env ELECTRON_ENV=Dev electron .\"",
+    "start": "concurrently --kill-others \"cross-env BROWSER=none yarn run react-start\" \"wait-on http://localhost:3000 && cross-env ELECTRON_ENV=Dev ELECTRON_IDE=Ide electron .\"",
     "build": "yarn run build-react-nsis && yarn run electron-builder"
   },
   "build": {
@@ -91,7 +91,7 @@
     "concurrently": "^6.0.0",
     "cross-env": "^7.0.3",
     "customize-cra": "^0.4.1",
-    "electron": "^10.0.0",
+    "electron": "^11.0.0",
     "electron-builder": "^22.10.5",
     "electron-fetch": "^1.7.3",
     "fs": "0.0.1-security",

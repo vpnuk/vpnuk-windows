@@ -24,7 +24,7 @@ export const Server = () => {
         const catalog = selectСatalog(serverType);
         setServerCatalog(catalog);
         setServerFirstIfExists(catalog);
-    }, [serverType]);
+    }, [serverType, servers]);
 
     useEffect(() => {
         !server.host && setServerFirstIfExists(selectСatalog(serverType));

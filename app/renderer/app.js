@@ -37,7 +37,7 @@ function App() {
 
         setConnection = state => dispatch(setConState(state));
         return () => {
-            setGateway = null;    
+            setGateway = null;
             setConnection = null;
         }
     }, []);
@@ -77,6 +77,7 @@ ipcRenderer.on('connection-changed', (_, arg) => {
 });
 
 window.addEventListener('contextmenu', event => {
+    isDev && console.log('window contextmenu event');
     if (isDev) {
         event.preventDefault();
         ipcRenderer.send('context-menu-show', { x: event.x, y: event.y });
