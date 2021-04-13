@@ -6,15 +6,6 @@ const connectionStates = {
 Object.freeze(connectionStates);
 exports.connectionStates = connectionStates;
 
-const optionsConnectionType = [
-    { value: 'OpenVPN', label: 'OpenVPN' },
-    { value: 'IKEv2', label: 'IKEv2', isDisabled: true },
-    { value: 'L2TP', label: 'L2TP', isDisabled: true },
-    { value: 'PPTP', label: 'PPTP', isDisabled: true },
-    { value: 'WireGuard', label: 'WireGuard', isDisabled: true }
-];
-exports.optionsConnectionType = optionsConnectionType;
-
 exports.optionsMtu = [
     { value: '', label: 'MTU: Default' },
     { value: '1500', label: 'MTU: 1500' },
@@ -26,12 +17,6 @@ exports.optionsMtu = [
     { value: '1200', label: 'MTU: 1200' },
     { value: '1150', label: 'MTU: 1150' },
     { value: '1100', label: 'MTU: 1100' },
-];
-
-exports.protoAndPorts = [
-    { label: 'TCP', protocol: 'tcp', ports: ['443', '80', '8008'] },
-    { label: 'UDP', protocol: 'udp', ports: ['1194', '55194', '65194'] },
-    { label: 'Obfuscation', protocol: 'tcp', ports: ['443'] }
 ];
 
 const path = require('path');

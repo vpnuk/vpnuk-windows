@@ -1,0 +1,45 @@
+import React from 'react';
+import { observer } from 'mobx-react-lite';
+import WorldImage from '@assets/world.png';
+import SettingsImage from '@assets/settings.png';
+import '@components/index.css';
+import { ConnectionSwitch, ValueSelector } from '@components';
+
+const MainPage = ({ showDrawer }) => {
+    
+    return (
+        <>
+            <div className="wrapper-content">
+                <div className="column">
+                    <div className="settings-button" onClick={showDrawer}>
+                        <img alt="settings-icon" src={`${SettingsImage}`} />
+                        <div>
+                            <p>Settings</p>
+                        </div>
+                    </div>
+                </div>
+                <div className="column">
+                    <div className="column-block column-image_world">
+                        <img alt="world-img" src={`${WorldImage}`} />
+                    </div>
+                    {/* <div className="column-block column-content_block">
+                        <div className="column-content_block-title">PRIVACY MODE</div>
+                        <ConnectionSwitch profile={profile} />
+                        <ValueSelector
+                            options={profiles} 
+                            defaultValue={profile}
+                            onChange={value => console.log(value)} />
+                        <div className="column-content_block-text">
+                            <p>{login}</p>
+                            <p>{serverName}</p>
+                        </div>
+                    </div> */}
+                    <div className="column-block"></div>
+                </div>
+                <div className="column"></div>
+            </div>
+        </>
+    );
+};
+
+export default observer(MainPage);

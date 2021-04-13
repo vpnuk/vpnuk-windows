@@ -1,45 +1,29 @@
 import React, { useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { observer } from 'mobx-react-lite';
 import { Layout } from 'antd';
 import './app.css';
-import { Sidebar } from './views/sidebar/sidebar';
-import { MainPage } from './views/main/main';
-import {
-    setDns,
-    setServers,
-    setObfuscateAvailable
-} from './reducers/catalogSlice';
-import {
-    setConState,
-    setGateway as setGatewayInner
-} from './reducers/connectionSlice';
+import { Sidebar, MainPage } from '@components';
 import { initializeCatalogs } from '@modules/catalogs.js';
+import { Dns, Servers, OvpnOptions, useStore } from '@domain';
 const { ipcRenderer } = require('electron');
 
-let isDev, setConnection, setGateway;
+let isDev, connectionStore;
 
-function App() {
-    const dispatch = useDispatch();
+// todo: move initialization to (CatalogStore) init
+initializeCatalogs().then(catalog => {
+    Dns.values = catalog.dns;
+    Servers.values = catalog.servers;
+    OvpnOptions.isObfuscateAvailable = catalog.isObfuscateAvailable;
+});
+
+const App = observer(() => {
+    connectionStore = useStore().connection;
     const [visible, setVisible] = useState(false);
 
     useEffect(() => {
         ipcRenderer.send('is-dev-request');
-        setGateway = gw => dispatch(setGatewayInner(gw));
         ipcRenderer.send('default-gateway-request');
         ipcRenderer.send('ipv6-fix');
-
-        initializeCatalogs()
-            .then(catalog => {
-                dispatch(setDns(catalog.dns));
-                dispatch(setServers(catalog.servers));
-                dispatch(setObfuscateAvailable(catalog.obfucsateAvailable));
-            });
-
-        setConnection = state => dispatch(setConState(state));
-        return () => {
-            setGateway = null;
-            setConnection = null;
-        }
     }, []);
 
     const showDrawer = () => {
@@ -59,7 +43,7 @@ function App() {
             </Layout>
         </div>
     );
-}
+});
 
 ipcRenderer.on('is-dev-response', (_, arg) => {
     isDev = arg;
@@ -68,12 +52,12 @@ ipcRenderer.on('is-dev-response', (_, arg) => {
 
 ipcRenderer.on('default-gateway-response', (_, arg) => {
     isDev && console.log('default-gateway-response event', arg);
-    setGateway(arg);
+    connectionStore.gateway = arg;
 });
 
 ipcRenderer.on('connection-changed', (_, arg) => {
     isDev && console.log('connection-changed event', arg);
-    setConnection(arg);
+    connectionStore.current = arg;
 });
 
 window.addEventListener('contextmenu', event => {
