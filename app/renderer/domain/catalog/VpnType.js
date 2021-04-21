@@ -1,4 +1,4 @@
-export const VpnProvider = {
+export const VpnType = {
     OpenVPN: { label: 'OpenVPN' },
     IKEv2: { label: 'IKEv2', isDisabled: true },
     L2TP: { label: 'L2TP', isDisabled: true },

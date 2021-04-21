@@ -1,10 +1,10 @@
-import { makeAutoObservable, runInAction } from 'mobx';
+import { makeAutoObservable } from 'mobx';
 
 class Servers {
     shared = [];
     dedicated = [];
     dedicated11 = [];
-    
+
     constructor() {
         makeAutoObservable(this);
     }
@@ -16,6 +16,16 @@ class Servers {
         this.shared = value.shared;
         this.dedicated = value.dedicated;
         this.dedicated11 = value.dedicated11;
+    }
+
+    getCatalog(type) {
+        return type === 'shared'
+            ? this.shared
+            : type === 'dedicated'
+                ? this.dedicated
+                : type === 'dedicated11'
+                    ? this.dedicated11
+                    : [];
     }
 
 }

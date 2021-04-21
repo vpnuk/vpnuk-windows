@@ -11,4 +11,4 @@ class ConnectionStore {
     }
 };
 
-export default ConnectionStore;
+export default new ConnectionStore();

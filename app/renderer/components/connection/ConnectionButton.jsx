@@ -1,32 +1,32 @@
 import { ipcRenderer } from 'electron';
 import React from 'react';
+import { toJS } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { connectionStates } from '@modules/constants.js';
-import { useStore } from '@domain';
+import { ConnectionStore, useStore } from '@domain';
 
 const ConnectionButton = observer(() => {
-    const store = useStore();
-
+    const profile = useStore().profiles.currentProfile;
+    
     return (
         <button
             className="form-button"
             onClick={() => {
-                if (store.connection.state !== connectionStates.disconnected) {
+                if (ConnectionStore.state !== connectionStates.disconnected) {
                     ipcRenderer.send('connection-stop');
                 }
-                else if (store.connection.state === connectionStates.disconnected) {
+                else if (ConnectionStore.state === connectionStates.disconnected) {
                     ipcRenderer.send('connection-start', {
-                        profile: store.profiles.getProfile(store.settings.profileId),
-                        gateway: store.connection.gateway
+                        profile: toJS(profile),
+                        gateway: ConnectionStore.gateway
                     });
                 }
             }}
         >
-            {store.connection.state !== connectionStates.disconnected
+            {ConnectionStore.state !== connectionStates.disconnected
                 ? 'Disconnect'
                 : 'Connect'}
-        </button>
-    );
+        </button>);
 });
 
 export default ConnectionButton;

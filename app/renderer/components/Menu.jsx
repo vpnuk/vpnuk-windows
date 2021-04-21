@@ -1,53 +1,50 @@
 import React, { useState } from 'react';
+import { action } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import CreatableSelect from "react-select/creatable";
-import { useStore, VpnProvider } from '@domain';
-import { ProfileDetails, ConnectionButton, ValueSelector } from '@components';
 import { selectOptionColors } from '@styles';
+import {
+    ProfileDetails,
+    ConnectionButton,
+    ValueSelector,
+    ServerSelector,
+    ConnectionDetails,
+    OvpnDetails
+} from '@components';
 import '@components/index.css';
+import { useStore, VpnType } from '@domain';
 
 const Menu = observer(() => {
-    const rootStore = useStore();
-    const store = useStore().profiles;
-    const vpnProviders = annotateProviderLabels(VpnProvider, '(Coming soon)');
-    const [profile, setProfile] = useState(store.getProfile());
+    const store = useStore();
+    const vpnTypes = annotateProviderLabels(VpnType, '(Coming soon)');
+    const [showMore, setShowMore] = useState(false);
 
-    return (
-        <>
-            <div className="form-titles">Connection Type</div>
-            <ValueSelector
-                options={vpnProviders}
-                value={vpnProviders.find(avp => avp.value === VpnProvider.OpenVPN.label)}
-                onChange={option => console.log(option.label)} />
-            <div className="form-titles">Profile</div>
-            <CreatableSelect
-                className="form-select"
-                styles={selectOptionColors}
-                options={store.getProfiles(VpnProvider.OpenVPN.label)}
-                getOptionLabel={option => option.label}
-                value={profile}
-                onChange={value => {
-                    rootStore.settings.profileId = value.id;
-                    setProfile(store.getProfile(value.id));
-                }}
-                onCreateOption={label => {
-                    let p = store.createProfile(label);
-                    rootStore.settings.profileId = p.id;
-                    setProfile(p);
-                }} />
-            <ProfileDetails />
-            <ConnectionButton />
-            {/* todo: remove this after debug */}
-            <button
-                className="form-button"
-                onClick={() => {
-                    console.log('print', rootStore);
-                }}
-            >
-                PRINT
-            </button>
-        </>
-    );
+    return <>
+        <div className="form-titles">Connection Type</div>
+        <ValueSelector
+            options={vpnTypes}
+            value={vpnTypes.find(avp => avp.value === VpnType.OpenVPN.label)}
+            onChange={action(value => store.settings.vpnType = value.value)} />
+        <div className="form-titles">Profile</div>
+        <CreatableSelect
+            className="form-select"
+            styles={selectOptionColors}
+            options={store.profiles.getProfiles(store.settings.vpnType)}
+            getOptionLabel={option => option.label}
+            value={store.profiles.currentProfile}
+            onChange={action(value => store.settings.profileId = value.id)}
+            onCreateOption={action(label => store.profiles.createProfile(label))} />
+        <ProfileDetails />
+        <ServerSelector />
+        <div type="more" className="form-show-more" onClick={() => setShowMore(!showMore)}>
+            {showMore ? 'Hide' : 'Show more'}
+        </div>
+        <div className={(showMore ? '' : 'hidden') + ' show-more-wrapper'}>
+            <ConnectionDetails />
+            <OvpnDetails />
+        </div>
+        <ConnectionButton />
+    </>;
 });
 
 const annotateProviderLabels = (providers, annotation) => Object.entries(providers).map(entry => {

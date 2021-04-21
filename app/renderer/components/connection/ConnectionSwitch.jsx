@@ -1,36 +1,41 @@
 import { ipcRenderer } from 'electron';
 import React from 'react';
+import { observer } from 'mobx-react-lite';
 import { Switch } from 'antd';
 import { CSSTransition } from 'react-transition-group';
-import { observer } from 'mobx-react-lite';
-import { connectionStates } from '@modules/constants.js';
-import { Connection } from '@domain';
 import '@components/index.css';
+import { connectionStates } from '@modules/constants.js';
+import { ConnectionStore, useStore } from '@domain';
 
-const ConnectionSwitch = ({ profile }) =>
-    <div className="column-content_block-check">
-        <CSSTransition
-            classNames="switch"
-            in={Connection.state === connectionStates.connected}
-            timeout={360}
-        >
-            <Switch
-                className="switch"
-                onChange={checked => {
-                    if (checked && Connection.state === connectionStates.disconnected) {
-                        ipcRenderer.send('connection-start', {
-                            profile,
-                            gateway: Connection.gateway
-                        });
-                    }
-                    else {
-                        ipcRenderer.send('connection-stop');
-                    }
-                }}
-                checked={Connection.state !== connectionStates.disconnected}
-            />
-        </CSSTransition>
-        <p>{Connection.state}</p>
-    </div>;
+const ConnectionSwitch = observer(() => {
+    const profile = useStore().profiles.currentProfile;
 
-export default observer(ConnectionSwitch);
+    return <>
+        <div className="column-content_block-check">
+            <CSSTransition
+                classNames="switch"
+                in={ConnectionStore.state === connectionStates.connected}
+                timeout={360}
+            >
+                <Switch
+                    className="switch"
+                    onChange={checked => {
+                        if (checked && ConnectionStore.state === connectionStates.disconnected) {
+                            ipcRenderer.send('connection-start', {
+                                profile,
+                                gateway: ConnectionStore.gateway
+                            });
+                        }
+                        else {
+                            ipcRenderer.send('connection-stop');
+                        }
+                    }}
+                    checked={ConnectionStore.state !== connectionStates.disconnected}
+                />
+            </CSSTransition>
+            <p>{ConnectionStore.state}</p>
+        </div>
+    </>;
+});
+
+export default ConnectionSwitch;

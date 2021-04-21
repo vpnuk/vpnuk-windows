@@ -1,12 +1,13 @@
 import { makeAutoObservable } from 'mobx';
-import { VpnProvider } from '../catalog/VpnProvider';
+import { VpnType } from '../catalog/VpnType';
 
 class SettingsStore {
-    provider = VpnProvider.OpenVPN.label;
+    vpnType = VpnType.OpenVPN.label;
     profileId = '';
     
     constructor() {
         makeAutoObservable(this);
+        // todo: restore from file data
     }
 }
 

@@ -4,10 +4,10 @@ import { Layout } from 'antd';
 import './app.css';
 import { Sidebar, MainPage } from '@components';
 import { initializeCatalogs } from '@modules/catalogs.js';
-import { Dns, Servers, OvpnOptions, useStore } from '@domain';
+import { Dns, Servers, OvpnOptions, ConnectionStore } from '@domain';
 const { ipcRenderer } = require('electron');
 
-let isDev, connectionStore;
+let isDev;
 
 // todo: move initialization to (CatalogStore) init
 initializeCatalogs().then(catalog => {
@@ -17,7 +17,6 @@ initializeCatalogs().then(catalog => {
 });
 
 const App = observer(() => {
-    connectionStore = useStore().connection;
     const [visible, setVisible] = useState(false);
 
     useEffect(() => {
@@ -52,12 +51,12 @@ ipcRenderer.on('is-dev-response', (_, arg) => {
 
 ipcRenderer.on('default-gateway-response', (_, arg) => {
     isDev && console.log('default-gateway-response event', arg);
-    connectionStore.gateway = arg;
+    ConnectionStore.gateway = arg;
 });
 
 ipcRenderer.on('connection-changed', (_, arg) => {
     isDev && console.log('connection-changed event', arg);
-    connectionStore.current = arg;
+    ConnectionStore.current = arg;
 });
 
 window.addEventListener('contextmenu', event => {

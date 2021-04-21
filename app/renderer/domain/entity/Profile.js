@@ -1,12 +1,12 @@
-import { makeAutoObservable, observable, runInAction } from 'mobx';
+import { makeAutoObservable, runInAction } from 'mobx';
 import { v4 as uuid } from 'uuid';
 import { optionsMtu } from '@modules/constants.js';
-import { VpnProvider } from '../catalog/VpnProvider';
+import { VpnType } from '../catalog/VpnType';
 
 class Profile {
     id = uuid();
     label = 'Label';
-    provider = 'Provider';
+    vpnType = 'Type';
     credentials = {
         login: '',
         password: ''
@@ -24,11 +24,11 @@ class Profile {
         killSwitchEnabled: false
     };
 
-    constructor(label = 'New profile', provider = VpnProvider.OpenVPN.label) {
+    constructor(label = 'New profile', vpnType = VpnType.OpenVPN.label) {
         makeAutoObservable(this);
         runInAction(() => {
             this.label = label;
-            this.provider = provider;
+            this.vpnType = vpnType;
         });
     }
 };

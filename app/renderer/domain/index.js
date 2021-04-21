@@ -2,7 +2,7 @@
 export { default as Dns } from './catalog/Dns';
 export { default as OvpnOptions } from './catalog/OvpnOptions';
 export { default as Servers } from './catalog/Servers';
-export { VpnProvider } from './catalog/VpnProvider';
+export { VpnType } from './catalog/VpnType';
 
 
 // entities
