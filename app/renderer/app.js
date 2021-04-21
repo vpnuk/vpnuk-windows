@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
+import { runInAction } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { Layout } from 'antd';
 import './app.css';
 import { Sidebar, MainPage } from '@components';
 import { initializeCatalogs } from '@modules/catalogs.js';
-import { Dns, Servers, OvpnOptions, ConnectionStore } from '@domain';
+import { Dns, Servers, OvpnOptions, ConnectionStore, useStore } from '@domain';
 const { ipcRenderer } = require('electron');
 
-let isDev;
+let isDev, store;
 
 initializeCatalogs().then(catalog => {
     Dns.values = catalog.dns;
@@ -17,8 +18,10 @@ initializeCatalogs().then(catalog => {
 
 const App = observer(() => {
     const [visible, setVisible] = useState(false);
+    const innerStore = useStore();
 
     useEffect(() => {
+        store = innerStore;
         ipcRenderer.send('is-dev-request');
         ipcRenderer.send('default-gateway-request');
         ipcRenderer.send('ipv6-fix');
@@ -50,12 +53,17 @@ ipcRenderer.on('is-dev-response', (_, arg) => {
 
 ipcRenderer.on('default-gateway-response', (_, arg) => {
     isDev && console.log('default-gateway-response event', arg);
-    ConnectionStore.gateway = arg;
+    runInAction(() => {
+        ConnectionStore.gateway = arg;
+    });
+
 });
 
 ipcRenderer.on('connection-changed', (_, arg) => {
     isDev && console.log('connection-changed event', arg);
-    ConnectionStore.current = arg;
+    runInAction(() => {
+        ConnectionStore.state = arg;
+    });
 });
 
 window.addEventListener('contextmenu', event => {
@@ -64,6 +72,11 @@ window.addEventListener('contextmenu', event => {
         event.preventDefault();
         ipcRenderer.send('context-menu-show', { x: event.x, y: event.y });
     }
+});
+
+window.addEventListener('beforeunload', _ => {
+    isDev && console.log('window beforeunload event');
+    store.triggerPersist();
 });
 
 export default App;

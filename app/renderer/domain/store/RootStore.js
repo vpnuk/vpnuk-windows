@@ -1,4 +1,4 @@
-import { makeAutoObservable } from 'mobx';
+import { makeAutoObservable, toJS } from 'mobx';
 import { ProfileStore, SettingsStore } from '@domain';
 import persist from './persist';
 
@@ -13,6 +13,10 @@ class RootStore {
             'profiles',
             ['profiles']);
         makeAutoObservable(this);
+    }
+
+    triggerPersist() {
+        this.profiles.profiles = toJS(this.profiles.profiles);
     }
 }
 
