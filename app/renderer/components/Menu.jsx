@@ -25,15 +25,18 @@ const Menu = observer(() => {
                 styles={selectOptionColors}
                 options={store.getProfiles(VpnProvider.OpenVPN.label)}
                 getOptionLabel={option => option.label}
-                getOptionValue={option => option.id}
                 value={profile}
-                onChange={id => setProfile(store.getProfile(id))}
+                onChange={value => {
+                    rootStore.settings.profileId = value.id;
+                    setProfile(store.getProfile(value.id));
+                }}
                 onCreateOption={label => {
                     let p = store.createProfile(label);
+                    rootStore.settings.profileId = p.id;
                     setProfile(p);
                 }} />
-            <ProfileDetails profileId={profile.id} />
-            <ConnectionButton profile={profile} />
+            <ProfileDetails />
+            <ConnectionButton />
             {/* todo: remove this after debug */}
             <button
                 className="form-button"

@@ -1,11 +1,10 @@
 import { makeAutoObservable } from 'mobx';
 
 class Dns {
-    values;
+    values = [];
 
-    constructor() {
+    constructor() {    
         makeAutoObservable(this);
-        this.values = [];
     }
 };
 

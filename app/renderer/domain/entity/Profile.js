@@ -4,37 +4,31 @@ import { optionsMtu } from '@modules/constants.js';
 import { VpnProvider } from '../catalog/VpnProvider';
 
 class Profile {
-    id;
-    label;
-    type;
-    credentials;
-    serverType;
-    server;
-    details;
-    killSwitchEnabled;
+    id = uuid();
+    label = 'Label';
+    provider = 'Provider';
+    credentials = {
+        login: '',
+        password: ''
+    };
+    serverType = 'shared';
+    server = {
+        host: '',
+        label: ''
+    };
+    details = {
+        port: '1194',
+        protocol: 'UDP',
+        dns: { label: 'DNS: Default' },
+        mtu: optionsMtu.find(o => o.value === ''),
+        killSwitchEnabled: false
+    };
 
     constructor(label = 'New profile', provider = VpnProvider.OpenVPN.label) {
-        makeAutoObservable(this, { label: observable });
+        makeAutoObservable(this);
         runInAction(() => {
-            this.id = uuid();
             this.label = label;
             this.provider = provider;
-            this.credentials = {
-                login: '',
-                password: ''
-            };
-            this.serverType = 'shared';
-            this.server = {
-                host: '',
-                label: ''
-            };
-            this.details = {
-                port: '1194',
-                protocol: 'UDP',
-                dns: { label: 'DNS: Default' },
-                mtu: optionsMtu.find(o => o.value === ''),
-                killSwitchEnabled: false
-            };
         });
     }
 };

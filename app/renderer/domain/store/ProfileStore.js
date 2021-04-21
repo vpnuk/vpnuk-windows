@@ -5,7 +5,7 @@ import { VpnProvider } from '../catalog/VpnProvider';
 const defaultProfileName = 'Default';
 
 class ProfileStore {
-    profiles;
+    profiles = [];
     
     constructor() {
         makeAutoObservable(this);

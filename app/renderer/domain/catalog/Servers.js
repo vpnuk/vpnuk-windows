@@ -1,17 +1,12 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 
 class Servers {
-    shared;
-    dedicated;
-    dedicated11;
+    shared = [];
+    dedicated = [];
+    dedicated11 = [];
     
     constructor() {
         makeAutoObservable(this);
-        runInAction(() => {
-            this.shared = [];
-            this.dedicated = [];
-            this.dedicated11 = [];
-        });
     }
 
     /**

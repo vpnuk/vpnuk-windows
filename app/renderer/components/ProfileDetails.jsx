@@ -1,36 +1,39 @@
 import React, { useEffect, useState } from 'react';
-import { action } from 'mobx';
+import { action, isObservable, isObservableProp } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import '@components/index.css';
 import { ServerSelector, ConnectionDetails } from '@components';
 import { useStore } from '@domain';
 
-const ProfileDetails = observer(({ profileId }) => {
-    const store = useStore().profiles;
+const ProfileDetails = observer(() => {
+    const store = useStore();
     const [showMore, setShowMore] = useState(false);
-    const profile = store.getProfile(profileId);
+    const [profile, setProfile] = useState(
+        store.profiles.getProfile(store.settings.profileId));
+    console.log('is obs',
+        isObservable(store.settings), isObservableProp(store.settings, 'profileId')
+    );
+    useEffect(() => {
+        console.log('profileId changed')
+        setProfile(store.profiles.getProfile(store.settings.profileId));
+    }, [store.settings.profileId]);
 
     return (
         <>
             <div className="form-profile-block">
                 <div className="form-profile-block-inline">
                     <input
-                        type="text"
                         placeholder="name"
-                        value={profile.label}
+                        defaultValue={profile.label}
                         onChange={action(e => profile.label = e.target.value)}
                     />
                     <button
                         className="form-button"
-                        onClick={action(() => store.deleteProfile(profile.id))}
+                        onClick={action(() => store.profiles.deleteProfile(profile.id))}
                     >
                         Delete
                     </button>
                     <div className="form-titles">Credentials</div>
-                    <input
-                        placeholder="login"
-                        value={profile.credentials.login}
-                        onChange={action(e => profile.credentials.login = e.target.value)} />
                     <input
                         placeholder="login"
                         defaultValue={profile.credentials.login}
