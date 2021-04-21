@@ -6,7 +6,7 @@
   - Node
   - yarn
 - React
-- Redux
+- MobX 6
 
 ## Dev environment setup
 
@@ -34,8 +34,10 @@
   - modules _- modules which are common for main and renderer parts_
   - renderer _- reactjs frontend part, electron renderer process_
     - components _- react components_
-    - reducers _- redux reducers_
-    - views _- app view (main components)_
+    - domain _- observable application domain_
+      - catalog _- application dynamic catalogs_
+      - entity _- domain entities_
+      - store _- domain stores_
 - build _- react-build build output dir_
 - nsis _- installer extensions subdir_
   - Plugins _- nsis plugins, dir contents must be copied to ../build dir before electron-builder starts_
@@ -47,6 +49,6 @@
 ## Git flow
 
 Classic merge-flow is used.
-Release branch is `msater`.
+Release branch is `master`.
 Develop branch is `dev`.
 Releases are marked with tags via github actions builder.
