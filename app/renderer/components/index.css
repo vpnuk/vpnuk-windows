@@ -279,39 +279,16 @@
 .switch {
     width: 168px !important;
     height: 92px !important;
-    border-width: 3px;
-    border-color: #97aaaa;
-    margin-bottom: 10px;
-    transition: background-color 0.18s linear;
-    background-image: linear-gradient(to right, #97AAAA80, #5B6A6A);
+    border-width: 3px !important;
+    border-color: #97aaaa !important;
+    margin-bottom: 10px !important;
 }
 .switch.ant-switch::after {
     width: 84px;
     height: 84px;
-    top: 3px;
-    left: 3px;
     border-radius: 100%;
 }
-.switch-enter {
-    background-color: #5B6A6A;
-    transition: background-color 0.36s linear 0.18s;
-}
-.switch-enter-active {
-    background-color: #13c7b9;
-    transition: background-color 0.36s linear 0.18s;
-}
-.switch-enter-done {
-    background-color: #1ACEB8;
-    transition: background-color 0.36s linear 0.18s;
-    background-image: linear-gradient(to right, #1ACEB880, #0BBFBA);
-}
-.switch-exit {
-    background-color: #13c7b980;
-}
-.switch-exit-active {
-    background-color: #5B6A6A;
-}
-.switch-exit-done {
-    background-color: #97AAAA;
-    background-image: linear-gradient(to right, #97AAAA80, #5B6A6A);
+
+.ant-switch-checked {
+    background-color: #1ACEB8 !important;
 }

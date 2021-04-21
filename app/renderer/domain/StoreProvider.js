@@ -18,4 +18,4 @@ export const useStore = () => {
         throw new Error('useStore must be used within a StoreProvider.');
     }
     return store;
-}
+};

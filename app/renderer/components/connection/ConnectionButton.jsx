@@ -18,7 +18,7 @@ const ConnectionButton = observer(() => {
                 else if (ConnectionStore.state === connectionStates.disconnected) {
                     ipcRenderer.send('connection-start', {
                         profile: toJS(profile),
-                        gateway: ConnectionStore.gateway
+                        gateway: toJS(ConnectionStore.gateway)
                     });
                 }
             }}

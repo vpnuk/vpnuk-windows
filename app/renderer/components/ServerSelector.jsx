@@ -36,7 +36,7 @@ const ServerSelector = observer(() => {
         </div>
         <ValueSelector
             options={catalog}
-            value={profile.server} // todo: default value = catalog[0]
+            value={profile.server}
             onChange={action(value => profile.server = value)} />
     </>
 });

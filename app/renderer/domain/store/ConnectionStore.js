@@ -2,7 +2,6 @@ import { makeAutoObservable } from 'mobx';
 import { connectionStates } from '@modules/constants.js';
 
 class ConnectionStore {
-    current = null;
     state = connectionStates.disconnected;
     gateway = null;
     

@@ -1,5 +1,6 @@
 import { ipcRenderer } from 'electron';
 import React from 'react';
+import { toJS } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { Switch } from 'antd';
 import { CSSTransition } from 'react-transition-group';
@@ -9,7 +10,7 @@ import { ConnectionStore, useStore } from '@domain';
 
 const ConnectionSwitch = observer(() => {
     const profile = useStore().profiles.currentProfile;
-
+    
     return <>
         <div className="column-content_block-check">
             <CSSTransition
@@ -22,8 +23,8 @@ const ConnectionSwitch = observer(() => {
                     onChange={checked => {
                         if (checked && ConnectionStore.state === connectionStates.disconnected) {
                             ipcRenderer.send('connection-start', {
-                                profile,
-                                gateway: ConnectionStore.gateway
+                                profile: toJS(profile),
+                                gateway: toJS(ConnectionStore.gateway)
                             });
                         }
                         else {
