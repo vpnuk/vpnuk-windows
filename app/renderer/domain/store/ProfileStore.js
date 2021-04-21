@@ -1,4 +1,4 @@
-import { makeAutoObservable, runInAction } from 'mobx';
+import { makeAutoObservable } from 'mobx';
 import { Profile } from '@domain';
 import { VpnType } from '../catalog/VpnType';
 
@@ -9,12 +9,8 @@ class ProfileStore {
 
     constructor(settings) {
         this.settings = settings;
+        this.profiles = [new Profile(defaultProfileName)];
         makeAutoObservable(this, { settings: false });
-        runInAction(() => {
-            // todo: restore from file
-            let defp = new Profile(defaultProfileName);
-            this.profiles = [defp];
-        });
     }
 
     getProfiles(vpnType = VpnType.OpenVPN.label) {

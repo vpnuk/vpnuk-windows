@@ -9,7 +9,6 @@ const { ipcRenderer } = require('electron');
 
 let isDev;
 
-// todo: move initialization to (CatalogStore) init
 initializeCatalogs().then(catalog => {
     Dns.values = catalog.dns;
     Servers.values = catalog.servers;

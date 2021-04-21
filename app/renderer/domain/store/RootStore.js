@@ -1,11 +1,18 @@
+import { makeAutoObservable } from 'mobx';
 import { ProfileStore, SettingsStore } from '@domain';
-
-// todo: persist profiles and settings (async hook)
+import persist from './persist';
 
 class RootStore {
     constructor() {
-        this.settings = new SettingsStore();
-        this.profiles = new ProfileStore(this.settings);
+        this.settings = persist(
+            new SettingsStore(),
+            'settings',
+            ['vpnType', 'profileId']);
+        this.profiles = persist(
+            new ProfileStore(this.settings),
+            'profiles',
+            ['profiles']);
+        makeAutoObservable(this);
     }
 }
 

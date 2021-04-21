@@ -76,23 +76,24 @@
     "extends": null
   },
   "dependencies": {
-    "electron-store": "^7.0.2",
+    "electron-store": "^7",
     "electron-updater": "^4.3.8",
     "public-ip": "^4.0.3"
   },
   "devDependencies": {
     "@babel/plugin-transform-modules-commonjs": "^7.13.8",
-    "babel-plugin-import": "^1.13.3",
     "antd": "^3.21.2",
     "axios": "^0.21.1",
+    "babel-plugin-import": "^1.13.3",
     "concurrently": "^6.0.0",
     "cross-env": "^7.0.3",
     "customize-cra": "^0.4.1",
-    "electron": "^11.0.0",
+    "electron": "^11",
     "electron-builder": "^22.10.5",
     "electron-fetch": "^1.7.3",
     "fs": "0.0.1-security",
     "mobx": "^6.2.0",
+    "mobx-persist-store": "^0.5.30",
     "mobx-react-lite": "^3.2.0",
     "node-stream-zip": "^1.13.3",
     "react": "^17.0.2",

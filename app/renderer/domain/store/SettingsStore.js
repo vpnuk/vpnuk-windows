@@ -7,7 +7,6 @@ class SettingsStore {
     
     constructor() {
         makeAutoObservable(this);
-        // todo: restore from file data
     }
 }
 

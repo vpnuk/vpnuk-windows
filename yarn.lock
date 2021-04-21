@@ -5047,7 +5047,7 @@ electron-fetch@^1.7.3:
     lazy-val "^1.0.4"
     mime "^2.5.0"
 
-electron-store@^7.0.2:
+electron-store@^7:
   version "7.0.3"
   resolved "https://registry.yarnpkg.com/electron-store/-/electron-store-7.0.3.tgz#56d78284454018ed50ffc7645da49f828ae5ff19"
   integrity sha512-wIbw4GHt4djs4dVrlRLCD/SpdpDUiRsQc212jagGA6zJ8xt1iwx3KZIzXY8gmwvgVCOcVxi3iyCXZoBBWwBXpQ==
@@ -5073,7 +5073,7 @@ electron-updater@^4.3.8:
     lodash.isequal "^4.5.0"
     semver "^7.3.4"
 
-electron@^11.0.0:
+electron@^11:
   version "11.4.3"
   resolved "https://registry.yarnpkg.com/electron/-/electron-11.4.3.tgz#74319635417c24fd19e31cfce5a39c8792e4014b"
   integrity sha512-RhCWJqiYK5oIRGOheilhg/nngCgk0fPgaf00KvbxorlvFZAz8OeMT5ShCpVsMSoyYhk4XEnn4orRly5ltaFYJg==
@@ -8530,6 +8530,11 @@ mkdirp@^1.0.3, mkdirp@^1.0.4:
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-1.0.4.tgz#3eb5ed62622756d79a5f0e2a221dfebad75c2f7e"
   integrity sha512-vVqVZQyf3WLx2Shd0qJ9xuvqgAyKPLAiqITEtqW0oIUjzo3PePDd6fW9iFz30ef7Ysp/oiWqbhszeGWW2T6Gzw==
+
+mobx-persist-store@^0.5.30:
+  version "0.5.30"
+  resolved "https://registry.yarnpkg.com/mobx-persist-store/-/mobx-persist-store-0.5.30.tgz#1f578478af87c458e28bd120d8e63b388b5cbd47"
+  integrity sha512-I4NW8ly0yD06+WPqzQb30dwRzrL2Uhnwd+40EBd+Zlorm9M7rc1Zx3Z6OTBjwqYVDweqLKKXttc66LpiKS6f1A==
 
 mobx-react-lite@^3.2.0:
   version "3.2.0"
