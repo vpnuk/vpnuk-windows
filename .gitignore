@@ -46,5 +46,8 @@ profile.txt
 !.vscode/extensions.json
 *.code-workspace
 
+# .env
+.env*
+
 # Local History for Visual Studio Code
 .history/
