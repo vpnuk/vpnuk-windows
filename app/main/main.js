@@ -7,6 +7,7 @@ ElectronStore.initRenderer();
 
 const isDev = process.env.ELECTRON_ENV === 'Dev';
 exports.isDev = isDev;
+const isIde = process.env.ELECTRON_IDE && true;
 
 let window, tray;
 
@@ -25,7 +26,7 @@ function createWindow() {
 
     !isDev && window.removeMenu()
     isDev && window.webContents.openDevTools();
-    window.loadURL(isDev
+    window.loadURL(isIde
         ? 'http://localhost:3000/'
         : 'file:///' + path.join(__dirname, '../../build/index.html'));
 
@@ -47,6 +48,7 @@ function createWindow() {
 const gotTheLock = app.requestSingleInstanceLock()
 
 if (gotTheLock) {
+    isIde && app.commandLine.appendSwitch('remote-debugging-port', '9223');
     app.on('second-instance', (event, commandLine, workingDirectory) => {
         if (window) {
             if (window.isMinimized()) window.restore()
@@ -58,7 +60,7 @@ if (gotTheLock) {
         createWindow();
         tray = new AppTray(() => window.focus());
         exports.tray = tray;
-        enableAutoUpdate();
+        !isIde && enableAutoUpdate();
     });
 
     app.on('window-all-closed', () => {

@@ -121,7 +121,7 @@ exports.initializeCatalogs = () => {
                 dns: handlerServerDnsStructure(result[0].dns),
                 servers: handlerServerTypesStructure(result[1].servers,
                     ['shared', 'dedicated', 'dedicated11']),
-                obfucsateAvailable: fs.existsSync(settingsPath.ovpnBinExe)
+                isObfuscateAvailable: fs.existsSync(settingsPath.ovpnBinExe)
             }
         });
 };

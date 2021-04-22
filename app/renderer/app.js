@@ -1,45 +1,32 @@
 import React, { useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { runInAction } from 'mobx';
+import { observer } from 'mobx-react-lite';
 import { Layout } from 'antd';
 import './app.css';
-import { Sidebar } from './views/sidebar/sidebar';
-import { MainPage } from './views/main/main';
-import {
-    setDns,
-    setServers,
-    setObfuscateAvailable
-} from './reducers/catalogSlice';
-import {
-    setConState,
-    setGateway as setGatewayInner
-} from './reducers/connectionSlice';
+import { Sidebar, MainPage } from '@components';
 import { initializeCatalogs } from '@modules/catalogs.js';
+import { Dns, Servers, OvpnOptions, ConnectionStore, useStore } from '@domain';
 const { ipcRenderer } = require('electron');
 
-let isDev, setConnection, setGateway;
+let isDev, store;
 
-function App() {
-    const dispatch = useDispatch();
+initializeCatalogs().then(catalog => {
+    runInAction(() => {
+        Dns.values = catalog.dns;
+        Servers.values = catalog.servers;
+        OvpnOptions.isObfuscateAvailable = catalog.isObfuscateAvailable;
+    });
+});
+
+const App = observer(() => {
     const [visible, setVisible] = useState(false);
+    const innerStore = useStore();
+    store = innerStore;
 
-    useEffect(() => {
+    useEffect(() => {    
         ipcRenderer.send('is-dev-request');
-        setGateway = gw => dispatch(setGatewayInner(gw));
         ipcRenderer.send('default-gateway-request');
         ipcRenderer.send('ipv6-fix');
-
-        initializeCatalogs()
-            .then(catalog => {
-                dispatch(setDns(catalog.dns));
-                dispatch(setServers(catalog.servers));
-                dispatch(setObfuscateAvailable(catalog.obfucsateAvailable));
-            });
-
-        setConnection = state => dispatch(setConState(state));
-        return () => {
-            setGateway = null;    
-            setConnection = null;
-        }
     }, []);
 
     const showDrawer = () => {
@@ -59,7 +46,7 @@ function App() {
             </Layout>
         </div>
     );
-}
+});
 
 ipcRenderer.on('is-dev-response', (_, arg) => {
     isDev = arg;
@@ -68,19 +55,30 @@ ipcRenderer.on('is-dev-response', (_, arg) => {
 
 ipcRenderer.on('default-gateway-response', (_, arg) => {
     isDev && console.log('default-gateway-response event', arg);
-    setGateway(arg);
+    runInAction(() => {
+        ConnectionStore.gateway = arg;
+    });
+
 });
 
 ipcRenderer.on('connection-changed', (_, arg) => {
     isDev && console.log('connection-changed event', arg);
-    setConnection(arg);
+    runInAction(() => {
+        ConnectionStore.state = arg;
+    });
 });
 
 window.addEventListener('contextmenu', event => {
+    isDev && console.log('window contextmenu event');
     if (isDev) {
         event.preventDefault();
         ipcRenderer.send('context-menu-show', { x: event.x, y: event.y });
     }
+});
+
+window.addEventListener('beforeunload', _ => {
+    isDev && console.log('window beforeunload event');
+    store.triggerPersist();
 });
 
 export default App;
