@@ -11,17 +11,19 @@ const { ipcRenderer } = require('electron');
 let isDev, store;
 
 initializeCatalogs().then(catalog => {
-    Dns.values = catalog.dns;
-    Servers.values = catalog.servers;
-    OvpnOptions.isObfuscateAvailable = catalog.isObfuscateAvailable;
+    runInAction(() => {
+        Dns.values = catalog.dns;
+        Servers.values = catalog.servers;
+        OvpnOptions.isObfuscateAvailable = catalog.isObfuscateAvailable;
+    });
 });
 
 const App = observer(() => {
     const [visible, setVisible] = useState(false);
     const innerStore = useStore();
+    store = innerStore;
 
-    useEffect(() => {
-        store = innerStore;
+    useEffect(() => {    
         ipcRenderer.send('is-dev-request');
         ipcRenderer.send('default-gateway-request');
         ipcRenderer.send('ipv6-fix');

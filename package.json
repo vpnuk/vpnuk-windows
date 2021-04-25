@@ -1,14 +1,21 @@
 {
-  "name": "VPNUK",
-  "author": {
-    "name": "Mikhail Kryuchkov",
-    "email": "kryuchkovm@outlook.com"
-  },
+  "name": "vpnuk",
+  "author": "VPNUK",
+  "contributors": [
+    {
+      "name": "Mikhail Kryuchkov",
+      "email": "kryuchkovm@outlook.com"
+    },
+    {
+      "name": "Vuhniavyi",
+      "email": "maksymvuhniavyi@gmail.com"
+    }
+  ],
   "version": "v1.0.0",
   "description": "VPNUK desktop application",
   "repository": {
     "type": "git",
-    "url": "https://github.com/vpnuk/vpnuk-windows.git"
+    "url": "https://github.com/vpnuk/vpnuk-windows"
   },
   "main": "app/main/main.js",
   "config-overrides-path": "app/modules/config-overrides.js",
@@ -23,14 +30,13 @@
     "electron-start": "electron .",
     "nsis-plugin-copy": "xcopy /e /h /i .\\nsis\\Plugins\\* .\\build\\",
     "build-react-nsis": "yarn run react-build && yarn run nsis-plugin-copy",
-    "start": "concurrently --kill-others \"dotenv cross-var yarn run react-start\" \"wait-on http://localhost:3000 && dotenv cross-var electron .\"",
+    "start": "concurrently --kill-others \"dotenv cross-var yarn run react-start\" \"wait-on http://localhost:3000 && yarn run dotenv cross-var electron .\"",
     "build": "yarn run build-react-nsis && dotenv cross-var yarn run electron-builder",
     "test": "dotenv cross-var echo %ELECTRON_ENV%"
   },
   "build": {
     "productName": "VPNUK",
     "appId": "net.vpnuk.desktop",
-    "copyright": "Interexy LLC",
     "win": {
       "target": [
         {
@@ -46,7 +52,7 @@
       "publish": [
         "github"
       ],
-      "certificateSubjectName": "Online Privacy Services Ltd"
+      "publisherName": "Online Privacy Services Ltd"
     },
     "nsisWeb": {
       "oneClick": false,

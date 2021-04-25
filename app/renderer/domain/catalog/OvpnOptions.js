@@ -1,9 +1,9 @@
 import { makeAutoObservable } from 'mobx';
 
 const data = new Map([
-    ['TCP', { value: 'tcp', ports: ['443', '80', '8008'] } ],
-    ['UDP', { value: 'udp', ports: ['1194', '55194', '65194'] } ],
-    ['Obfuscation', { value: 'tcp', ports: ['443'] } ]
+    ['TCP', { value: 'tcp', ports: ['443', '80', '8008'] }],
+    ['UDP', { value: 'udp', ports: ['1194', '55194', '65194'] }],
+    ['Obfuscation', { value: 'tcp', ports: ['443'] }]
 ]);
 
 class OvpnOptions {
@@ -15,8 +15,8 @@ class OvpnOptions {
 
     get protocolNames() {
         return this.isObfuscateAvailable
-            ? data.keys()
-            : [ ...data.keys()].filter(k => k !== 'Obfuscation');
+            ? [...data.keys()]
+            : [...data.keys()].filter(k => k !== 'Obfuscation');
     }
 
     getPorts(protocol) {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { action, runInAction } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { Radio } from 'antd';
@@ -8,14 +8,14 @@ import { Servers, useStore } from '@domain';
 
 const ServerSelector = observer(() => {
     const profile = useStore().profiles.currentProfile;
-    const [catalog, setCatalog] = useState(Servers.getCatalog(profile.serverType));
     useEffect(() => {
+        let catalog = Servers.getCatalog(profile.serverType);
         if (!profile.server.host && catalog.length > 0) {
             runInAction(() => {
                 profile.server = catalog[0];
             });
         }
-    }, [profile, profile.server, catalog]);
+    }, [profile, profile.server, profile.serverType]);
 
     return <>
         <div className="form-titles">Server</div>
@@ -26,7 +26,6 @@ const ServerSelector = observer(() => {
                     profile.serverType = e.target.value;
                     let cat = Servers.getCatalog(e.target.value);
                     cat.length > 0 && (profile.server = cat[0]);
-                    setCatalog(cat);
                 })}>
 
                 <Radio.Button value="shared">SHARED</Radio.Button>
@@ -35,7 +34,7 @@ const ServerSelector = observer(() => {
             </Radio.Group>
         </div>
         <ValueSelector
-            options={catalog}
+            options={Servers.getCatalog(profile.serverType)}
             value={profile.server}
             onChange={action(value => profile.server = value)} />
     </>

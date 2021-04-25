@@ -14,7 +14,7 @@ class Profile {
     serverType = 'shared';
     server = {
         host: '',
-        label: ''
+        label: 'Select server...'
     };
     details = {
         port: '1194',
