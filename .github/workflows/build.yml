@@ -41,8 +41,23 @@ jobs:
           # release the app after building
           release: ${{ startsWith(github.ref, 'refs/tags/v') }}
           # Name of the optional NPM build script which is executed
-          # before electron-builder (default: "build"
+          # before electron-builder (default: "build")
           build_script_name: 'build-react-nsis'
           # Arguments to pass to the electron-builder command,
           # e.g. configuration overrides
           args: --publish=always
+      
+      - name: Pack installer to 7zip archive
+        uses: edgarrc/action-7z@v1.0.4
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          args: 7z a -t7z -mx=9 "VPNUK Web Setup ${{ github.ref.replace(/\/refs\/tags\/v, '') }}.7z" .\release\nsis-web\*.exe
+      
+      - name: Upload 7zip archive
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          files: .\release\nsis-web\VPNUK Web Setup*.7z
+          tag_name: github.ref.replace(/\/refs\/tags\/v, '')
+        env:
+          github_token: ${{ secrets.github_token }}
