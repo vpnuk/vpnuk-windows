@@ -12,7 +12,7 @@ VPNUK assistant application for Windows.
 ## Download
 
 You can download latest web installer following [this link](https://github.com/vpnuk/vpnuk-windows/releases/latest).
-`VPNUK-Web-Setup-x.x.x.exe` is what you need.
+`VPNUK-Web-Setup-x.x.x` (`-compressed.7z` or `.exe`) is what you need.
 Offline installation requires to download also both *.7z files from release assets.
 
 ## Website
