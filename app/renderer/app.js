@@ -16,6 +16,9 @@ initializeCatalogs().then(catalog => {
         Servers.values = catalog.servers;
         OvpnOptions.isObfuscateAvailable = catalog.isObfuscateAvailable;
     });
+    if (catalog.ovpnUpdateAvailable) {
+        ipcRenderer.send('ovpn-update-request', catalog.ovpnUpdateAvailable);
+    }
 });
 
 const App = observer(() => {
@@ -68,9 +71,20 @@ ipcRenderer.on('connection-changed', (_, arg) => {
     });
 });
 
+ipcRenderer.on('ovpn-update-response', () => {
+    isDev && console.log('ovpn-update-response event', arg);
+    // todo: 
+    //   - [active connection?] disconnect
+    //   - download ovpn
+    //   - install ovpn
+    //   - remove patch bin // disable obfuscation
+    //   - download ovpn patch // enable obfuscation
+    //   - [active connection?] offer to reconnect
+});
+
 window.addEventListener('contextmenu', event => {
-    isDev && console.log('window contextmenu event');
     if (isDev) {
+        console.log('window contextmenu event');
         event.preventDefault();
         ipcRenderer.send('context-menu-show', { x: event.x, y: event.y });
     }

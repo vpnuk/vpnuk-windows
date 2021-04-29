@@ -83,6 +83,8 @@ exports.initializeCatalogs = () => {
         ? JSON.parse(fs.readFileSync(settingsPath.versions))
         : null;
 
+    let ovpnUpdateAvailable = null;
+
     return axios.get(settingsLink.versions)
         .then(response => {
             return response.data;
@@ -106,8 +108,11 @@ exports.initializeCatalogs = () => {
             if (!oldVers || (oldVers.dns !== newVers.dns) || !fs.existsSync(settingsPath.dns)) {
                 dowloads.push(dowloadJson(settingsLink.dns, settingsPath.dns));
             }
-            if (!oldVers || (!oldVers.openvpn || oldVers.openvpn.version !== newVers.openvpn.version) || !fs.existsSync(settingsPath.ovpnBinExe)) {
+            if (!oldVers || !fs.existsSync(settingsPath.ovpnBinExe)) {
                 dowloads.push(downloadPatchedOvpnExe(newVers.openvpn.patch));
+            }
+            if (!oldVers.openvpn || oldVers.openvpn.version !== newVers.openvpn.version) {
+                ovpnUpdateAvailable = newVers.openvpn.version;
             }
             return Promise.all(dowloads);
         })
@@ -121,7 +126,8 @@ exports.initializeCatalogs = () => {
                 dns: handlerServerDnsStructure(result[0].dns),
                 servers: handlerServerTypesStructure(result[1].servers,
                     ['shared', 'dedicated', 'dedicated11']),
-                isObfuscateAvailable: fs.existsSync(settingsPath.ovpnBinExe)
-            }
+                isObfuscateAvailable: fs.existsSync(settingsPath.ovpnBinExe),
+                ovpnUpdateAvailable: ovpnUpdateAvailable
+            };
         });
 };

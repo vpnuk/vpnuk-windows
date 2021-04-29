@@ -160,3 +160,17 @@ ipcMain.on('ipv6-fix', async () => {
         showMessageBoxOnError(error, 'IPv6 disable');
     }
 });
+
+ipcMain.on('ovpn-update-request', (event, arg) => {
+    isDev && console.log('ovpn-update-request event');
+    if (dialog.showMessageBoxSync({
+        type: 'question',
+        icon: path.join(__dirname, '../assets/icon.ico'),
+        title: 'VPNUK update',
+        message: `OpenVPN ${arg} update available.\nInstall now?`,
+        buttons: ['Yes', 'No'],
+        cancelId: 1
+    }) !== 1) {
+        event.sender.send('ovpn-update-response');
+    }
+});

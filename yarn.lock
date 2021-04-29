@@ -12638,6 +12638,18 @@ signal-exit@^3.0.0, signal-exit@^3.0.2:
   resolved "https://registry.yarnpkg.com/signal-exit/-/signal-exit-3.0.3.tgz#a1410c2edd8f077b08b4e253c8eacfcaf057461c"
   integrity sha512-VUJ49FC8U1OxwZLxIbTTrDvLnf/6TDgxZcK8wxR8zs13xpx7xbG60ndBlhNrFi2EMuFRoeDoJO7wthSLq42EjA==
 
+simple-job-scheduler@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/simple-job-scheduler/-/simple-job-scheduler-1.1.0.tgz#66bb3c050dbb3ea288217feb96cce0846fdcdab3"
+  integrity sha512-iuqmrUIDVEUJilJMVvdgyanIBF3ICJR2fSZbte6qEnnDTQWAzdrTfzbkfTbUvwr5Obrtxt0pjil0r49hxtX1OA==
+  dependencies:
+    simple-logging-system "^1.0.0"
+
+simple-logging-system@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/simple-logging-system/-/simple-logging-system-1.0.0.tgz#a1a596a2bae588ba9ca0967708c7ca8a9f5c1e78"
+  integrity sha512-FF5AQ+UY4PmZ4MhnjwOfmiv+//y1VYwXscZaDFkv/FuRQAOhh2+F4icCVEhMiCJ6XIAqT+/UESYNgah72ZUlLQ==
+
 simple-swizzle@^0.2.2:
   version "0.2.2"
   resolved "https://registry.yarnpkg.com/simple-swizzle/-/simple-swizzle-0.2.2.tgz#a4da6b635ffcccca33f70d17cb92592de95e557a"
