@@ -15,11 +15,11 @@ const getOpenVpnExePathSync = (obfuscate = false) => {
         return escapeSpaces(settingsPath.ovpnBinExe);
     }
 
-    var exeKey = '' + cp
+    let exeKey = '' + cp
         .spawnSync('cmd', ['/c\ reg\ query\ HKLM\\SOFTWARE\\OpenVPN\\\ /v\ exe_path'],
             { shell: true })
         .stdout;
-    var exePath = exeKey.substring(exeKey.indexOf('REG_SZ') + 6).trim();
+    let exePath = exeKey.substring(exeKey.indexOf('REG_SZ') + 6).trim();
 
     if (fs.existsSync(exePath)) {
         return escapeSpaces(exePath);
@@ -54,7 +54,7 @@ exports.runOpenVpn = (
 
     const obfuscate = options.details.protocol.toLowerCase() === 'obfuscation';
 
-    var proc = cp.execFile(
+    let proc = cp.execFile(
         (isIde ? 'ide' : '') + getOpenVpnExePathSync(obfuscate),
         [
             `--config\ ${obfuscate
@@ -82,14 +82,14 @@ exports.runOpenVpn = (
 };
 
 exports.killWindowsProcess = (pid, callback) => {
-    var proc = cp.spawn('taskkill', [`/PID\ ${pid}\ /T\ /F`], { shell: true });
+    let proc = cp.spawn('taskkill', [`/PID\ ${pid}\ /T\ /F`], { shell: true });
     proc.on('close', code => {
         callback(code);
     });
 };
 
 exports.killWindowsProcessSync = pid => {
-    var code = cp.spawnSync('taskkill', [`/PID\ ${pid}\ /T\ /F`], { shell: true })
+    let code = cp.spawnSync('taskkill', [`/PID\ ${pid}\ /T\ /F`], { shell: true })
         .status;
     isDev && console.log(`kill process PID=${pid} result=${code}`);
     return code;
@@ -102,3 +102,9 @@ exports.getOvpnAdapterNames = async () =>
         .filter(_ => _)
         .slice(1)
         .map(line => line.substring(1, line.indexOf('\'', 1)));
+
+exports.installOvpnUpdate = file =>
+    cp.spawnSync('cmd', [`/c\ \"${file}\"`,
+        'ADDLOCAL=OpenVPN,OpenVPN.Service,Drivers,Drivers.TAPWindows6',
+        'SELECT_ASSOCIATIONS=0', '/passive'], { shell: true })
+        .status;

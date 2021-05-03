@@ -5,7 +5,8 @@ const {
     runOpenVpn,
     killWindowsProcess,
     getOvpnAdapterNames,
-    killWindowsProcessSync
+    killWindowsProcessSync,
+    installOvpnUpdate
 } = require('./utils/openVpn');
 const { getLogFileStream, openLogFileExternal } = require('./utils/logs');
 const {
@@ -17,6 +18,7 @@ const {
     disableIPv6
 } = require('./utils/routing');
 const { connectionStates } = require('../modules/constants');
+const { replaceVersionsEntry } = require('./utils/versions');
 
 const isDev = process.env.ELECTRON_ENV === 'Dev';
 
@@ -167,10 +169,41 @@ ipcMain.on('ovpn-update-request', (event, arg) => {
         type: 'question',
         icon: path.join(__dirname, '../assets/icon.ico'),
         title: 'VPNUK update',
-        message: `OpenVPN ${arg} update available.\nInstall now?`,
+        message: `OpenVPN ${arg.version} update available.\nInstall now?`,
         buttons: ['Yes', 'No'],
         cancelId: 1
     }) !== 1) {
-        event.sender.send('ovpn-update-response');
+        pid && killWindowsProcess(pid, code => {
+            isDev && console.log(`ovpn-update: killed process PID=${pid} result=${code}`);
+        });
+        event.sender.send('ovpn-update-response', arg);
+    }
+});
+
+ipcMain.on('ovpn-update-install', (event, arg) => {
+    isDev && console.log('ovpn-update-install event', arg);
+    if (installOvpnUpdate(arg.file) === 0) {
+        isDev && console.log('ovpn-update-install success');
+        dialog.showMessageBoxSync({
+            type: 'info',
+            icon: path.join(__dirname, '../assets/icon.ico'),
+            title: 'VPNUK update',
+            message: 'OpenVPN is updated successfully!',
+            buttons: ['Ok']
+        });
+        replaceVersionsEntry('openvpn', arg.info);
+        event.sender.send('ovpn-update-installed', true);
+    }
+    else {
+        isDev && console.log('ovpn-update-install fail');
+        if (dialog.showMessageBoxSync({
+            type: 'error',
+            title: 'VPNUK update',
+            message: 'OpenVPN update failed.\nTry again?',
+            buttons: ['Yes', 'No'],
+            cancelId: 1
+        }) !== 1) {
+            event.sender.send('ovpn-update-response', arg.info);
+        }
     }
 });

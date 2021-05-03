@@ -4,7 +4,13 @@ import { observer } from 'mobx-react-lite';
 import { Layout } from 'antd';
 import './app.css';
 import { Sidebar, MainPage } from '@components';
-import { initializeCatalogs } from '@modules/catalogs.js';
+import {
+    checkOvpnUpdates,
+    downloadOvpnUpdate,
+    downloadPatchedOvpnExe,
+    initializeCatalogs,
+    isObfuscateAvailable
+} from '@modules/catalogs.js';
 import { Dns, Servers, OvpnOptions, ConnectionStore, useStore } from '@domain';
 const { ipcRenderer } = require('electron');
 
@@ -16,9 +22,10 @@ initializeCatalogs().then(catalog => {
         Servers.values = catalog.servers;
         OvpnOptions.isObfuscateAvailable = catalog.isObfuscateAvailable;
     });
-    if (catalog.ovpnUpdateAvailable) {
-        ipcRenderer.send('ovpn-update-request', catalog.ovpnUpdateAvailable);
-    }
+    // todo: run check every N hours
+    checkOvpnUpdates().then(info => {
+        info && ipcRenderer.send('ovpn-update-request', info);
+    });
 });
 
 const App = observer(() => {
@@ -26,7 +33,7 @@ const App = observer(() => {
     const innerStore = useStore();
     store = innerStore;
 
-    useEffect(() => {    
+    useEffect(() => {
         ipcRenderer.send('is-dev-request');
         ipcRenderer.send('default-gateway-request');
         ipcRenderer.send('ipv6-fix');
@@ -71,15 +78,28 @@ ipcRenderer.on('connection-changed', (_, arg) => {
     });
 });
 
-ipcRenderer.on('ovpn-update-response', () => {
+ipcRenderer.on('ovpn-update-response', async (event, arg) => {
     isDev && console.log('ovpn-update-response event', arg);
-    // todo: 
-    //   - [active connection?] disconnect
-    //   - download ovpn
-    //   - install ovpn
-    //   - remove patch bin // disable obfuscation
-    //   - download ovpn patch // enable obfuscation
-    //   - [active connection?] offer to reconnect
+    runInAction(() => {
+        OvpnOptions.isObfuscateAvailable = false;
+    });
+
+    Promise.all([
+        downloadOvpnUpdate(arg.original),
+        downloadPatchedOvpnExe(arg.patch)
+    ]).then(result => event.sender.send('ovpn-update-install',
+        {
+            info: arg,
+            file: result[0]
+        })
+    );
+});
+
+ipcRenderer.on('ovpn-update-installed', (_, arg) => {
+    isDev && console.log('ovpn-update-installed event', arg);
+    runInAction(() => {
+        OvpnOptions.isObfuscateAvailable = isObfuscateAvailable();
+    });
 });
 
 window.addEventListener('contextmenu', event => {

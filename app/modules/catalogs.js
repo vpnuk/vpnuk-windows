@@ -1,8 +1,8 @@
 const axios = require('axios');
 const path = require('path');
 const fs = require('fs');
-const { settingsPath, settingsLink } = require('@modules/constants.js');
-const StreamZip = require('node-stream-zip')
+const { settingsPath, settingsLink } = require('./constants');
+const AdmZip = require('adm-zip');;
 
 const dowloadOvpnConfig = (link, filePath) =>
     axios
@@ -30,21 +30,22 @@ const dowloadJson = (link, filePath) =>
         .catch(error => console.log('error', error));
 
 const downloadPatchedOvpnExe = links => {
-    if (fs.existsSync(settingsPath.ovpnBinExe)) {
-        return;
+    let link = getLinkByArch(links);
+    if (fs.existsSync(settingsPath.ovpnBinFolder)) {
+        fs.rmdirSync(settingsPath.ovpnBinFolder, { recursive: true });
     }
-    var link = process.arch === 'x32' ? links.win32 : links.win64;
-    const zipFile = path.join(settingsPath.folder, path.basename(link));
+    const zipFile = path.join(require('os').tmpdir(), '\\', path.basename(link));
     return axios
         .get(link, { responseType: 'arraybuffer' })
         .then(response => fs.writeFileSync(zipFile, new Buffer.from(response.data)))
         .catch(error => console.log('error', error))
-        .then(async () => {
+        .then(() => {
+            let success = false;
             try {
-                const zip = new StreamZip.async({ file: zipFile });
+                let zip = new AdmZip(zipFile);
                 fs.mkdirSync(settingsPath.ovpnBinFolder, { recursive: true });
-                await zip.extract(null, settingsPath.ovpnBinFolder);
-                await zip.close();
+                zip.extractAllTo(settingsPath.ovpnBinFolder, true);
+                success = true;
             } catch (error) {
                 console.log('error', error)
             } finally {
@@ -52,7 +53,19 @@ const downloadPatchedOvpnExe = links => {
                     fs.unlinkSync(zipFile);
                 }
             }
+            return success;
         });
+};
+exports.downloadPatchedOvpnExe = downloadPatchedOvpnExe;
+
+exports.downloadOvpnUpdate = links => {
+    let link = getLinkByArch(links);
+    let file = path.resolve(require('os').tmpdir() + '\\' + path.basename(link));
+    return axios
+        .get(link, { responseType: 'arraybuffer' })
+        .then(response => fs.writeFileSync(file, new Buffer.from(response.data)))
+        .catch(error => console.log('error', error))
+        .then(() => { return file; });
 };
 
 const handlerServerDnsStructure = arr => [
@@ -74,47 +87,44 @@ const handlerServerTypesStructure = (arr, types) =>
             }))
     })));
 
+const isObfuscateAvailable = () => fs.existsSync(settingsPath.ovpnBinExe);
+exports.isObfuscateAvailable = isObfuscateAvailable;
+
+const getVersions = file => fs.existsSync(file)
+    ? JSON.parse(fs.readFileSync(file)) : null;
+
+const getLinkByArch = node => process.arch === 'x32'
+    ? node.win32 : node.win64;
+
 exports.initializeCatalogs = () => {
     if (!fs.existsSync(settingsPath.folder)) {
         fs.mkdirSync(settingsPath.folder);
     };
-
-    const oldVers = fs.existsSync(settingsPath.versions)
-        ? JSON.parse(fs.readFileSync(settingsPath.versions))
-        : null;
-
-    let ovpnUpdateAvailable = null;
+    const oldVers = getVersions(settingsPath.versions);
 
     return axios.get(settingsLink.versions)
-        .then(response => {
-            return response.data;
-        })
-        .catch(error => {
-            console.log('error', error);
-        })
+        .then(response => response.data)
+        .catch(error => console.log('error', error))
         .then(newVers => {
-            if (!oldVers && newVers) {
-                fs.writeFileSync(settingsPath.versions, JSON.stringify(newVers, undefined, 2));
-            }
-            var dowloads = [];
+            var downloads = [];
             if (!oldVers || (oldVers.ovpn !== newVers.ovpn)
                 || !fs.existsSync(settingsPath.ovpn) || !fs.existsSync(settingsPath.ovpnObfucation)) {
-                dowloads.push(dowloadOvpnConfig(settingsLink.ovpn, settingsPath.ovpn));
-                dowloads.push(dowloadOvpnConfig(settingsLink.ovpnObfucation, settingsPath.ovpnObfucation));
+                downloads.push(dowloadOvpnConfig(settingsLink.ovpn, settingsPath.ovpn));
+                downloads.push(dowloadOvpnConfig(settingsLink.ovpnObfucation, settingsPath.ovpnObfucation));
             }
             if (!oldVers || (oldVers.servers !== newVers.servers) || !fs.existsSync(settingsPath.servers)) {
-                dowloads.push(dowloadJson(settingsLink.servers, settingsPath.servers));
+                downloads.push(dowloadJson(settingsLink.servers, settingsPath.servers));
             }
             if (!oldVers || (oldVers.dns !== newVers.dns) || !fs.existsSync(settingsPath.dns)) {
-                dowloads.push(dowloadJson(settingsLink.dns, settingsPath.dns));
+                downloads.push(dowloadJson(settingsLink.dns, settingsPath.dns));
             }
-            if (!oldVers || !fs.existsSync(settingsPath.ovpnBinExe)) {
-                dowloads.push(downloadPatchedOvpnExe(newVers.openvpn.patch));
+            if (!oldVers || !fs.existsSync(settingsPath.ovpnBinExe)) { // silent download for the first time
+                downloads.push(downloadPatchedOvpnExe(newVers.openvpn.patch));
             }
-            if (!oldVers.openvpn || oldVers.openvpn.version !== newVers.openvpn.version) {
-                ovpnUpdateAvailable = newVers.openvpn.version;
+            if (newVers && (!oldVers || downloads.length > 0)) {
+                fs.writeFileSync(settingsPath.versions, JSON.stringify(newVers, undefined, 2));
             }
-            return Promise.all(dowloads);
+            return Promise.all(downloads);
         })
         .then(() => {
             return Promise.all([
@@ -126,8 +136,19 @@ exports.initializeCatalogs = () => {
                 dns: handlerServerDnsStructure(result[0].dns),
                 servers: handlerServerTypesStructure(result[1].servers,
                     ['shared', 'dedicated', 'dedicated11']),
-                isObfuscateAvailable: fs.existsSync(settingsPath.ovpnBinExe),
-                ovpnUpdateAvailable: ovpnUpdateAvailable
+                isObfuscateAvailable: isObfuscateAvailable()
             };
+        });
+};
+
+exports.checkOvpnUpdates = () => {
+    const oldVers = getVersions(settingsPath.versions);
+    return axios.get(settingsLink.versions)
+        .then(response => response.data)
+        .catch(error => console.log('error', error))
+        .then(newVers => {
+            if (!oldVers.openvpn || oldVers.openvpn.version !== newVers.openvpn.version) {
+                return newVers.openvpn;
+            }
         });
 };
