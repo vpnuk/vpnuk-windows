@@ -7,19 +7,18 @@ import { ConnectionStore, useStore } from '@domain';
 
 const ConnectionButton = observer(() => {
     const profile = useStore().profiles.currentProfile;
-    
+
     return (
         <button
             className="form-button"
             onClick={() => {
-                if (ConnectionStore.state !== connectionStates.disconnected) {
-                    ipcRenderer.send('connection-stop');
-                }
-                else if (ConnectionStore.state === connectionStates.disconnected) {
+                if (ConnectionStore.state === connectionStates.disconnected) {
                     ipcRenderer.send('connection-start', {
                         profile: toJS(profile),
                         gateway: toJS(ConnectionStore.gateway)
                     });
+                } else {
+                    ipcRenderer.send('connection-stop');
                 }
             }}
         >

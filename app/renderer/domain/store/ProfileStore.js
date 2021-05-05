@@ -1,6 +1,6 @@
 import { makeAutoObservable, toJS } from 'mobx';
 import { Profile } from '@domain';
-import { VpnType } from '../catalog/VpnType';
+import { VpnType } from '@modules/constants.js';
 
 const defaultProfileName = 'default';
 

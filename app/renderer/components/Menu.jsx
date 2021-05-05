@@ -12,7 +12,8 @@ import {
     OvpnDetails
 } from '@components';
 import '@components/index.css';
-import { useStore, VpnType } from '@domain';
+import { VpnType } from '@modules/constants.js';
+import { useStore } from '@domain';
 import { isDev } from '@app';
 
 const Menu = observer(() => {

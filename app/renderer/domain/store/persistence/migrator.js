@@ -1,5 +1,5 @@
-import { VpnType } from "../../catalog/VpnType";
-import { createDefaultProfiles } from "../ProfileStore";
+import { VpnType } from '@modules/constants.js';
+import { createDefaultProfiles } from '../ProfileStore';
 
 function migrate(name, data) {
     if (name === 'profiles') {
