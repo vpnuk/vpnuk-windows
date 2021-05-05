@@ -6,7 +6,6 @@ const isDev = process.env.ELECTRON_ENV === 'Dev';
 
 const enableAutoUpdate = () => {
     autoUpdater.autoDownload = false;
-    autoUpdater.allowPrerelease = true; // TODO: remove on release v1.0.0+
     autoUpdater.checkForUpdates();
 };
 exports.enableAutoUpdate = enableAutoUpdate;

@@ -2387,6 +2387,11 @@ adjust-sourcemap-loader@3.0.0:
     loader-utils "^2.0.0"
     regex-parser "^2.2.11"
 
+adm-zip@^0.5.5:
+  version "0.5.5"
+  resolved "https://registry.yarnpkg.com/adm-zip/-/adm-zip-0.5.5.tgz#b6549dbea741e4050309f1bb4d47c47397ce2c4f"
+  integrity sha512-IWwXKnCbirdbyXSfUDvCCrmYrOHANRZcc8NcRrvTlIApdl7PwE9oGcsYvNeJPAVY1M+70b4PxXGKIf8AEuiQ6w==
+
 aggregate-error@^3.0.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/aggregate-error/-/aggregate-error-3.1.0.tgz#92670ff50f5359bdb7a3e0d40d0ec30c5737687a"
@@ -9503,11 +9508,6 @@ node-releases@^1.1.61, node-releases@^1.1.71:
   resolved "https://registry.yarnpkg.com/node-releases/-/node-releases-1.1.71.tgz#cb1334b179896b1c89ecfdd4b725fb7bbdfc7dbb"
   integrity sha512-zR6HoT6LrLCRBwukmrVbHv0EpEQjksO6GmFcZQQuCAy139BEsoVKPYnf3jongYW83fAa1torLGYwxxky/p28sg==
 
-node-stream-zip@^1.13.3:
-  version "1.13.3"
-  resolved "https://registry.yarnpkg.com/node-stream-zip/-/node-stream-zip-1.13.3.tgz#63235337abebcef408b244b4e28f28961e6e86f0"
-  integrity sha512-Vv95ug+8Jfug4AxcqNV7TeGEk2antNidj+YBOyP8SS8LTHJmjsE3d9h6L831eJtO8p7jesJ3CDtgkwmLO/wcSw==
-
 normalize-package-data@^2.3.2, normalize-package-data@^2.5.0:
   version "2.5.0"
   resolved "https://registry.yarnpkg.com/normalize-package-data/-/normalize-package-data-2.5.0.tgz#e66db1838b200c1dfc233225d12cb36520e234a8"
@@ -12637,6 +12637,18 @@ signal-exit@^3.0.0, signal-exit@^3.0.2:
   version "3.0.3"
   resolved "https://registry.yarnpkg.com/signal-exit/-/signal-exit-3.0.3.tgz#a1410c2edd8f077b08b4e253c8eacfcaf057461c"
   integrity sha512-VUJ49FC8U1OxwZLxIbTTrDvLnf/6TDgxZcK8wxR8zs13xpx7xbG60ndBlhNrFi2EMuFRoeDoJO7wthSLq42EjA==
+
+simple-job-scheduler@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/simple-job-scheduler/-/simple-job-scheduler-1.1.0.tgz#66bb3c050dbb3ea288217feb96cce0846fdcdab3"
+  integrity sha512-iuqmrUIDVEUJilJMVvdgyanIBF3ICJR2fSZbte6qEnnDTQWAzdrTfzbkfTbUvwr5Obrtxt0pjil0r49hxtX1OA==
+  dependencies:
+    simple-logging-system "^1.0.0"
+
+simple-logging-system@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/simple-logging-system/-/simple-logging-system-1.0.0.tgz#a1a596a2bae588ba9ca0967708c7ca8a9f5c1e78"
+  integrity sha512-FF5AQ+UY4PmZ4MhnjwOfmiv+//y1VYwXscZaDFkv/FuRQAOhh2+F4icCVEhMiCJ6XIAqT+/UESYNgah72ZUlLQ==
 
 simple-swizzle@^0.2.2:
   version "0.2.2"
