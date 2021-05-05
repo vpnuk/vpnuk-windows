@@ -12,6 +12,7 @@ import {
     isObfuscateAvailable
 } from '@modules/catalogs.js';
 import { Dns, Servers, OvpnOptions, ConnectionStore, useStore } from '@domain';
+import scheduler, { HOUR_MS } from '@modules/scheduler.js';
 const { ipcRenderer } = require('electron');
 
 let isDev, store;
@@ -22,11 +23,13 @@ initializeCatalogs().then(catalog => {
         Servers.values = catalog.servers;
         OvpnOptions.isObfuscateAvailable = catalog.isObfuscateAvailable;
     });
-    // todo: run check every N hours
+});
+
+function ovpnCheckUpdate() {
     checkOvpnUpdates().then(info => {
         info && ipcRenderer.send('ovpn-update-request', info);
     });
-});
+}
 
 const App = observer(() => {
     const [visible, setVisible] = useState(false);
@@ -37,6 +40,8 @@ const App = observer(() => {
         ipcRenderer.send('is-dev-request');
         ipcRenderer.send('default-gateway-request');
         ipcRenderer.send('ipv6-fix');
+        ovpnCheckUpdate(); // check on start and every 3 days then
+        scheduler.schedule('ovpn-check-update', ovpnCheckUpdate, 72 * HOUR_MS);
     }, []);
 
     const showDrawer = () => {
