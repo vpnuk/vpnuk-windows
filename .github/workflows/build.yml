@@ -63,5 +63,5 @@ jobs:
           omitBodyDuringUpdate: true
           tag: "v${{ steps.archive.outputs.VERSION }}"
           name: ${{ steps.archive.outputs.VERSION }}
-          artifacts: "${{ steps.archive.outputs.NAME }},release/nsis-web/*.7z,release/nsis-web/*.exe"
+          artifacts: "${{ steps.archive.outputs.NAME }},release/nsis-web/*"
           token: ${{ secrets.github_token }}
