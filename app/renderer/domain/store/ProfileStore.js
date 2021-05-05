@@ -1,40 +1,49 @@
-import { makeAutoObservable } from 'mobx';
+import { makeAutoObservable, toJS } from 'mobx';
 import { Profile } from '@domain';
 import { VpnType } from '../catalog/VpnType';
 
-const defaultProfileName = 'Default';
+const defaultProfileName = 'default';
+
+function _createDefaultProfiles() {
+    return Object.assign({}, ...Object.entries(VpnType).map(([k, _]) => ({
+        [k]: [new Profile(`${k} ${defaultProfileName}`, k)]
+    })));
+}
+export const createDefaultProfiles = _createDefaultProfiles;
 
 class ProfileStore {
-    profiles = [];
+    profiles = _createDefaultProfiles();
 
     constructor(settings) {
         this.settings = settings;
-        this.profiles = [new Profile(defaultProfileName)];
         makeAutoObservable(this, { settings: false });
     }
 
-    getProfiles(vpnType = VpnType.OpenVPN.label) {
-        return this.profiles.filter(p => p.vpnType === vpnType);
+    getProfiles(vpnType = this.settings.vpnType) {
+        return this.profiles[vpnType];
     }
 
-    getProfile(id) {
-        return this.profiles.find(p => p.id === id) || this.profiles[0];
+    getProfile(id, vpnType = this.settings.vpnType) {
+        let list =this.profiles[vpnType];
+        return list.find(p => p.id === id) || list[0];
     }
 
-    createProfile(name, provider) {
-        let newProfile = new Profile(name, provider);
-        this.profiles.push(newProfile);
+    createProfile(name, vpnType = this.settings.vpnType) {
+        let newProfile = new Profile(name, vpnType);
+        this.profiles[vpnType].push(newProfile);
         this.settings.profileId = newProfile.id;
     }
 
-    deleteProfile(id) {
-        let index = this.profiles.findIndex(p => p.id === id);
-        this.profiles.splice(index, 1);
-        this.profiles = this.profiles.length
-            ? this.profiles
-            : [new Profile(defaultProfileName, this.settings.vpnType)];
-        index = index - 1 < 0 ? 0 : index - 1; 
-        this.settings.profileId = this.profiles[index];
+    deleteProfile(id, vpnType = this.settings.vpnType) {
+        let list = this.profiles[vpnType];
+        let index = toJS(list).findIndex(p => p.id === id);
+        list.splice(index, 1);
+        if (!list.length) {
+            this.createProfile(`${vpnType} ${defaultProfileName}`, vpnType);
+            return;
+        }
+        index = index - 1 < 0 ? 0 : index - 1;
+        this.settings.profileId = list[index].id;
     }
 
     get currentProfile() {
