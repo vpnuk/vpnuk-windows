@@ -1,10 +1,13 @@
 const cp = require('child_process');
-const { connectionStates } = require('../../modules/constants');
+const { connectionStates, VpnType } = require('../../modules/constants');
 const VpnBase = require('./VpnBase');
 
 class WindowsVpn extends VpnBase {
-    constructor(profile, hooks) {
+    #ipseckey;
+
+    constructor(profile, hooks, wVpnOptions) {
         super(profile, hooks);
+        this.#ipseckey = wVpnOptions.ipseckey;
     }
 
     connect() {
@@ -47,13 +50,13 @@ class WindowsVpn extends VpnBase {
         ]).status;
     }
 
-    #addConnection(ipseckey = '69000903') {
+    #addConnection() {
         return this.#logSpawnSync('powershell', [
             'Add-VpnConnection',
             '-Name', this._name,
             '-TunnelType', this.type,
-            '-ServerAddress', this._server.host, // todo: dns name with ike2
-            ipseckey ? `-L2tpPsk ${ipseckey}` : '', // l2tp only // get from catalogs
+            '-ServerAddress', this._server.host, // todo: use dns name for ike2
+            this.type === VpnType.L2TP.label ? `-L2tpPsk ${this.#ipseckey}` : '',
             '-AuthenticationMethod Chap, MsChapv2', // todo: check for pptp and ikev2
             '-Force -RememberCredential -PassThru'
         ]).status;

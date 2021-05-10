@@ -34,7 +34,7 @@ const showMessageBoxOnError = (error, title = 'Error') => {
 const closeConnectionSync = () => {
     isDev && console.log(`closeConnectionSync. status=${vpnConnection?.getConnectionStatus()}`);
     if (!vpnConnection || vpnConnection.getConnectionStatus()
-            === connectionStates.disconnected) {
+            !== connectionStates.connected) {
         return true;
     }
     if (dialog.showMessageBoxSync({
@@ -54,7 +54,7 @@ exports.closeConnectionSync = closeConnectionSync;
 
 ipcMain.on('connection-start', (event, args) => {
     isDev && console.log('connection-start event', args);
-    const { profile, gateway } = args; // todo: validate profile
+    const { profile, gateway, wVpnOptions } = args; // todo: validate profile
     isDev && console.log('connection-start details', profile.details);
     const { tray } = require('./main');
 
@@ -92,7 +92,7 @@ ipcMain.on('connection-start', (event, args) => {
         errorHook: error => {
             showMessageBoxOnError(error, 'Error starting connection');
         }
-    });
+    }, wVpnOptions);
 
     vpnConnection.connect();
 });
