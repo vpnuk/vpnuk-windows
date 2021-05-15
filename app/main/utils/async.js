@@ -15,7 +15,7 @@ exports.spawnChild = async (command, args, options) => {
     });
 
     if (exitCode) {
-        throw new Error(`subprocess error exit ${exitCode}, ${error}`);
+        throw new Error(`Subprocess exited with error ${exitCode}:\n${error}`);
     }
     return data;
 }

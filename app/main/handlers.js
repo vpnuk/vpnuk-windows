@@ -31,10 +31,10 @@ const showMessageBoxOnError = (error, title = 'Error') => {
     }));
 };
 
-const closeConnectionSync = () => {
-    isDev && console.log(`closeConnectionSync. status=${vpnConnection?.getConnectionStatus()}`);
-    if (!vpnConnection || vpnConnection.getConnectionStatus()
-            !== connectionStates.connected) {
+const closeConnection = async (beforeDisconnectCb = () => {}) => {
+    let status = await vpnConnection?.getConnectionStatus();
+    isDev && console.log(`closeConnection. status=${status}`);
+    if (!vpnConnection || status !== connectionStates.connected) {
         return true;
     }
     if (dialog.showMessageBoxSync({
@@ -45,14 +45,15 @@ const closeConnectionSync = () => {
         buttons: ['Disconnect and exit', 'Cancel'],
         cancelId: 1
     }) !== 1) {
-        vpnConnection.disconnect();
+        beforeDisconnectCb();
+        await vpnConnection.disconnect();
         return true;
     }
     return false;
 };
-exports.closeConnectionSync = closeConnectionSync;
+exports.closeConnection = closeConnection;
 
-ipcMain.on('connection-start', (event, args) => {
+ipcMain.on('connection-start', async (event, args) => {
     isDev && console.log('connection-start event', args);
     const { profile, gateway, wVpnOptions } = args; // todo: validate profile
     isDev && console.log('connection-start details', profile.details);
@@ -94,12 +95,12 @@ ipcMain.on('connection-start', (event, args) => {
         }
     }, wVpnOptions);
 
-    vpnConnection.connect();
+    await vpnConnection.connect();
 });
 
-ipcMain.on('connection-stop', () => {
+ipcMain.on('connection-stop', async () => {
     isDev && console.log('connection-stop event', vpnConnection);
-    vpnConnection?.disconnect();
+    await vpnConnection?.disconnect();
 });
 
 ipcMain.on('is-dev-request', event => {
@@ -150,7 +151,7 @@ ipcMain.on('ipv6-fix', async () => {
     }
 });
 
-ipcMain.on('ovpn-update-request', (event, arg) => {
+ipcMain.on('ovpn-update-request', async (event, arg) => {
     isDev && console.log('ovpn-update-request event');
     if (dialog.showMessageBoxSync({
         type: 'question',
@@ -160,7 +161,7 @@ ipcMain.on('ovpn-update-request', (event, arg) => {
         buttons: ['Yes', 'No'],
         cancelId: 1
     }) !== 1) {
-        vpnConnection?.type === 'OpenVPN' && vpnConnection?.disconnect();
+        vpnConnection?.type === 'OpenVPN' && (await vpnConnection?.disconnect());
         event.sender.send('ovpn-update-response', arg);
     }
 });
