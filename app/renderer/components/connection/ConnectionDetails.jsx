@@ -4,7 +4,7 @@ import { action } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { Checkbox } from 'antd';
 import '@components/index.css';
-import { optionsMtu } from '@modules/constants.js';
+import { optionsMtu, VpnType } from '@modules/constants.js';
 import { ValueSelector } from '@components';
 import { Dns, useStore } from '@domain';
 
@@ -18,21 +18,23 @@ const ConnectionDetails = observer(() => {
             style={{ color: "#fff" }}
         >
             Kill Switch
-    </Checkbox>
+        </Checkbox>
         <div
             className="form-show-more-connection-log"
             onClick={() => ipcRenderer.send('log-open', profile.id)}
         >
             View the connection log
-    </div>
+        </div>
         <ValueSelector
             options={Dns.values}
             value={profile.details.dns}
             onChange={action(value => profile.details.dns = value)} />
-        <ValueSelector
-            options={optionsMtu}
-            value={profile.details.mtu}
-            onChange={action(value => profile.details.mtu = value)} />
+        <div className={(profile.vpnType === VpnType.OpenVPN.label ? '' : 'hidden')}>
+            <ValueSelector
+                options={optionsMtu}
+                value={profile.details.mtu}
+                onChange={action(value => profile.details.mtu = value)} />
+        </div>
     </>
 });
 

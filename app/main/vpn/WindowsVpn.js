@@ -1,5 +1,12 @@
-const { connectionStates, VpnType } = require('../../modules/constants');
+const {
+    connectionStates,
+    VpnType,
+    phoneBookPath
+} = require('../../modules/constants');
 const { spawnChild } = require('../utils/async');
+const { readFile } = require('fs').promises;
+const { writeFileSync } = require('fs');
+const { encode, decode } = require('ini');
 const VpnBase = require('./VpnBase');
 
 class WindowsVpn extends VpnBase {
@@ -19,6 +26,7 @@ class WindowsVpn extends VpnBase {
             await this.#removeConnection();
         }
         await this.#addConnection();
+        await this.#setDns();
         await this.#rasdialConnect();
         if (await this.getConnectionStatus() === connectionStates.connected) {
             this._connectedHook?.();
@@ -83,6 +91,20 @@ class WindowsVpn extends VpnBase {
     async #rasdialDisconnect() {
         return await this.#logSpawn('powershell',
             ['rasdial', this._name, '/d']);
+    }
+
+    async #setDns() {
+        if (!this._dns.value) {
+            return;
+        }
+        // todo: ? try-catch phoneBookPath file exists
+        let phoneBook = decode(await readFile(phoneBookPath, 'utf-8'));
+        phoneBook[this._name].IpPrioritizeRemote = '1';
+        phoneBook[this._name].IpDnsAddress = this._dns.value[0];
+        phoneBook[this._name].IpDns2Address = this._dns.value[1];
+        phoneBook[this._name].IpNameAssign = '2';
+        let result = encode(phoneBook);
+        writeFileSync(phoneBookPath, result, 'utf-8');
     }
 
     async #logSpawn(cmd, args) {

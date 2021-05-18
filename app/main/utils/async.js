@@ -19,32 +19,3 @@ exports.spawnChild = async (command, args, options) => {
     }
     return data;
 }
-
-const https = require('https');
-exports.httpsGet = async url =>
-    new Promise((resolve, reject) => {
-        let req = https.get(url);
-
-        req.on('response', res => {
-            resolve(res);
-        });
-
-        req.on('error', err => {
-            reject(err);
-        });
-    });
-
-const fs = require('fs');
-exports.writeFile = async (stream, fileName) =>
-    new Promise((resolve, reject) => {
-        let writer = fs.createWriteStream(fileName);
-        stream.pipe(writer);
-
-        writer.on('finish', () => {
-            resolve();
-        });
-
-        writer.on('error', err => {
-            reject(err);
-        });
-    });
