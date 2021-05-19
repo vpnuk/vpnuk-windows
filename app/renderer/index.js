@@ -4,10 +4,10 @@ import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 import { StoreProvider } from '@domain';
+import { Starting } from '@components';
 
-// todo: loading view: loading={<Loading />}
 ReactDOM.render(
-    <StoreProvider>
+    <StoreProvider loading={<Starting />}>
         <App />
     </StoreProvider>,
     document.getElementById('root')
