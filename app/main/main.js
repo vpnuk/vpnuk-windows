@@ -1,4 +1,4 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, Menu } = require('electron');
 const path = require('path');
 const AppTray = require('./tray');
 const { enableAutoUpdate } = require("./updater");
@@ -23,6 +23,30 @@ function createWindow() {
         }
     });
     window.connectionIsOk = false;
+    window.webContents.on('context-menu', (_, props) => {
+        const { selectionText, isEditable, x, y } = props;
+        let menuList = isDev ? [
+            {
+                label: 'Inspect Element',
+                click: () => { window.inspectElement(x, y) }
+            },
+            { type: 'separator' }
+        ] : [];
+        if (isEditable) {
+            menuList = [
+                ...menuList,
+                { role: 'cut' },
+                { role: 'copy' },
+                { role: 'paste' },
+                { role: 'delete' },
+            ];
+        } else if (selectionText && selectionText.trim() !== '') {
+            menuList = [...menuList, { role: 'copy' }];
+        }
+        menuList = [...menuList, { type: 'separator' }, { role: 'selectall' }];
+        const menu = Menu.buildFromTemplate(menuList);
+        menu.popup(window);
+    });
     exports.window = window;
 
     !isDev && window.removeMenu()
