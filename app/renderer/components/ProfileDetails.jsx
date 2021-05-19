@@ -24,11 +24,15 @@ const ProfileDetails = observer(() => {
                 <input
                     placeholder="login"
                     value={profiles.currentProfile.credentials.login}
-                    onChange={action(e => profiles.currentProfile.credentials.login = e.target.value)} />
+                    onChange={action(e =>
+                        profiles.currentProfile.credentials.login =
+                            e.target.value.trim())} />
                 <input
                     placeholder="password"
                     value={profiles.currentProfile.credentials.password}
-                    onChange={action(e => profiles.currentProfile.credentials.password = e.target.value)}
+                    onChange={action(e =>
+                        profiles.currentProfile.credentials.password =
+                            e.target.value.trim())}
                 />
             </div>
         </div>
