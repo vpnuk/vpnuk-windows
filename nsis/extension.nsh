@@ -151,6 +151,9 @@ send:
             MessageBox MB_OK "Please specify your choice"
             Abort
         ${ElseIf} $radioValue == true
+            GetDlgItem $0 $hWndParent 1 ; 'Next' button handle
+            EnableWindow $0 0
+
             ${If} $ovpnPath != ""
                 ${uninstallOvpn}
             ${EndIf}
@@ -174,6 +177,9 @@ send:
                 MessageBox MB_OK "Error loading openvpn:$\n$1"
                 Abort
             ${EndIf}
+
+            GetDlgItem $0 $hWndParent 1 ; 'Next' button handle
+            EnableWindow $0 1
         ${EndIf}
     FunctionEnd
     !pragma warning enable 6040 ; Enable back
@@ -262,6 +268,10 @@ send:
             MessageBox MB_OK "Please specify your choice"
             Abort
         ${EndIf}
+        
+        GetDlgItem $0 $hWndParent 1 ; 'Next' button handle
+        EnableWindow $0 0
+
         SetShellVarContext current
 
         ; ----------- Updater cache -----------
@@ -276,7 +286,11 @@ send:
         ${If} $userDataFlag == true
             RMDir /r "$APPDATA\VPNUK"
         ${EndIf}
+        
         SetShellVarContext all
+
+        GetDlgItem $0 $hWndParent 1 ; 'Next' button handle
+        EnableWindow $0 1
     FunctionEnd
     !pragma warning enable 6040
 !macroend
