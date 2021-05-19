@@ -38,7 +38,6 @@ const MainPage = observer(({ showDrawer }) => {
                         <p>{store.profiles.currentProfile.server.label}</p>
                     </div>
                 </div>
-                <div className="column-block"></div>
             </div>
             <div className="column"></div>
         </div>

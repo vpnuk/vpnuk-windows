@@ -1,4 +1,4 @@
-const { BrowserWindow, dialog, ipcMain, Menu } = require('electron');
+const { dialog, ipcMain } = require('electron');
 const path = require('path');
 const publicIp = require('public-ip');
 const {
@@ -31,7 +31,7 @@ const showMessageBoxOnError = (error, title = 'Error') => {
     }));
 };
 
-const closeConnection = async (beforeDisconnectCb = () => {}) => {
+const closeConnection = async (beforeDisconnectCb = () => { }) => {
     let status = await vpnConnection?.getConnectionStatus();
     isDev && console.log(`closeConnection. status=${status}`);
     if (!vpnConnection || status !== connectionStates.connected) {
@@ -106,15 +106,6 @@ ipcMain.on('connection-stop', async () => {
 ipcMain.on('is-dev-request', event => {
     isDev && console.log('is-dev-request event');
     event.sender.send('is-dev-response', isDev);
-});
-
-ipcMain.on('context-menu-show', (event, args) => {
-    const { window } = require('./main');
-    const menu = Menu.buildFromTemplate([{
-        label: 'Inspect Element',
-        click: () => { window.inspectElement(args.x, args.y) }
-    }])
-    menu.popup(BrowserWindow.fromWebContents(event.sender))
 });
 
 ipcMain.on('log-open', (_, profileId) => {

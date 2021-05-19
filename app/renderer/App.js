@@ -116,14 +116,6 @@ ipcRenderer.on('ovpn-update-installed', (_, arg) => {
     });
 });
 
-window.addEventListener('contextmenu', event => {
-    if (isDev) {
-        console.log('window contextmenu event');
-        event.preventDefault();
-        ipcRenderer.send('context-menu-show', { x: event.x, y: event.y });
-    }
-});
-
 window.addEventListener('beforeunload', _ => {
     isDev && console.log('window beforeunload event');
     store.triggerPersist();
