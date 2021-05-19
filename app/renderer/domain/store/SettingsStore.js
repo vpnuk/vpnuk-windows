@@ -1,5 +1,5 @@
 import { makeAutoObservable } from 'mobx';
-import { VpnType } from '../catalog/VpnType';
+import { VpnType } from '@modules/constants.js';
 
 class SettingsStore {
     vpnType = VpnType.OpenVPN.label;

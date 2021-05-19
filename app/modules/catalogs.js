@@ -96,11 +96,12 @@ const getVersions = file => fs.existsSync(file)
 const getLinkByArch = node => process.arch === 'x32'
     ? node.win32 : node.win64;
 
-exports.initializeCatalogs = () => {
+function initializeCatalogs() {
     if (!fs.existsSync(settingsPath.folder)) {
         fs.mkdirSync(settingsPath.folder);
     };
     const oldVers = getVersions(settingsPath.versions);
+    let ipseckey;
 
     return axios.get(settingsLink.versions)
         .then(response => response.data)
@@ -124,6 +125,7 @@ exports.initializeCatalogs = () => {
             if (newVers && (!oldVers || downloads.length > 0)) {
                 fs.writeFileSync(settingsPath.versions, JSON.stringify(newVers, undefined, 2));
             }
+            ipseckey = newVers.ipseckey ? newVers.ipseckey : oldVers.ipseckey;
             return Promise.all(downloads);
         })
         .then(() => {
@@ -136,10 +138,12 @@ exports.initializeCatalogs = () => {
                 dns: handlerServerDnsStructure(result[0].dns),
                 servers: handlerServerTypesStructure(result[1].servers,
                     ['shared', 'dedicated', 'dedicated11']),
-                isObfuscateAvailable: isObfuscateAvailable()
+                isObfuscateAvailable: isObfuscateAvailable(),
+                ipseckey: ipseckey
             };
         });
 };
+exports.initializeCatalogs = initializeCatalogs;
 
 exports.checkOvpnUpdates = () => {
     const oldVers = getVersions(settingsPath.versions);

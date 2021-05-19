@@ -11,17 +11,26 @@ import {
     initializeCatalogs,
     isObfuscateAvailable
 } from '@modules/catalogs.js';
-import { Dns, Servers, OvpnOptions, ConnectionStore, useStore } from '@domain';
+import {
+    Dns,
+    Servers,
+    OvpnOptions,
+    ConnectionStore,
+    useStore,
+    WvpnOptions
+} from '@domain';
 import scheduler, { HOUR_MS } from '@modules/scheduler.js';
 const { ipcRenderer } = require('electron');
 
 let isDev, store;
 
 initializeCatalogs().then(catalog => {
+    isDev && console.log('initializeCatalogs', catalog);
     runInAction(() => {
         Dns.values = catalog.dns;
         Servers.values = catalog.servers;
         OvpnOptions.isObfuscateAvailable = catalog.isObfuscateAvailable;
+        WvpnOptions.ipseckey = catalog.ipseckey;
     });
 });
 

@@ -86,6 +86,7 @@
   "dependencies": {
     "electron-store": "^7",
     "electron-updater": "^4.3.8",
+    "ini": "^2.0.0",
     "public-ip": "^4.0.3"
   },
   "devDependencies": {
