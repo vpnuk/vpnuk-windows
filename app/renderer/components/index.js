@@ -7,6 +7,7 @@ export { default as ConnectionButton } from './connection/ConnectionButton';
 export { default as ConnectionSwitch } from './connection/ConnectionSwitch';
 
 // all
+export { default as LoadingGate } from './common/LoadingGate';
 export { default as MainPage } from './MainPage';
 export { default as Menu } from './Menu';
 export { default as OvpnDetails } from './OvpnDetails';

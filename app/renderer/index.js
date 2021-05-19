@@ -4,12 +4,14 @@ import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 import { StoreProvider } from '@domain';
-import { Starting } from '@components';
+import { LoadingGate, Starting } from '@components';
 
 ReactDOM.render(
-    <StoreProvider loading={<Starting />}>
-        <App />
-    </StoreProvider>,
+    <LoadingGate loading={<Starting />}>
+        <StoreProvider>
+            <App />
+        </StoreProvider>
+    </LoadingGate>,
     document.getElementById('root')
 );
 
