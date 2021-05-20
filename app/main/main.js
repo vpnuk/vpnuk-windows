@@ -91,7 +91,6 @@ if (gotTheLock) {
         createWindow();
         tray = new AppTray(() => window.focus());
         exports.tray = tray;
-        !isIde && enableAutoUpdate();
     });
 
     app.on('window-all-closed', () => {

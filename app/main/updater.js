@@ -1,10 +1,12 @@
 const { dialog } = require('electron');
-const { autoUpdater } = require("electron-updater");
+const { autoUpdater } = require('electron-updater');
 const path = require('path');
 
 const isDev = process.env.ELECTRON_ENV === 'Dev';
+let _sender;
 
-const enableAutoUpdate = () => {
+const enableAutoUpdate = sender => {
+    _sender = sender;
     autoUpdater.autoDownload = false;
     autoUpdater.checkForUpdates();
 };
@@ -24,10 +26,11 @@ autoUpdater.on('update-available', info => {
         type: 'info',
         icon: path.join(__dirname, '../assets/icon.ico'),
         title: 'VPNUK Update',
-        message: `New version (${info.version} from ${info.releaseDate}) is available.\nDownload?`,
+        message: `Version ${info.version} is available.\nUpdate now?`,
         buttons: ['Yes', 'No'],
         cancelId: 1
     }) !== 1) {
+        _sender.send('auto-update-info', info);
         autoUpdater.downloadUpdate();
     }
 });
@@ -37,26 +40,21 @@ autoUpdater.on('update-not-available', info => {
 });
 
 autoUpdater.on('download-progress', progressObj => {
-    let log_message = "Download speed: " + progressObj.bytesPerSecond;
-    log_message = log_message + ' - Downloaded ' + progressObj.percent + '%';
-    log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')';
-    printUpdateStatus('download-progress', log_message);
+    _sender.send('auto-update-progress', progressObj);
+    printUpdateStatus('download-progress', progressObj);
 });
 
-autoUpdater.on('update-downloaded', info => {
-    printUpdateStatus('Update downloaded. Quitting to install.', info);
-    if (dialog.showMessageBoxSync({
-        type: 'info',
-        icon: path.join(__dirname, '../assets/icon.ico'),
-        title: 'VPNUK Update',
-        message: `New version (${info.version} from ${info.releaseDate}) is downloaded.\Install now?`,
-        buttons: ['Yes', 'No'],
-        cancelId: 1
-    }) !== 1) {
-        autoUpdater.quitAndInstall();
-    }
+autoUpdater.on('update-downloaded', () => {
+    _sender.send('auto-update-progress', { percent: 100 });
+    printUpdateStatus('Update downloaded. Quitting to install.');
+    !isDev && autoUpdater.quitAndInstall();
 });
 
 autoUpdater.on('error', err => {
     printUpdateStatus('Error in auto-updater. ' + err);
+    dialog.showMessageBoxSync({
+        type: 'error',
+        title: 'Error updating the app',
+        message: err.message
+    });
 });

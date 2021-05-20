@@ -275,6 +275,15 @@
     color: #ffffff;
     margin-bottom: 3px;
 }
+.column-content_block-update_text {
+    text-align: left;
+    color: #ffffff;
+    margin-top: 2em;
+    font-size: large;
+}
+.column-content_block-update_text h1, h2, h3, h4, h5, h6 {
+    color: #ffffff;
+}
 
 .switch {
     width: 168px !important;
