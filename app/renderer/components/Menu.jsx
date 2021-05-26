@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { action } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import CreatableSelect from "react-select/creatable";
+import CreatableSelect from 'react-select/creatable';
 import { selectOptionColors } from '@styles';
 import {
     ProfileDetails,
@@ -12,7 +12,9 @@ import {
     OvpnDetails
 } from '@components';
 import '@components/index.css';
-import { useStore, VpnType } from '@domain';
+import { VpnType } from '@modules/constants.js';
+import { useStore } from '@domain';
+import { isDev } from '@app';
 
 const Menu = observer(() => {
     const store = useStore();
@@ -23,8 +25,8 @@ const Menu = observer(() => {
         <div className="form-titles">Connection Type</div>
         <ValueSelector
             options={vpnTypes}
-            value={vpnTypes.find(avp => avp.value === VpnType.OpenVPN.label)}
-            onChange={action(value => store.settings.vpnType = value.value)} />
+            value={vpnTypes.find(type => type.value === store.settings.vpnType)}
+            onChange={action(option => store.settings.vpnType = option.value)} />
         <div className="form-titles">Profile</div>
         <CreatableSelect
             className="form-select"
@@ -41,9 +43,17 @@ const Menu = observer(() => {
         </div>
         <div className={(showMore ? '' : 'hidden') + ' show-more-wrapper'}>
             <ConnectionDetails />
-            <OvpnDetails />
+            <div className={(store.settings.vpnType === VpnType.OpenVPN.label ? '' : 'hidden')}>
+                <OvpnDetails />
+            </div>
         </div>
         <ConnectionButton />
+        <button className={(isDev ? '' : 'hidden') + ' form-button'}
+            onClick={() => {
+                console.log('PRINT', store);
+            }}>
+            PRINT
+        </button>
     </>;
 });
 

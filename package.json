@@ -7,11 +7,11 @@
       "email": "kryuchkovm@outlook.com"
     },
     {
-      "name": "Vuhniavyi",
+      "name": "Maksym Vuhniavyi",
       "email": "maksymvuhniavyi@gmail.com"
     }
   ],
-  "version": "v1.1.1",
+  "version": "v1.2.2",
   "description": "VPNUK desktop application",
   "repository": {
     "type": "git",
@@ -34,8 +34,8 @@
     "build": "yarn run build-react-nsis && dotenv cross-var yarn run electron-builder",
     "test": "dotenv cross-var echo %ELECTRON_ENV%"
   },
+  "productName": "VPNUK",
   "build": {
-    "productName": "VPNUK",
     "appId": "net.vpnuk.desktop",
     "win": {
       "target": [
@@ -62,7 +62,8 @@
       "installerHeader": "nsis/installerHeader.bmp",
       "installerSidebar": "nsis/installerSidebar.bmp",
       "runAfterFinish": true,
-      "include": "nsis/extension.nsh"
+      "include": "nsis/extension.nsh",
+      "differentialPackage": true
     },
     "directories": {
       "buildResources": "build",
@@ -85,7 +86,8 @@
   },
   "dependencies": {
     "electron-store": "^7",
-    "electron-updater": "^4.3.8",
+    "electron-updater": "^4.3.9",
+    "ini": "^2.0.0",
     "public-ip": "^4.0.3"
   },
   "devDependencies": {
@@ -100,7 +102,7 @@
     "customize-cra": "^0.4.1",
     "dotenv-cli": "^4.0.0",
     "electron": "^11",
-    "electron-builder": "^22.10.5",
+    "electron-builder": "^22.11.5",
     "electron-fetch": "^1.7.3",
     "fs": "0.0.1-security",
     "mobx": "^6.2.0",
@@ -109,14 +111,12 @@
     "react": "^17.0.2",
     "react-app-rewired": "^2.1.8",
     "react-dom": "^17.0.2",
+    "react-modal": "^3.13.1",
     "react-scripts": "^4.0.0",
     "react-select": "^4.1.0",
     "simple-job-scheduler": "^1.1.0",
     "uuid": "^8.3.2",
     "wait-on": "^5.2.1"
-  },
-  "resolutions": {
-    "**/app-builder-lib": "npm:app-builder-lib-mkfork@22.10.3"
   },
   "eslintConfig": {
     "extends": "react-app"

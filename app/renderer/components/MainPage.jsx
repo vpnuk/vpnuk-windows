@@ -27,7 +27,7 @@ const MainPage = observer(({ showDrawer }) => {
                     <div className="column-content_block-title">PRIVACY MODE</div>
                     <ConnectionSwitch />
                     <ValueSelector
-                        options={store.profiles.profiles}
+                        options={store.profiles.getProfiles()}
                         value={store.profiles.currentProfile}
                         onChange={action(value => {
                             store.settings.vpnType = value.vpnType;
@@ -38,7 +38,6 @@ const MainPage = observer(({ showDrawer }) => {
                         <p>{store.profiles.currentProfile.server.label}</p>
                     </div>
                 </div>
-                <div className="column-block"></div>
             </div>
             <div className="column"></div>
         </div>

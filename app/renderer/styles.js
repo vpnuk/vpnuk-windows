@@ -1,4 +1,4 @@
-const selectOptionColors = {
+export const selectOptionColors = {
     option: (provided, state) => ({
         ...provided,
         backgroundColor:
@@ -14,4 +14,10 @@ const selectOptionColors = {
         width: 200,
     }),
 };
-exports.selectOptionColors = selectOptionColors;
+
+export const modalStyle = {
+    content: {
+        padding: 0,
+        borderRadius: 10
+    }
+};

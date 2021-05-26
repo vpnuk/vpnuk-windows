@@ -1,14 +1,14 @@
 import { makeAutoObservable, toJS } from 'mobx';
 import { ProfileStore, SettingsStore } from '@domain';
-import persist from './persist';
+import persistor from './persistence/persistor';
 
 class RootStore {
     constructor() {
-        this.settings = persist(
+        this.settings = persistor(
             new SettingsStore(),
             'settings',
             ['vpnType', 'profileId']);
-        this.profiles = persist(
+        this.profiles = persistor(
             new ProfileStore(this.settings),
             'profiles',
             ['profiles']);

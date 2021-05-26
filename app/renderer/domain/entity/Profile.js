@@ -1,7 +1,6 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import { v4 as uuid } from 'uuid';
-import { optionsMtu } from '@modules/constants.js';
-import { VpnType } from '../catalog/VpnType';
+import { optionsMtu, VpnType } from '@modules/constants.js';
 
 class Profile {
     id = uuid();

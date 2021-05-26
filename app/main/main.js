@@ -1,4 +1,4 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, Menu } = require('electron');
 const path = require('path');
 const AppTray = require('./tray');
 const { enableAutoUpdate } = require("./updater");
@@ -22,6 +22,31 @@ function createWindow() {
             nodeIntegrationInWorker: true
         }
     });
+    window.connectionIsOk = false;
+    window.webContents.on('context-menu', (_, props) => {
+        const { selectionText, isEditable, x, y } = props;
+        let menuList = isDev ? [
+            {
+                label: 'Inspect Element',
+                click: () => { window.inspectElement(x, y) }
+            },
+            { type: 'separator' }
+        ] : [];
+        if (isEditable) {
+            menuList = [
+                ...menuList,
+                { role: 'cut' },
+                { role: 'copy' },
+                { role: 'paste' },
+                { role: 'delete' },
+            ];
+        } else if (selectionText && selectionText.trim() !== '') {
+            menuList = [...menuList, { role: 'copy' }];
+        }
+        menuList = [...menuList, { type: 'separator' }, { role: 'selectall' }];
+        const menu = Menu.buildFromTemplate(menuList);
+        menu.popup(window);
+    });
     exports.window = window;
 
     !isDev && window.removeMenu()
@@ -31,11 +56,17 @@ function createWindow() {
         : 'file:///' + path.join(__dirname, '../../build/index.html'));
 
     window.on('close', event => {
-        isDev && console.log('window-close event');
-        const { closeConnectionSync } = require('./handlers');
-        if (!closeConnectionSync()) {
-            isDev && console.log('window-close event cancelled');
+        isDev && console.log('window-close event', window.connectionIsOk);
+        if (!window.connectionIsOk) {
             event.preventDefault();
+            const { closeConnection } = require('./handlers');
+            closeConnection(() => { window.hide(); }).then(result => {
+                isDev && console.log('closeConnection ', result);
+                window.connectionIsOk = result;
+                if (result) {
+                    window.close();
+                }
+            });
         }
     });
 
@@ -60,7 +91,6 @@ if (gotTheLock) {
         createWindow();
         tray = new AppTray(() => window.focus());
         exports.tray = tray;
-        !isIde && enableAutoUpdate();
     });
 
     app.on('window-all-closed', () => {

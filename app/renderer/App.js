@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import Modal from 'react-modal';
 import { runInAction } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { Layout } from 'antd';
 import './app.css';
-import { Sidebar, MainPage } from '@components';
+import { modalStyle } from '@styles';
+import { Sidebar, MainPage, UpdateInfo } from '@components';
 import {
     checkOvpnUpdates,
     downloadOvpnUpdate,
@@ -11,17 +13,26 @@ import {
     initializeCatalogs,
     isObfuscateAvailable
 } from '@modules/catalogs.js';
-import { Dns, Servers, OvpnOptions, ConnectionStore, useStore } from '@domain';
+import {
+    Dns,
+    Servers,
+    OvpnOptions,
+    ConnectionStore,
+    useStore,
+    WvpnOptions
+} from '@domain';
 import scheduler, { HOUR_MS } from '@modules/scheduler.js';
 const { ipcRenderer } = require('electron');
 
 let isDev, store;
 
 initializeCatalogs().then(catalog => {
+    isDev && console.log('initializeCatalogs', catalog);
     runInAction(() => {
         Dns.values = catalog.dns;
         Servers.values = catalog.servers;
         OvpnOptions.isObfuscateAvailable = catalog.isObfuscateAvailable;
+        WvpnOptions.ipseckey = catalog.ipseckey;
     });
 });
 
@@ -31,8 +42,10 @@ function ovpnCheckUpdate() {
     });
 }
 
+Modal.setAppElement('#root');
+
 const App = observer(() => {
-    const [visible, setVisible] = useState(false);
+    const [isSidebarVisible, setSidebarVisible] = useState(false);
     const innerStore = useStore();
     store = innerStore;
 
@@ -40,28 +53,38 @@ const App = observer(() => {
         ipcRenderer.send('is-dev-request');
         ipcRenderer.send('default-gateway-request');
         ipcRenderer.send('ipv6-fix');
+        ipcRenderer.send('auto-update-enable');
         ovpnCheckUpdate(); // check on start and every 3 days then
         scheduler.schedule('ovpn-check-update', ovpnCheckUpdate, 72 * HOUR_MS);
     }, []);
 
     const showDrawer = () => {
-        setVisible(true);
+        setSidebarVisible(true);
     };
 
     return (
-        <div className="App">
+        <div className="App" id="app">
             <Layout style={{ height: "100%" }}>
                 <Sidebar
-                    visible={visible}
-                    setVisible={setVisible} />
+                    visible={isSidebarVisible}
+                    setVisible={setSidebarVisible} />
                 <Layout>
                     <MainPage
                         showDrawer={showDrawer} />
                 </Layout>
             </Layout>
+            <Modal
+                isOpen={innerStore.settings.isModalOpen}
+                closeTimeoutMS={200}
+                style={modalStyle}
+            >
+                <UpdateInfo />
+            </Modal>
         </div>
     );
 });
+
+// todo: move to handlers.js
 
 ipcRenderer.on('is-dev-response', (_, arg) => {
     isDev = arg;
@@ -107,17 +130,24 @@ ipcRenderer.on('ovpn-update-installed', (_, arg) => {
     });
 });
 
-window.addEventListener('contextmenu', event => {
-    if (isDev) {
-        console.log('window contextmenu event');
-        event.preventDefault();
-        ipcRenderer.send('context-menu-show', { x: event.x, y: event.y });
-    }
+ipcRenderer.on('auto-update-info', (_, arg) => {
+    isDev && console.log('auto-update-info event', arg);
+    store.settings.update.info = arg;
+    store.settings.toggleModal();
+});
+
+ipcRenderer.on('auto-update-progress', (_, arg) => {
+    isDev && console.log('auto-update-progress event', arg);
+    runInAction(() => {
+        store.settings.update.progress = arg;
+    });
 });
 
 window.addEventListener('beforeunload', _ => {
     isDev && console.log('window beforeunload event');
-    store.triggerPersist();
+    runInAction(() => {
+        store.triggerPersist();
+    });
 });
 
 export default App;

@@ -44,3 +44,17 @@ exports.settingsLink = {
     ovpn: baseAddress + 'openvpn-configuration.ovpn',
     ovpnObfucation: baseAddress + 'openvpn-obfuscation-configuration.ovpn'
 }
+
+exports.phoneBookPath = path.resolve(
+    require('process').env.APPDATA
+    + '\\Microsoft\\Network\\Connections\\Pbk\\rasphone.pbk'
+);
+
+const VpnType = {
+    OpenVPN: { label: 'OpenVPN' },
+    IKEv2: { label: 'IKEv2', isDisabled: true },
+    L2TP: { label: 'L2TP' },
+    PPTP: { label: 'PPTP' },
+    WireGuard: { label: 'WireGuard', isDisabled: true }
+};
+exports.VpnType = VpnType;

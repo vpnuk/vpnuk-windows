@@ -75,3 +75,30 @@
 .form-select > div div div {
     color: #fff;
 }
+
+.ant-progress-circle-trail {
+    stroke: rgba(0, 0, 0, 0.25) !important;
+}
+.ant-progress-inner {
+    background-color: rgba(0, 0, 0, 0.25) !important;
+    border: 3px solid rgba(255, 255, 255, 0.25);
+}
+.ant-progress-text {
+    font-style: normal;
+    font-weight: normal;
+    color: #ffffff !important;
+    font-size: 2em !important;
+    line-height: 2 !important;
+    margin-left: 0 !important;
+}
+
+.ReactModal__Overlay {
+    opacity: 0;
+    transition: opacity 200ms ease-in;
+}
+.ReactModal__Overlay--after-open{
+    opacity: 1;
+}
+.ReactModal__Overlay--before-close{
+    opacity: 0;
+}
