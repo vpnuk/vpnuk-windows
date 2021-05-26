@@ -17,6 +17,7 @@ const {
 } = require('./utils/routing');
 const { connectionStates } = require('../modules/constants');
 const { replaceVersionsEntry } = require('./utils/versions');
+const { enableAutoUpdate } = require('./updater');
 
 const isDev = process.env.ELECTRON_ENV === 'Dev';
 
@@ -183,4 +184,9 @@ ipcMain.on('ovpn-update-install', (event, arg) => {
             event.sender.send('ovpn-update-response', arg.info);
         }
     }
+});
+
+ipcMain.on('auto-update-enable', event => {
+    isDev && console.log('auto-update-enable event');
+    enableAutoUpdate(event.sender);
 });
