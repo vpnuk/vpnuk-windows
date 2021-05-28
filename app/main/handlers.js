@@ -1,5 +1,6 @@
 const { dialog, ipcMain } = require('electron');
 const path = require('path');
+const fs = require('fs').promises;
 const publicIp = require('public-ip');
 const {
     createVpn,
@@ -15,8 +16,13 @@ const {
     getIPv6Adapters,
     disableIPv6
 } = require('./utils/routing');
-const { connectionStates } = require('../modules/constants');
+const { connectionStates, settingsPath } = require('../modules/constants');
 const { replaceVersionsEntry } = require('./utils/versions');
+const {
+    checkRootCert,
+    removeRootCert,
+    importRootCert
+} = require('./utils/certs');
 const { enableAutoUpdate } = require('./updater');
 
 const isDev = process.env.ELECTRON_ENV === 'Dev';
@@ -189,4 +195,22 @@ ipcMain.on('ovpn-update-install', (event, arg) => {
 ipcMain.on('auto-update-enable', event => {
     isDev && console.log('auto-update-enable event');
     enableAutoUpdate(event.sender);
+});
+
+ipcMain.on('ikev2-cert-install', async (event, arg) => {
+    isDev && console.log('ikev2-cert-install event');
+    if (arg || !(await checkRootCert())) {
+        isDev && console.log('ikev2-cert-install in');
+        await removeRootCert();
+        try {
+            await fs.access(settingsPath.ikev2Cert);
+            await importRootCert(settingsPath.ikev2Cert);
+        } catch (err) {
+            console.log('ikev2-cert-install error', err);
+            // todo: messagebox
+            event.sender.send('ikev2-cert-installed', false);
+            return;
+        }
+    }
+    event.sender.send('ikev2-cert-installed', true);
 });

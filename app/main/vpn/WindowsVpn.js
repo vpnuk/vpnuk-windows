@@ -72,9 +72,12 @@ class WindowsVpn extends VpnBase {
             'Add-VpnConnection',
             '-Name', this._name,
             '-TunnelType', this.type,
-            '-ServerAddress', this._server.host, // todo: use dns name for ike2
-            this.type === VpnType.L2TP.label ? `-L2tpPsk ${this.#ipseckey}` : '',
-            '-AuthenticationMethod Chap, MsChapv2', // todo: check for pptp and ikev2
+            '-ServerAddress', this.type === VpnType.IKEv2.label
+                ? this._server.dns : this._server.host,
+            this.type === VpnType.L2TP.label
+                ? `-L2tpPsk ${this.#ipseckey}` : '',
+            this.type !== VpnType.IKEv2.label
+                ? '-AuthenticationMethod Chap, MsChapv2' : '',
             '-Force -RememberCredential -PassThru'
         ]);
     }

@@ -2,7 +2,7 @@ const axios = require('axios');
 const path = require('path');
 const fs = require('fs');
 const { settingsPath, settingsLink } = require('./constants');
-const AdmZip = require('adm-zip');;
+const AdmZip = require('adm-zip');
 
 const dowloadOvpnConfig = (link, filePath) =>
     axios
@@ -68,6 +68,13 @@ exports.downloadOvpnUpdate = links => {
         .then(() => { return file; });
 };
 
+const downloadFile = (link, path) => {
+    return axios
+        .get(link, { responseType: 'arraybuffer' })
+        .then(response => fs.writeFileSync(path, new Buffer.from(response.data)))
+        .catch(error => console.log('error', error));
+}
+
 const handlerServerDnsStructure = arr => [
     { value: [], label: 'DNS: Default' },
     ...arr.map(dnsItem => ({
@@ -83,7 +90,8 @@ const handlerServerTypesStructure = (arr, types) =>
             .map(server => ({
                 label: server.location.name,
                 host: server.address,
-                type: server.type
+                type: server.type,
+                dns: server.dns
             }))
     })));
 
@@ -101,7 +109,7 @@ function initializeCatalogs() {
         fs.mkdirSync(settingsPath.folder);
     };
     const oldVers = getVersions(settingsPath.versions);
-    let ipseckey;
+    let ipseckey, ikev2Cert;
 
     return axios.get(settingsLink.versions)
         .then(response => response.data)
@@ -118,6 +126,10 @@ function initializeCatalogs() {
             }
             if (!oldVers || (oldVers.dns !== newVers.dns) || !fs.existsSync(settingsPath.dns)) {
                 downloads.push(dowloadJson(settingsLink.dns, settingsPath.dns));
+            }
+            if (!oldVers || (oldVers.ikev2?.version !== newVers.ikev2?.version) || !fs.existsSync(settingsPath.ikev2Cert)) {
+                downloads.push(downloadFile(newVers.ikev2.cert, settingsPath.ikev2Cert));
+                ikev2Cert = true;
             }
             if (!oldVers || !fs.existsSync(settingsPath.ovpnBinExe)) { // silent download for the first time
                 downloads.push(downloadPatchedOvpnExe(newVers.openvpn.patch));
@@ -139,7 +151,8 @@ function initializeCatalogs() {
                 servers: handlerServerTypesStructure(result[1].servers,
                     ['shared', 'dedicated', 'dedicated11']),
                 isObfuscateAvailable: isObfuscateAvailable(),
-                ipseckey: ipseckey
+                ipseckey: ipseckey,
+                installIKEv2Cert: ikev2Cert
             };
         });
 };
