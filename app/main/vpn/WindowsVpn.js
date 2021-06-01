@@ -27,14 +27,14 @@ class WindowsVpn extends VpnBase {
         }
         await this.#addConnection();
         await this.#setDns();
-        await this.#rasdialConnect();
+        await this.#vpnConnect();
         if (await this.getConnectionStatus() === connectionStates.connected) {
             this._connectedHook?.();
         }
         else {
             await this.#removeConnection();
-            this._logStream.end();
             this._disconnectedHook?.();
+            this._logStream.end();
             this._errorHook?.(new Error(`${this._name} connection error.`));
         }
     }
@@ -47,6 +47,7 @@ class WindowsVpn extends VpnBase {
             await this.#removeConnection();
         }
         this._disconnectedHook?.();
+        this._logStream.end();
     }
 
     async getConnectionStatus() {
@@ -82,9 +83,9 @@ class WindowsVpn extends VpnBase {
         ]);
     }
 
-    async #rasdialConnect() {
+    async #vpnConnect() {
         return await this.#logSpawn('powershell', [
-            'rasdial',
+            'Connect-Vpn',
             this._name,
             this._credentials.login,
             this._credentials.password
