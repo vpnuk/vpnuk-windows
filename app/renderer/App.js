@@ -28,6 +28,7 @@ let isDev, store;
 
 initializeCatalogs().then(catalog => {
     isDev && console.log('initializeCatalogs', catalog);
+    ipcRenderer.send('ikev2-cert-install', catalog.installIKEv2Cert);
     runInAction(() => {
         Dns.values = catalog.dns;
         Servers.values = catalog.servers;
@@ -140,6 +141,13 @@ ipcRenderer.on('auto-update-progress', (_, arg) => {
     isDev && console.log('auto-update-progress event', arg);
     runInAction(() => {
         store.settings.update.progress = arg;
+    });
+});
+
+ipcRenderer.on('ikev2-cert-installed', (_, arg) => {
+    isDev && console.log('ikev2-cert-installed event', arg);
+    runInAction(() => {
+        WvpnOptions.ikeCertOk = arg;
     });
 });
 

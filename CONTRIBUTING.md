@@ -39,10 +39,12 @@
       - entity _- domain entities_
       - store _- domain stores_
 - build _- react-build build output dir_
+- node\_modules _- the black hole on your disk_
 - nsis _- installer extensions subdir_
   - Plugins _- nsis plugins, dir contents must be copied to ../build dir before electron-builder starts_
 - public _- electron web templates_
 - release _- build output dir_
+- dev-app-update.yml _- config for electron auto-update testing_
 - package.json _- project settings and scripts_
 - yarn.lock _- dependencies lock file, must be commited on each change_
 

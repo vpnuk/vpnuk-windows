@@ -33,7 +33,8 @@ exports.settingsPath = {
     ovpnObfucation: path.join(settingsFolder, 'openvpn-obfuscation-configuration.ovpn'),
     profile: path.join(settingsFolder, 'profile.txt'),
     ovpnBinFolder: path.join(settingsFolder, 'ovpnBin/'),
-    ovpnBinExe: path.join(settingsFolder, 'ovpnBin', 'bin', 'openvpn.exe')
+    ovpnBinExe: path.join(settingsFolder, 'ovpnBin', 'bin', 'openvpn.exe'),
+    ikev2Cert: path.join(settingsFolder, 'ikev2.crt'),
 };
 
 const baseAddress = 'https://www.serverlistvault.com/';
@@ -52,7 +53,7 @@ exports.phoneBookPath = path.resolve(
 
 const VpnType = {
     OpenVPN: { label: 'OpenVPN' },
-    IKEv2: { label: 'IKEv2', isDisabled: true },
+    IKEv2: { label: 'IKEv2' },
     L2TP: { label: 'L2TP' },
     PPTP: { label: 'PPTP' },
     WireGuard: { label: 'WireGuard', isDisabled: true }
