@@ -16,6 +16,20 @@ jobs:
         with:
           node-version: 14
 
+      - name: Install dotnet
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '5.x'
+      
+      - name : Cache nuget
+        uses: actions/cache@v2
+        with:
+          path: ~/.nuget/packages
+          # Look to see if there is a cache hit for the corresponding requirements file
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget
+
       - name: Cache node_modules
         uses: actions/cache@v2
         with:
@@ -27,6 +41,12 @@ jobs:
         with:
           path: '.cache/electron'
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+
+      - name: Install dotnet dependencies
+        run: dotnet restore VpnHelper\VpnHelper.csproj
+
+      - name: Build cmdlet
+        run: dotnet build VpnHelper\VpnHelper.csproj -c Release -o .\VpnHelper\bin\VpnHelper
 
       - name: Build app
         uses: samuelmeuli/action-electron-builder@v1

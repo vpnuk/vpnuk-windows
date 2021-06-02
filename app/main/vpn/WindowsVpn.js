@@ -27,14 +27,14 @@ class WindowsVpn extends VpnBase {
         }
         await this.#addConnection();
         await this.#setDns();
-        await this.#rasdialConnect();
+        await this.#vpnConnect();
         if (await this.getConnectionStatus() === connectionStates.connected) {
             this._connectedHook?.();
         }
         else {
             await this.#removeConnection();
-            this._logStream.end();
             this._disconnectedHook?.();
+            this._logStream.end();
             this._errorHook?.(new Error(`${this._name} connection error.`));
         }
     }
@@ -47,6 +47,7 @@ class WindowsVpn extends VpnBase {
             await this.#removeConnection();
         }
         this._disconnectedHook?.();
+        this._logStream.end();
     }
 
     async getConnectionStatus() {
@@ -72,16 +73,19 @@ class WindowsVpn extends VpnBase {
             'Add-VpnConnection',
             '-Name', this._name,
             '-TunnelType', this.type,
-            '-ServerAddress', this._server.host, // todo: use dns name for ike2
-            this.type === VpnType.L2TP.label ? `-L2tpPsk ${this.#ipseckey}` : '',
-            '-AuthenticationMethod Chap, MsChapv2', // todo: check for pptp and ikev2
+            '-ServerAddress', this.type === VpnType.IKEv2.label
+                ? this._server.dns : this._server.host,
+            this.type === VpnType.L2TP.label
+                ? `-L2tpPsk ${this.#ipseckey}` : '',
+            this.type !== VpnType.IKEv2.label
+                ? '-AuthenticationMethod Chap, MsChapv2' : '',
             '-Force -RememberCredential -PassThru'
         ]);
     }
 
-    async #rasdialConnect() {
+    async #vpnConnect() {
         return await this.#logSpawn('powershell', [
-            'rasdial',
+            'Connect-Vpn',
             this._name,
             this._credentials.login,
             this._credentials.password

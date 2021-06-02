@@ -2,6 +2,7 @@ const cp = require('child_process');
 const fs = require('fs');
 const { settingsPath, connectionStates } = require('../../modules/constants');
 const { spawnChild } = require('../utils/async');
+const { escapeSpaces } = require('../utils/cmd');
 const VpnBase = require('./VpnBase');
 
 const isDev = process.env.ELECTRON_ENV === 'Dev';
@@ -26,10 +27,6 @@ const getOpenVpnExePathSync = (obfuscate = false) => {
     }
 
     throw new Error('No OpenVPN found.');
-};
-
-const escapeSpaces = (value) => {
-    return value.replace(' ', '\"\ \"');
 };
 
 // const killWindowsProcess = (pid, callback) => {

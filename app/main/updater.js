@@ -36,7 +36,7 @@ autoUpdater.on('update-available', info => {
 });
 
 autoUpdater.on('update-not-available', info => {
-    printUpdateStatus('Update not available.', info);
+    // printUpdateStatus('Update not available.', info);
 });
 
 autoUpdater.on('download-progress', progressObj => {
