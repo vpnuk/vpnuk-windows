@@ -1,85 +1,43 @@
-/**
- * ServerSelector — scrollable multi-row server list.
- *
- * Fixed height shows ~7 rows; the rest scrolls.
- * Auto-initialises profile.server to catalog[0] when the server host is blank
- * (new profile, or serverType switch) so the connection flow always has a
- * valid endpoint to work with.
- */
-
-import React, { useRef, useEffect } from 'react';
-import { action, runInAction }      from 'mobx';
-import { observer }                  from 'mobx-react-lite';
-import ReactCountryFlag              from 'react-country-flag';
+import React, { useEffect } from 'react';
+import { action, runInAction } from 'mobx';
+import { observer } from 'mobx-react-lite';
+import { Radio } from 'antd';
 import '@components/index.css';
-import { Servers, useStore }         from '@domain';
-
-const toIso = code => (code === 'UK' ? 'GB' : (code || '').toUpperCase());
+import { ValueSelector } from '@components';
+import { Servers, useStore } from '@domain';
 
 const ServerSelector = observer(() => {
     const profile = useStore().profiles.currentProfile;
-    const catalog = Servers.getCatalog(profile.serverType);
-    const listRef = useRef(null);
-
-    // ── Auto-init: if the stored server has no host, select the first entry ──
     useEffect(() => {
-        if (catalog.length > 0 && !profile.server?.host) {
-            runInAction(() => { profile.server = catalog[0]; });
+        let catalog = Servers.getCatalog(profile.serverType);
+        if (!profile.server.host && catalog.length > 0) {
+            runInAction(() => {
+                profile.server = catalog[0];
+            });
         }
-    }, [profile.serverType, catalog.length]);
+    }, [profile, profile.server, profile.serverType]);
 
-    // ── Scroll the selected row into view ────────────────────────────────────
-    // Uses setTimeout(0) so the DOM is fully laid out before scrolling.
-    // block:'center' keeps the selection visible even when it's deep in the list.
-    // Fires on serverType change too (new catalog = new list = selected may shift).
-    useEffect(() => {
-        const t = setTimeout(() => {
-            if (!listRef.current) return;
-            const sel = listRef.current.querySelector('[data-selected="true"]');
-            if (sel) sel.scrollIntoView({ block: 'center', behavior: 'auto' });
-        }, 0);
-        return () => clearTimeout(t);
-    }, [profile.server?.host, profile.serverType]);
+    return <>
+        <div className="form-titles">Server</div>
+        <div className="form-server-block-radio">
+            <Radio.Group
+                value={profile.serverType}
+                onChange={action(e => {
+                    profile.serverType = e.target.value;
+                    let cat = Servers.getCatalog(e.target.value);
+                    cat.length > 0 && (profile.server = cat[0]);
+                })}>
 
-    return (
-        <div ref={listRef} className="server-list">
-            {catalog.length === 0 && (
-                <div style={{ padding: '12px 10px', fontSize: 11, color: 'var(--text-muted)', textAlign: 'center' }}>
-                    No servers available
-                </div>
-            )}
-            {catalog.map((server, i) => {
-                const isSelected = profile.server?.host
-                    ? profile.server.host === server.host
-                    : i === 0;
-
-                return (
-                    <div
-                        key={server.host || server.dns || i}
-                        data-selected={isSelected}
-                        className={'server-list-item' + (isSelected ? ' server-list-item--selected' : '')}
-                        onClick={action(() => { profile.server = server; })}
-                    >
-                        {server.countryCode ? (
-                            <ReactCountryFlag
-                                countryCode={toIso(server.countryCode)}
-                                svg
-                                style={{ width: 18, height: 14, flexShrink: 0 }}
-                            />
-                        ) : (
-                            <span style={{ width: 18, flexShrink: 0 }} />
-                        )}
-                        <div className="server-list-item-text">
-                            <span className="server-list-item-name">{server.label}</span>
-                            {server.city && (
-                                <span className="server-list-item-city">{server.city}</span>
-                            )}
-                        </div>
-                    </div>
-                );
-            })}
+                <Radio.Button value="shared">SHARED</Radio.Button>
+                <Radio.Button value="dedicated">DEDICATED</Radio.Button>
+                <Radio.Button value="dedicated11">1:1</Radio.Button>
+            </Radio.Group>
         </div>
-    );
+        <ValueSelector
+            options={Servers.getCatalog(profile.serverType)}
+            value={profile.server}
+            onChange={action(value => profile.server = value)} />
+    </>
 });
 
 export default ServerSelector;
