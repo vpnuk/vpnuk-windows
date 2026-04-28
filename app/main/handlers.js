@@ -1,4 +1,4 @@
-const { dialog, ipcMain } = require('electron');
+const { app, dialog, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs').promises;
 const publicIp = require('public-ip');
@@ -6,6 +6,8 @@ const {
     createVpn,
     getOvpnAdapterNames,
     installOvpnUpdate,
+    checkWireGuardInstalled,
+    installWireGuard
 } = require('./vpn');
 const { openLogFileExternal } = require('./utils/logs');
 const {
@@ -24,18 +26,34 @@ const {
     importRootCert
 } = require('./utils/certs');
 const { enableAutoUpdate } = require('./updater');
+const { downloadWireGuardInstaller } = require('../modules/catalogs');
 
 const isDev = process.env.ELECTRON_ENV === 'Dev';
 
 let vpnConnection = null;
 
-const showMessageBoxOnError = (error, title = 'Error') => {
+// ─── Friendly notification helper ─────────────────────────────────────────────
+const sendNotification = (sender, { type = 'error', title, message }) => {
+    try {
+        sender.send('app-notification', { type, title, message });
+    } catch {}
+};
+
+const showMessageBoxOnError = (error, title = 'Error', sender = null) => {
     isDev && console.error(error);
-    console.log(dialog.showMessageBoxSync({
-        type: 'error',
-        title: title,
-        message: error.message
-    }));
+    if (sender) {
+        sendNotification(sender, {
+            type: 'error',
+            title,
+            message: error.message || String(error)
+        });
+    } else {
+        dialog.showMessageBoxSync({
+            type: 'error',
+            title,
+            message: error.message || String(error)
+        });
+    }
 };
 
 const closeConnection = async (beforeDisconnectCb = () => { }) => {
@@ -46,10 +64,10 @@ const closeConnection = async (beforeDisconnectCb = () => { }) => {
     }
     if (dialog.showMessageBoxSync({
         type: 'warning',
-        icon: path.join(__dirname, '../assets/icon.ico'),
-        title: 'VPNUK Warning',
-        message: 'Connection is active right now',
-        buttons: ['Disconnect and exit', 'Cancel'],
+        icon: path.join(__dirname, '../assets/icon.png'),
+        title: 'VPNUK',
+        message: 'VPN is active. Disconnect and exit?',
+        buttons: ['Disconnect & Exit', 'Cancel'],
         cancelId: 1
     }) !== 1) {
         beforeDisconnectCb();
@@ -60,45 +78,53 @@ const closeConnection = async (beforeDisconnectCb = () => { }) => {
 };
 exports.closeConnection = closeConnection;
 
+// ─── Connection ───────────────────────────────────────────────────────────────
+
 ipcMain.on('connection-start', async (event, args) => {
-    isDev && console.log('connection-start event', args);
-    const { profile, gateway, wVpnOptions } = args; // todo: validate profile
-    isDev && console.log('connection-start details', profile.details);
+    isDev && console.log('connection-start', args);
+    const { profile, gateway, wVpnOptions } = args;
     const { tray } = require('./main');
 
     vpnConnection = createVpn(profile, {
         connectedHook: async () => {
             if (profile.killSwitchEnabled) {
-                console.log(`deleteRoute ${defaultRoute} ${gateway}`,
-                    deleteRouteSync(defaultRoute, gateway).trim());
+                deleteRouteSync(defaultRoute, gateway).trim();
             }
-            const ip = await publicIp.v4();
+            // Mark connected immediately so the UI responds without waiting for the IP lookup.
             event.sender.send('connection-changed', connectionStates.connected);
-            tray.setConnectedState(`Connected to ${profile.server.label}\nYour IP: ${ip}`);
+            tray.setConnectedState(`Connected to ${profile.server.label}`);
+            // WireGuard: the tunnel service starts before the kernel completes its
+            // handshake and applies the new routing table.  Fetching the public IP
+            // too early returns the ISP address instead of the VPN exit IP.
+            // Wait 3 s for routing to stabilise, then do the lookup through the tunnel.
+            await new Promise(r => setTimeout(r, 3000));
+            const ip = await publicIp.v4({ timeout: 10000 }).catch(() => null);
+            if (ip) {
+                tray.setConnectedState(`Connected to ${profile.server.label}\nYour IP: ${ip}`);
+            }
         },
         disconnectedHook: () => {
             try {
                 event.sender.send('connection-changed', connectionStates.disconnected);
-            }
-            catch (error) { // sender (window) may be destroyed if app is closing
-                if (error.message !== 'Object has been destroyed') {
-                    throw error;
-                }
+            } catch (error) {
+                if (error.message !== 'Object has been destroyed') throw error;
             }
             tray.setDisconnectedState('Disconnected');
             if (profile.killSwitchEnabled) {
-                console.log(`addRoute ${defaultRoute} ${gateway}`,
-                    addRouteSync(defaultRoute, gateway, defaultRoute).trim());
+                addRouteSync(defaultRoute, gateway, defaultRoute).trim();
             }
-            console.log(`deleteRoute ${profile.server.host} ${gateway}`,
-                deleteRouteSync(profile.server.host, gateway).trim());
+            deleteRouteSync(profile.server.host, gateway).trim();
         },
         connectingHook: () => {
             event.sender.send('connection-changed', connectionStates.connecting);
             tray.setConnectingState(`Connecting to ${profile.server.label}...`);
         },
         errorHook: error => {
-            showMessageBoxOnError(error, 'Error starting connection');
+            sendNotification(event.sender, {
+                type: 'error',
+                title: 'Connection Error',
+                message: error.message
+            });
         }
     }, wVpnOptions);
 
@@ -106,57 +132,53 @@ ipcMain.on('connection-start', async (event, args) => {
 });
 
 ipcMain.on('connection-stop', async () => {
-    isDev && console.log('connection-stop event', vpnConnection);
+    isDev && console.log('connection-stop');
     await vpnConnection?.disconnect();
 });
 
+// ─── Misc ─────────────────────────────────────────────────────────────────────
+
 ipcMain.on('is-dev-request', event => {
-    isDev && console.log('is-dev-request event');
     event.sender.send('is-dev-response', isDev);
 });
 
 ipcMain.on('log-open', (_, profileId) => {
     try {
         openLogFileExternal(profileId);
-    }
-    catch (error) {
-        showMessageBoxOnError(error, 'Error opening log file');
+    } catch (error) {
+        isDev && console.error('log-open error', error);
     }
 });
 
 ipcMain.on('default-gateway-request', async event => {
-    isDev && console.log('default-gateway-request event');
-    event.sender.send('default-gateway-response',
-        await getDefaultGateway());
+    event.sender.send('default-gateway-response', await getDefaultGateway());
 });
 
-ipcMain.on('ipv6-fix', async () => {
-    isDev && console.log('ipv6-fix event');
+ipcMain.on('ipv6-fix', async (event) => {
+    isDev && console.log('ipv6-fix');
     try {
         const ovpnAdapters = await getOvpnAdapterNames();
-        isDev && console.log('ipv6-fix ovpnAdapters', ovpnAdapters);
         (await getIPv6Adapters()).forEach(async adapter => {
             if (adapter.ipv6Enabled && ovpnAdapters.some(_ => _ === adapter.name)) {
-                const code = await disableIPv6(adapter.name);
-                isDev && console.log(`IPv6 disabled for ${adapter.name} with code ${code}`);
+                await disableIPv6(adapter.name);
             }
         });
-    }
-    catch (error) {
-        (error.message !== 'No OpenVPN found.')
-            && console.error('ipv6-fix error', error.message);
-        showMessageBoxOnError(error, 'IPv6 disable');
+    } catch (error) {
+        if (error.message !== 'No OpenVPN found.') {
+            isDev && console.error('ipv6-fix error', error.message);
+        }
     }
 });
 
+// ─── OpenVPN update ───────────────────────────────────────────────────────────
+
 ipcMain.on('ovpn-update-request', async (event, arg) => {
-    isDev && console.log('ovpn-update-request event');
     if (dialog.showMessageBoxSync({
         type: 'question',
-        icon: path.join(__dirname, '../assets/icon.ico'),
-        title: 'VPNUK update',
+        icon: path.join(__dirname, '../assets/icon.png'),
+        title: 'VPNUK Update',
         message: `OpenVPN ${arg.version} update available.\nInstall now?`,
-        buttons: ['Yes', 'No'],
+        buttons: ['Install', 'Later'],
         cancelId: 1
     }) !== 1) {
         vpnConnection?.type === 'OpenVPN' && (await vpnConnection?.disconnect());
@@ -165,26 +187,22 @@ ipcMain.on('ovpn-update-request', async (event, arg) => {
 });
 
 ipcMain.on('ovpn-update-install', (event, arg) => {
-    isDev && console.log('ovpn-update-install event', arg);
     if (installOvpnUpdate(arg.file) === 0) {
-        isDev && console.log('ovpn-update-install success');
         dialog.showMessageBoxSync({
             type: 'info',
-            icon: path.join(__dirname, '../assets/icon.ico'),
-            title: 'VPNUK update',
-            message: 'OpenVPN is updated successfully!',
-            buttons: ['Ok']
+            icon: path.join(__dirname, '../assets/icon.png'),
+            title: 'VPNUK Update',
+            message: 'OpenVPN updated successfully.',
+            buttons: ['OK']
         });
         replaceVersionsEntry('openvpn', arg.info);
         event.sender.send('ovpn-update-installed', true);
-    }
-    else {
-        isDev && console.log('ovpn-update-install fail');
+    } else {
         if (dialog.showMessageBoxSync({
-            type: 'error',
-            title: 'VPNUK update',
-            message: 'OpenVPN update failed.\nTry again?',
-            buttons: ['Yes', 'No'],
+            type: 'warning',
+            title: 'VPNUK Update',
+            message: 'OpenVPN update failed. Try again?',
+            buttons: ['Retry', 'Skip'],
             cancelId: 1
         }) !== 1) {
             event.sender.send('ovpn-update-response', arg.info);
@@ -192,22 +210,77 @@ ipcMain.on('ovpn-update-install', (event, arg) => {
     }
 });
 
+// ─── WireGuard install ────────────────────────────────────────────────────────
+
+ipcMain.on('wg-update-request', async (event, arg) => {
+    if (checkWireGuardInstalled()) return;
+    if (dialog.showMessageBoxSync({
+        type: 'question',
+        icon: path.join(__dirname, '../assets/icon.png'),
+        title: 'VPNUK — WireGuard',
+        message: 'WireGuard is not installed.\nInstall it now to use WireGuard connections?',
+        buttons: ['Install WireGuard', 'Skip'],
+        cancelId: 1
+    }) !== 1) {
+        try {
+            sendNotification(event.sender, {
+                type: 'info',
+                title: 'Installing WireGuard',
+                message: 'Downloading WireGuard installer...'
+            });
+            const installerPath = await downloadWireGuardInstaller(arg.installer);
+            const code = installWireGuard(installerPath);
+            if (code === 0) {
+                sendNotification(event.sender, {
+                    type: 'info',
+                    title: 'WireGuard Installed',
+                    message: 'WireGuard installed successfully. You can now create WireGuard profiles.'
+                });
+            } else {
+                sendNotification(event.sender, {
+                    type: 'warning',
+                    title: 'WireGuard Install',
+                    message: 'WireGuard installation may have failed. Please install manually from wireguard.com.'
+                });
+            }
+        } catch (err) {
+            sendNotification(event.sender, {
+                type: 'error',
+                title: 'WireGuard Install Error',
+                message: err.message || 'Installation failed. Please install WireGuard manually.'
+            });
+        }
+    }
+});
+
+// ─── Auto-run (Windows startup) ───────────────────────────────────────────────
+
+ipcMain.on('auto-run-toggle', (_, enable) => {
+    isDev && console.log('auto-run-toggle', enable);
+    const exePath = app.getPath('exe');
+    if (enable) {
+        app.setLoginItemSettings({ openAtLogin: true, path: exePath });
+    } else {
+        app.setLoginItemSettings({ openAtLogin: false });
+    }
+});
+
+// ─── Auto-update ──────────────────────────────────────────────────────────────
+
 ipcMain.on('auto-update-enable', event => {
-    isDev && console.log('auto-update-enable event');
     enableAutoUpdate(event.sender);
 });
 
+// ─── IKEv2 cert ───────────────────────────────────────────────────────────────
+
 ipcMain.on('ikev2-cert-install', async (event, arg) => {
-    isDev && console.log('ikev2-cert-install event');
     if (arg || !(await checkRootCert())) {
-        isDev && console.log('ikev2-cert-install in');
         await removeRootCert();
         try {
             await fs.access(settingsPath.ikev2Cert);
             await importRootCert(settingsPath.ikev2Cert);
         } catch (err) {
-            console.log('ikev2-cert-install error', err);
-            // todo: messagebox
+            isDev && console.log('ikev2-cert-install error', err);
             event.sender.send('ikev2-cert-installed', false);
             return;
         }
