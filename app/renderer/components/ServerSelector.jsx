@@ -2,12 +2,66 @@ import React, { useEffect } from 'react';
 import { action, runInAction } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { Radio } from 'antd';
+import ReactCountryFlag from 'react-country-flag';
 import '@components/index.css';
 import { ValueSelector } from '@components';
 import { Servers, useStore } from '@domain';
+import { settingsPath, wgConfSlug, VpnType } from '@modules/constants.js';
+
+const fs = require('fs');
+
+const toIso = code => (code === 'UK' ? 'GB' : (code || '').toUpperCase());
+
+const formatServerOption = option => (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        {option.countryCode && (
+            <ReactCountryFlag
+                countryCode={toIso(option.countryCode)}
+                svg
+                style={{ width: 24, height: 18, flexShrink: 0 }}
+            />
+        )}
+        <span style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.25 }}>
+            <span style={{ fontWeight: 700, fontSize: 13 }}>
+                {option.label}
+            </span>
+            {option.city && (
+                <span style={{ fontSize: 11, opacity: 0.60 }}>
+                    {option.city}
+                </span>
+            )}
+        </span>
+    </div>
+);
+
+const WireGuardConfigStatus = observer(({ profile }) => {
+    const serverDns = profile.server?.dns || '';
+    void profile.wgConfigFetched;
+    // Use the shared slug function so the path always matches what WireGuardDetails writes.
+    const confPath = settingsPath.wgConf(profile.serverType, serverDns);
+    let hasConfig = false;
+    try { hasConfig = fs.existsSync(confPath); } catch { }
+
+    // For dedicated accounts the conf exists as soon as it has been fetched once;
+    // no server selection is required, so always show the status line.
+    const isDedicated = profile.serverType === 'dedicated' || profile.serverType === 'dedicated11';
+    if (!serverDns && !isDedicated) return null;
+
+    return hasConfig ? (
+        <p style={{ margin: '8px 0 0', fontSize: 12, color: '#1aceb8' }}>
+            ✓ WireGuard config ready for this server
+        </p>
+    ) : (
+        <p style={{ margin: '8px 0 0', fontSize: 12, color: '#e6a817' }}>
+            No WireGuard config for this server — go to the Connection tab to fetch one
+        </p>
+    );
+});
 
 const ServerSelector = observer(() => {
     const profile = useStore().profiles.currentProfile;
+    const isWireGuard = profile.vpnType === VpnType.WireGuard.label;
+
     useEffect(() => {
         let catalog = Servers.getCatalog(profile.serverType);
         if (!profile.server.host && catalog.length > 0) {
@@ -36,7 +90,10 @@ const ServerSelector = observer(() => {
         <ValueSelector
             options={Servers.getCatalog(profile.serverType)}
             value={profile.server}
+            formatOptionLabel={formatServerOption}
             onChange={action(value => profile.server = value)} />
+
+        {isWireGuard && <WireGuardConfigStatus profile={profile} />}
     </>
 });
 
