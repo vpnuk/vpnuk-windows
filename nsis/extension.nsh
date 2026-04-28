@@ -1,6 +1,6 @@
 !include MUI2.nsh
 !macro customWelcomePage
-!insertMacro MUI_PAGE_WELCOME
+	!insertMacro MUI_PAGE_WELCOME
 !macroEnd
 
 ; ---------------------------------- COMMON -----------------------------------
@@ -41,48 +41,6 @@ send:
 !macroend
 !define uninstallOvpn "!insertmacro uninstallOvpn"
 
-!macro uninstallWg
-    ; Step 1 — Stop AND delete every WireGuardTunnel service entry.
-    ;
-    ; Stopping a service alone is not enough: its registration stays in the
-    ; Windows Service Control Manager database.  wireguard.exe /uninstall
-    ; detects those orphaned entries and aborts silently rather than risk
-    ; removing a service that might still be in use.  We therefore call
-    ; sc.exe delete on each one after stopping it, so the SCM database is
-    ; clean before the main uninstaller runs.
-    nsExec::ExecToStack 'powershell -NonInteractive -Command "$$svcs = Get-Service -Name WireGuardTunnel* -ErrorAction SilentlyContinue; foreach ($$s in $$svcs) { Stop-Service $$s -Force -ErrorAction SilentlyContinue; Start-Sleep -Milliseconds 500; sc.exe delete $$s.Name | Out-Null }"'
-    Pop $0
-    Pop $0
-    Sleep 2000
-
-    ; Step 2 — Locate wireguard.exe from known install paths and call /uninstall.
-    ;
-    ; We use $1 (not $0) to keep the Pop register free for nsExec results.
-    ; Primary:  64-bit Program Files (covers the vast majority of installs).
-    ; Fallback: 32-bit Program Files.
-    ; Last resort: ask the registry for the installation directory.
-    StrCpy $1 ""
-    IfFileExists "$PROGRAMFILES64\WireGuard\wireguard.exe" 0 +2
-    StrCpy $1 "$PROGRAMFILES64\WireGuard\wireguard.exe"
-    ${If} $1 == ""
-        IfFileExists "$PROGRAMFILES\WireGuard\wireguard.exe" 0 +2
-        StrCpy $1 "$PROGRAMFILES\WireGuard\wireguard.exe"
-    ${EndIf}
-    ${If} $1 == ""
-        ReadRegStr $1 HKLM "SOFTWARE\WireGuard" "InstallationDirectory"
-        ${If} $1 != ""
-            StrCpy $1 "$1\wireguard.exe"
-        ${EndIf}
-    ${EndIf}
-    ${If} $1 != ""
-        nsExec::ExecToStack '"$1" /uninstall'
-        Pop $0
-        Pop $0
-        Sleep 5000
-    ${EndIf}
-!macroend
-!define uninstallWg "!insertmacro uninstallWg"
-
 !macro radioBtnClick
     Pop $hwnd
     nsDialogs::GetUserData $hwnd
@@ -98,25 +56,6 @@ send:
         Pop $0
         MessageBox MB_OK "Error setting PSModulePath:$\n$0"
     ${EndIf}
-
-    ; ─── Task Scheduler ──────────────────────────────────────────────────────
-    ; Register an on-demand scheduled task that runs VPNUK at the highest
-    ; available privilege level.  Desktop and Start Menu shortcuts are then
-    ; rewritten to target schtasks.exe (which is asInvoker and carries no UAC
-    ; shield) while keeping the VPNUK icon — so the shield never appears.
-    nsExec::ExecToStack 'schtasks /Delete /TN "VPNUK" /F'
-    Pop $0
-    Pop $0
-    nsExec::ExecToStack 'schtasks /Create /TN "VPNUK" /TR "$\"$INSTDIR\VPNUK.exe$\"" /SC ONDEMAND /RL HIGHEST /F'
-    Pop $0
-    ${If} $0 == 0
-        Pop $0
-        SetShellVarContext all
-        CreateShortCut "$DESKTOP\VPNUK.lnk" "$WINDIR\System32\schtasks.exe" '/Run /TN "VPNUK"' "$INSTDIR\VPNUK.exe" 0
-        CreateShortCut "$SMPROGRAMS\VPNUK\VPNUK.lnk" "$WINDIR\System32\schtasks.exe" '/Run /TN "VPNUK"' "$INSTDIR\VPNUK.exe" 0
-    ${Else}
-        Pop $0
-    ${EndIf}
 !macroend
 
 ; --------------- OVPN ----------------
@@ -126,10 +65,6 @@ send:
     LangString subtitle 1033 "OpenVPN installation"
     Page custom ovpnPageCreate ovpnPageLeave
 
-    LangString wgTitle 1033 "WireGuard"
-    LangString wgSubtitle 1033 "WireGuard installation"
-    Page custom wgPageCreate wgPageLeave
-
     Var ovpnVersion
     Var ovpnPath
     Var installedOvpnVer
@@ -138,16 +73,6 @@ send:
     Var hwnd
     Var radioValue
     Var height
-
-    Var wgVersion
-    Var wgInstallerUrl
-    Var wgPath
-    Var installedWgVer
-    Var wgDialog
-    Var wgHwnd
-    Var wgRadioValue
-    Var wgHeight
-
     Function ovpnPageCreate
         StrCpy $height 12
         !insertmacro MUI_HEADER_TEXT $(title) $(subtitle)
@@ -225,12 +150,6 @@ send:
 
             nsJSON::Get "openvpn" "original" $1 /end
             Pop $ovpnInstallerUrl
-
-            nsJSON::Get "windows" "wireguard" "version" /end
-            Pop $wgVersion
-
-            nsJSON::Get "windows" "wireguard" "installer" /end
-            Pop $wgInstallerUrl
         ${Else}
             MessageBox MB_OK "Error loading versions.json:$\n$0"
         ${EndIf}
@@ -263,11 +182,6 @@ send:
                     MessageBox MB_OK "Error installing openvpn:$\n$0"
                     Abort
                 ${EndIf}
-                ; Write versions.json so the app doesn't prompt to update on first run
-                CreateDirectory "$APPDATA\VPNUK"
-                FileOpen $0 "$APPDATA\VPNUK\versions.json" w
-                FileWrite $0 '{"openvpn":{"version":"$ovpnVersion"}}'
-                FileClose $0
             ${Else}
                 MessageBox MB_OK "Error loading openvpn:$\n$1"
                 Abort
@@ -277,101 +191,6 @@ send:
             EnableWindow $0 1
         ${EndIf}
     FunctionEnd
-
-    ; =================== WireGuard functions ===================
-
-    Function wgPageCreate
-        StrCpy $wgHeight 12
-        !insertmacro MUI_HEADER_TEXT $(wgTitle) $(wgSubtitle)
-        nsDialogs::Create 1018
-        Pop $wgDialog
-        ${If} $wgDialog == error
-            Abort
-        ${EndIf}
-
-        StrCpy $wgPath ""
-        IfFileExists "$PROGRAMFILES\WireGuard\wireguard.exe" 0 wg_check64
-        StrCpy $wgPath "$PROGRAMFILES\WireGuard\wireguard.exe"
-        Goto wg_version_check
-    wg_check64:
-        IfFileExists "$PROGRAMFILES64\WireGuard\wireguard.exe" 0 wg_no_install
-        StrCpy $wgPath "$PROGRAMFILES64\WireGuard\wireguard.exe"
-    wg_version_check:
-        ReadRegStr $installedWgVer HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\WireGuard" "DisplayVersion"
-        ${If} $installedWgVer == ""
-            StrCpy $installedWgVer "unknown"
-        ${EndIf}
-    wg_no_install:
-
-        ${NSD_CreateLabel} 0u 0u 100% 12u "Select WireGuard to use:"
-        Pop $wgHwnd
-
-        StrCmp $wgPath "" +2 0
-        StrCmp $wgVersion $installedWgVer wg_install_end 0
-        ${NSD_CreateRadioButton} 12u "$wgHeight\u" 100% 12u "Install WireGuard $wgVersion"
-        Pop $wgHwnd
-        nsDialogs::SetUserData $wgHwnd "true"
-        ${NSD_OnClick} $wgHwnd wgRadioBtnClick
-        IntOp $wgHeight $wgHeight + 12
-        StrCpy $wgRadioValue "true"
-    wg_install_end:
-
-        StrCmp $wgPath "" wg_use_end 0
-        ${NSD_CreateRadioButton} 12u "$wgHeight\u" 100% 12u "Use installed WireGuard $installedWgVer"
-        Pop $wgHwnd
-        nsDialogs::SetUserData $wgHwnd "false"
-        ${NSD_OnClick} $wgHwnd wgRadioBtnClick
-        StrCpy $wgRadioValue "false"
-    wg_use_end:
-
-        ${NSD_Check} $wgHwnd
-        nsDialogs::Show
-    FunctionEnd
-
-    Function wgRadioBtnClick
-        Pop $wgHwnd
-        nsDialogs::GetUserData $wgHwnd
-        Pop $wgRadioValue
-    FunctionEnd
-
-    Function wgPageLeave
-        ${If} $wgRadioValue == ""
-            MessageBox MB_OK "Please specify your choice"
-            Abort
-        ${ElseIf} $wgRadioValue == true
-            GetDlgItem $0 $hWndParent 1
-            EnableWindow $0 0
-
-            ${If} $wgPath != ""
-                ${uninstallWg}
-            ${EndIf}
-
-            ${ClearStack}
-            inetc::get /NOCANCEL "$wgInstallerUrl" "$TEMP\wgInstaller.exe" /END
-            Pop $1
-
-            ${If} $1 == "OK"
-                nsExec::ExecToStack '"$TEMP\wgInstaller.exe" /S'
-                Pop $0
-                ${If} $0 != 0
-                    Pop $0
-                    MessageBox MB_OK "Error installing WireGuard:$\n$0"
-                    Abort
-                ${EndIf}
-                ; Close WireGuard UI if it auto-launched after silent install
-                nsExec::ExecToStack 'taskkill /F /IM wireguard.exe'
-                Pop $0
-                Pop $0
-            ${Else}
-                MessageBox MB_OK "Error downloading WireGuard:$\n$1"
-                Abort
-            ${EndIf}
-
-            GetDlgItem $0 $hWndParent 1
-            EnableWindow $0 1
-        ${EndIf}
-    FunctionEnd
-
     !pragma warning enable 6040 ; Enable back
 !macroend
 
@@ -455,16 +274,13 @@ FunctionEnd
     Var ovpnDialog
     Var hwnd
     Var ovpnFlag
-    Var wgFlag
     Var userDataFlag
 
     Function un.OvpnPageCreate
         ReadRegStr $0 HKLM SOFTWARE\OpenVPN exe_path
-
-        ; Pre-initialise flags so validation in Leave never sees empty string
-        StrCpy $ovpnFlag "false"
-        StrCpy $wgFlag "false"
-        StrCpy $userDataFlag "false"
+        ${If} $0 == ""
+            Abort
+        ${EndIf}
 
         !insertmacro MUI_HEADER_TEXT $(title) $(subtitle)
         nsDialogs::Create 1018
@@ -474,56 +290,34 @@ FunctionEnd
         ${EndIf}
 
     ; -------------- OpenVPN --------------
-        ${If} $0 != ""
-            ${NSD_CreateLabel} 0u 0u 100% 12u "Uninstall OpenVPN"
-            Pop $hwnd
+        ${NSD_CreateLabel} 0u 0u 100% 12u "Uninstall OpenVPN"
+        Pop $hwnd
 
-            ${NSD_CreateRadioButton} 12u 12u 100% 12u "Yes"
-            pop $hwnd
-            nsDialogs::SetUserData $hwnd "true"
-            ${NSD_OnClick} $hwnd un.ovpnRadioClick
-            ${NSD_AddStyle} $hwnd ${WS_GROUP}
+        ${NSD_CreateRadioButton} 12u 12u 100% 12u "Yes"
+        pop $hwnd
+        nsDialogs::SetUserData $hwnd "true"
+        ${NSD_OnClick} $hwnd un.ovpnRadioClick
+        ${NSD_AddStyle} $hwnd ${WS_GROUP}
 
-            ${NSD_CreateRadioButton} 12u 24u 100% 12u "No"
-            pop $hwnd
-            nsDialogs::SetUserData $hwnd "false"
-            ${NSD_OnClick} $hwnd un.ovpnRadioClick
+        ${NSD_CreateRadioButton} 12u 24u 100% 12u "No"
+        pop $hwnd
+        nsDialogs::SetUserData $hwnd "false"
+        ${NSD_OnClick} $hwnd un.ovpnRadioClick
 
-            ${NSD_Check} $hwnd
-            StrCpy $ovpnFlag "false"
-        ${EndIf}
-
-    ; -------------- WireGuard (always shown, defaults to Yes) --------------
-        ${NSD_CreateLabel} 0u 36u 100% 12u "Uninstall WireGuard"
+        ${NSD_Check} $hwnd
+        StrCpy $ovpnFlag "false"
+    
+    ; ------------- User data -------------
+        ${NSD_CreateLabel} 0u 36u 100% 12u "Clear application user data"
         Pop $hwnd
 
         ${NSD_CreateRadioButton} 12u 48u 100% 12u "Yes"
         pop $hwnd
         nsDialogs::SetUserData $hwnd "true"
-        ${NSD_OnClick} $hwnd un.wgRadioClick
-        ${NSD_AddStyle} $hwnd ${WS_GROUP}
-        Push $hwnd                    ; stash the "Yes" handle — no Var needed
-
-        ${NSD_CreateRadioButton} 12u 60u 100% 12u "No"
-        pop $hwnd
-        nsDialogs::SetUserData $hwnd "false"
-        ${NSD_OnClick} $hwnd un.wgRadioClick
-
-        Pop $R0                       ; retrieve the "Yes" handle from stack
-        ${NSD_Check} $R0              ; pre-select "Yes" by default
-        StrCpy $wgFlag "true"         ; initialise flag to match
-
-    ; ------------- User data -------------
-        ${NSD_CreateLabel} 0u 76u 100% 12u "Clear application user data"
-        Pop $hwnd
-
-        ${NSD_CreateRadioButton} 12u 88u 100% 12u "Yes"
-        pop $hwnd
-        nsDialogs::SetUserData $hwnd "true"
         ${NSD_OnClick} $hwnd un.dataRadioClick
         ${NSD_AddStyle} $hwnd ${WS_GROUP}
 
-        ${NSD_CreateRadioButton} 12u 100u 100% 12u "No"
+        ${NSD_CreateRadioButton} 12u 60u 100% 12u "No"
         pop $hwnd
         nsDialogs::SetUserData $hwnd "false"
         ${NSD_OnClick} $hwnd un.dataRadioClick
@@ -538,11 +332,6 @@ FunctionEnd
     Function un.ovpnRadioClick
         ${radioBtnClick}
         Pop $ovpnFlag
-    FunctionEnd
-
-    Function un.wgRadioClick
-        ${radioBtnClick}
-        Pop $wgFlag
     FunctionEnd
 
     Function un.dataRadioClick
@@ -569,11 +358,6 @@ FunctionEnd
         ${If} $ovpnFlag == true
             ${uninstallOvpn}
         ${EndIf}
-
-        ; ------------- WireGuard -------------
-        ${If} $wgFlag == true
-            ${uninstallWg}
-        ${EndIf}
         
         ; ------------- User data -------------
         ${If} $userDataFlag == true
@@ -581,11 +365,6 @@ FunctionEnd
         ${EndIf}
         
         SetShellVarContext all
-
-        ; ─── Task Scheduler cleanup ───────────────────────────────────────────
-        nsExec::ExecToStack 'schtasks /Delete /TN "VPNUK" /F'
-        Pop $0
-        Pop $0
 
         ; ----------- PSModulePath ------------
         call un.PSModulePath
