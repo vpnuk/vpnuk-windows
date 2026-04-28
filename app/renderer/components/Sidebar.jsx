@@ -2,7 +2,7 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { Drawer } from 'antd';
 import '@components/index.css';
-import SettingsImage from '@assets/settings.png';
+import ShieldImage from '@assets/icon.png';
 import { Menu } from '@components';
 
 const Sidebar = observer(({ visible, setVisible }) =>
@@ -13,22 +13,21 @@ const Sidebar = observer(({ visible, setVisible }) =>
         visible={visible}
         width={522}
         closable
-        headerStyle={{ background: "#000000" }}
-        drawerStyle={{ background: "#000000" }}>
+        headerStyle={{ background: '#0d1422', borderBottom: '1px solid #1e2d4a', padding: '12px 16px' }}
+        drawerStyle={{ background: '#0d1422' }}
+        bodyStyle={{ padding: '14px 16px', overflowX: 'hidden' }}>
 
         <Menu />
     </Drawer>
 );
 
-const SettingsTitle = () => {
-    return (
-        <div className="settings-button-modal">
-            <img alt="settings-icon" src={`${SettingsImage}`} />
-            <div>
-                <p>Settings</p>
-            </div>
+const SettingsTitle = () => (
+    <div className="settings-button-modal">
+        <img alt="vpnuk-logo" src={`${ShieldImage}`} style={{ width: 32, height: 32, filter: 'none' }} />
+        <div>
+            <p>VPNUK Settings</p>
         </div>
-    );
-};
+    </div>
+);
 
 export default Sidebar;
