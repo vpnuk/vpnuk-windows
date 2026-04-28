@@ -20,7 +20,6 @@ exports.optionsMtu = [
 ];
 
 const path = require('path');
-// This folder should be created during the installation process
 const settingsFolder = path.resolve(require('process').env.APPDATA + '\\VPNUK');
 exports.settingsFolder = settingsFolder;
 
@@ -35,6 +34,12 @@ exports.settingsPath = {
     ovpnBinFolder: path.join(settingsFolder, 'ovpnBin/'),
     ovpnBinExe: path.join(settingsFolder, 'ovpnBin', 'bin', 'openvpn.exe'),
     ikev2Cert: path.join(settingsFolder, 'ikev2.crt'),
+    device: path.join(settingsFolder, 'device.json'),
+    wgConf: (profileId, serverDns) => {
+        // Use DNS slug as filename: shared32.vpnuk.net → shared32.conf
+        const slug = serverDns ? serverDns.replace(/\.vpnuk\.net$/i, '') : 'vpnuk-wg';
+        return path.join(settingsFolder, `${slug}.conf`);
+    },
 };
 
 const baseAddress = 'https://www.serverlistvault.com/';
@@ -44,7 +49,7 @@ exports.settingsLink = {
     servers: baseAddress + 'servers.json',
     ovpn: baseAddress + 'openvpn-configuration.ovpn',
     ovpnObfucation: baseAddress + 'openvpn-obfuscation-configuration.ovpn'
-}
+};
 
 exports.phoneBookPath = path.resolve(
     require('process').env.APPDATA
@@ -52,10 +57,12 @@ exports.phoneBookPath = path.resolve(
 );
 
 const VpnType = {
-    OpenVPN: { label: 'OpenVPN' },
-    IKEv2: { label: 'IKEv2' },
-    L2TP: { label: 'L2TP' },
-    PPTP: { label: 'PPTP' },
-    WireGuard: { label: 'WireGuard', isDisabled: true }
+    WireGuard: { label: 'WireGuard' },
+    OpenVPN:   { label: 'OpenVPN' },
+    IKEv2:     { label: 'IKEv2' },
+    L2TP:      { label: 'L2TP' },
+    PPTP:      { label: 'PPTP' },
 };
 exports.VpnType = VpnType;
+
+exports.WG_AUTH_URL = 'https://clientcp.vpnuk.info/vpnuk/clients/wg_v2_app_api.php';
